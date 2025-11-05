@@ -23,3 +23,19 @@ frontend/ - Root frontend application folder
     tests/ & scripts/ – Unit/integration tests and utility scripts for build/deploy.
 
     This structure ensures scalability, maintainability, and clear separation of concerns for enterprise-level applications.
+
+
+Further Frontend Information (Next.js + Tailwind CSS):
+
+The frontend is built with Next.js using the App Router pattern, providing a modular, feature-based architecture that is ideal for enterprise applications. Tailwind CSS ensures consistent styling, responsive design, and rapid UI development.
+Key aspects:
+
+Project Structure: Organized into app (pages/routes), components (reusable UI elements), features (feature-specific components and hooks), hooks (global React hooks), lib (utilities), store (state management), styles, and public (static assets).
+
+Tailwind Integration: Provides utility-first CSS, enabling rapid design with responsive and consistent styling for buttons, forms, cards, and layouts.
+
+TypeScript/JSX Support: Ensures type safety, better developer experience, and maintainable code.
+
+Development Workflow: npm run dev launches the app in development mode with hot-reloading.
+
+Scalable Component Design: Modular feature-based architecture allows independent development of auth, dashboard, and job listings.
