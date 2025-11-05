@@ -1,0 +1,77 @@
+The Job Portal backend should be built using Python 3.11+ and FastAPI, following a modular architecture. The folder structure and responsibilities are as follows:
+
+backend/ – Root backend application folder. Contains all backend logic and modules.
+
+    main.py – Entry point of the application, starts the FastAPI server.
+
+    api/ – Defines versioned API endpoints.
+
+        v1/routes/ – Route handlers for features like authentication, users, jobs, applications, recommendations, and AI assistant.
+
+        dependencies.py – Common dependencies for routes (e.g., DB session, auth).
+
+    core/ – Core app configuration and utilities.
+
+        config.py – Environment and application configuration.
+
+        security.py – Authentication, password hashing, JWT handling.
+
+        logging.py – Structured logging setup.
+
+        rate_limit.py – Rate limiting logic.
+
+        errors.py – Centralized error handling.
+
+    models/ – Database models using Pydantic + Beanie.
+
+        Examples: user.py, company.py, job.py, application.py, resume.py, conversation.py.
+
+    schemas/ – Request/response validation and serialization.
+
+        Includes auth.py, user.py, job.py, application.py, resume.py, assistant.py, and common schemas.
+
+    repositories/ – Encapsulates database operations for each model.
+
+        Examples: user_repository.py, job_repository.py, application_repository.py, resume_repository.py.
+
+    services/ – Business logic and domain services.
+
+        Examples: authentication, resume parsing, search, recommendations, suggestions, email handling.
+
+    ai/ – AI orchestration and workflows.
+
+        providers/ – API clients for AI models (OpenAI, Anthropic).
+
+        prompts/ – System prompts and templates for AI interactions.
+
+        chains/ – LangChain prompt chains (recommendation, cover letter).
+
+        rag/ – Retrieval-Augmented Generation: loader, splitter, embeddings, vectorstore, retriever, QA chain.
+
+        agents/ –  Agent orchestration
+
+    workers/ – Background processing.
+
+        queue.py, scheduler.py – Task management and scheduling.
+
+        tasks/ – Background tasks like embedding generation and email sending.
+
+    db/ – Database setup and management.
+
+        init_db.py – Async MongoDB connection and Beanie initialization.
+
+        indexes.py – Index definitions.
+
+        migrations/ – Database migrations.
+
+    utils/ – Shared utilities and adapters.
+
+        Examples: pagination helpers, validators, adapters for integrations.
+
+Root files – Project-level configuration and dependencies:
+
+Dockerfile – Containerization setup.
+
+requirements.txt / pyproject.toml – Python dependencies.
+
+.env.example – Environment variables template.
