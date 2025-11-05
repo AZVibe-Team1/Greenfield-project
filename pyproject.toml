@@ -1,0 +1,14 @@
+[project]
+name = "greenfield-project"
+version = "0.1.0"
+description = "Greenfield Team Project for AZVIBE"
+readme = "README.md"
+authors = [
+  {name="Michael Sanders", email="mrsande1@asu.edu"}
+  {name="Grace Li", email="graceli9095@gmail.com"}
+  {name="Jack Markle", email="jack.markle5@gmail.com"}
+  {name="Gabriel Scruggs", email="g_works21@hotmail.com"}
+  {name="Aahmed Khalil", email=" ahmed.khal718@gmail.com"}
+  ]
+requires-python = ">=3.12"
+dependencies = []

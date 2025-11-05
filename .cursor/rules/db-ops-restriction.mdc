@@ -1,0 +1,10 @@
+---
+description: "Direct DB operations should always be done in the 'dbase' layer."
+globs:
+alwaysApply: true
+---
+
+# Database Operations Restriction
+
+- All modules should follow Dependency Injection (ie, object that used in a class is provided via the constructor)
+- Direct DB operations should always be done in the 'dbase' layer
