@@ -1,0 +1,28 @@
+---
+alwaysApply: true
+---
+Assume the following environment variables are set in a file named .env at the root of the project:
+Variables without an equals sign are set but hidden to you.
+
+# AWS Credentials
+AWS_ACCESS_KEY_ID
+AWS_SECRET_ACCESS_KEY
+AWS_REGION=us-east-1
+AWS_SESSION_TOKEN
+AWS_BEARER_TOKEN_BEDROCK
+
+OPENAI_API_KEY
+OPENAI_MODEL=gpt-4o-mini
+BEDROCK_MODEL=amazon.nova-micro-v1:0
+
+# Langsmith
+LANGSMITH_API_KEY
+LANGSMITH_TRACING="true"
+LANGSMITH_ENDPOINT="https://api.smith.langchain.com"
+LANGSMITH_PROJECT=""
+
+# ChromaDB Configuration
+CHROMA_PC_PATH=./chroma_db
+ALLOW_ORIGINS=http://localhost:3000
+# NEXT_JS
+NEXT_PUBLIC_BACKEND_URL=http://backend:8000

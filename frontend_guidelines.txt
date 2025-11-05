@@ -1,0 +1,25 @@
+The Job Portal frontend should be built with Next.js (App Router) and follows a modular, feature-based architecture:
+
+frontend/ - Root frontend application folder
+
+    app/ – Defines routes and layouts for pages like Home, Login, Dashboard, and nested routes.
+
+    components/ – Contains global, reusable UI components such as buttons, cards, and navigation bars.
+
+    features/ – Encapsulates each feature (auth, dashboard, job listings) with its own components, hooks, API services, and state management.
+
+    hooks/ – Houses global reusable React hooks for data fetching, debouncing, etc.
+
+    lib/ – Utilities, shared API clients, and helper functions.
+
+    store/ – Global state management (Redux/Zustand) for authentication, UI, and other app-wide state.
+
+    types/ & constants/ – Centralized TypeScript types/interfaces and app-wide constants.
+
+    services/ & middleware/ – Shared services like logging, analytics, and middleware for authentication.
+
+    styles/ & public/ – Global CSS/Tailwind styles and static assets.
+
+    tests/ & scripts/ – Unit/integration tests and utility scripts for build/deploy.
+
+    This structure ensures scalability, maintainability, and clear separation of concerns for enterprise-level applications.

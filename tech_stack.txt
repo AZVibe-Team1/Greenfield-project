@@ -1,0 +1,9 @@
+Platform / Tech Stack:
+Backend: Python 3.11+, FastAPI (async), Uvicorn/Gunicorn
+Frontend: Next.js 14 (App Router), TypeScript, React, Tailwind CSS (or equivalent design system)
+Database: MongoDB 6.x (Atlas or managed); Pydantic + Beanie ODM
+Vector Store: ChromaDB
+AI Orchestration: LangChain for prompt chains, tools, retrieval pipelines, n8n
+Models: OpenAI (GPT-4o/4.1) or Anthropic Claude 3.x/4; OpenAI text-embedding-3-small for embeddings; fallback to open-source (all-MiniLM-L6-v2)
+Containerization: Docker.
+Observability: Structured logging
