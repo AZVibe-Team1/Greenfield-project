@@ -15,6 +15,61 @@ This project uses Docker Compose for containerized development and deployment.
 - Docker Desktop (Windows/Mac) or Docker Engine (Linux)
 - Docker Compose v2.0+
 
+### Installing Docker
+
+#### Windows
+
+1. **Download Docker Desktop:**
+   - Visit [https://www.docker.com/products/docker-desktop/](https://www.docker.com/products/docker-desktop/)
+   - Click "Download for Windows"
+   - Download the installer (`Docker Desktop Installer.exe`)
+
+2. **Install Docker Desktop:**
+   - Run the installer
+   - Follow the installation wizard
+   - When prompted, ensure "Use WSL 2 instead of Hyper-V" is checked (recommended)
+   - Restart your computer if prompted
+
+3. **Launch Docker Desktop:**
+   - After restart, launch Docker Desktop from the Start menu
+   - Accept the service agreement
+   - Wait for Docker to start (the Docker icon in the system tray will show "Docker Desktop is running")
+
+4. **Verify Installation:**
+   ```bash
+   docker --version
+   docker compose version
+   ```
+
+#### macOS
+
+1. **Choose Your Mac Type:**
+   - **Apple Silicon (M1/M2/M3)**: Download "Mac with Apple chip"
+   - **Intel Mac**: Download "Mac with Intel chip"
+
+2. **Download Docker Desktop:**
+   - Visit [https://www.docker.com/products/docker-desktop/](https://www.docker.com/products/docker-desktop/)
+   - Click "Download for Mac"
+   - The download will be a `.dmg` file
+
+3. **Install Docker Desktop:**
+   - Open the downloaded `.dmg` file
+   - Drag Docker.app to your Applications folder
+   - Open Docker from Applications (or Spotlight search)
+   - Click "Open" when macOS asks for confirmation
+
+4. **Complete Setup:**
+   - Docker Desktop will start and may ask for your password to install networking components
+   - Wait for Docker to finish starting (the Docker icon in the menu bar will show "Docker Desktop is running")
+
+5. **Verify Installation:**
+   ```bash
+   docker --version
+   docker compose version
+   ```
+
+**Note:** Docker Desktop includes Docker Compose, so you don't need to install it separately.
+
 ### Quick Start
 
 1. **Copy environment variables:**
