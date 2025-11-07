@@ -74,10 +74,10 @@ Establish the development environment, project structure, core dependencies, and
 
 #### Infrastructure
 - **Files to Create:**
-  - `docker-compose.yml` - Multi-service orchestration
+  - `docker-compose.yml` - Multi-service orchestration (backend, frontend, MongoDB, Redis)
   - `backend/Dockerfile` - Backend container
   - `frontend/Dockerfile` - Frontend container
-  - `.env.example` - Environment variables template
+  - `.env.example` - Environment variables template (include n8n credentials)
   - `.gitignore` - Ignore sensitive files
 
 #### Database Setup
@@ -87,6 +87,14 @@ Establish the development environment, project structure, core dependencies, and
   - Set up database indexes for performance
   - Create initial collections structure
 
+#### n8n Workflow Automation Setup
+- **Tasks:**
+  - Set up n8n instance (self-hosted with Docker or n8n cloud)
+  - Configure n8n environment variables
+  - Create initial workflow templates
+  - Set up webhook endpoints
+  - Document n8n API credentials and access
+
 ### Dependencies
 - None (foundation phase)
 
@@ -94,7 +102,8 @@ Establish the development environment, project structure, core dependencies, and
 - ✓ Backend server runs on http://localhost:8000
 - ✓ Frontend dev server runs on http://localhost:3000
 - ✓ MongoDB connection successful
-- ✓ Docker containers build and run successfully
+- ✓ n8n instance is accessible and configured
+- ✓ Docker containers build and run successfully 
 - ✓ Health check endpoints respond correctly
 - ✓ Logging outputs structured JSON logs
 
@@ -394,6 +403,7 @@ Enable job seekers to apply for jobs and employers to review applications, short
 - ✅ Candidate shortlisting
 - ✅ Interview scheduling
 - ✅ Application status updates
+- ✅ n8n workflow automation for application status reporting
 
 ### Technical Tasks
 
@@ -525,6 +535,24 @@ Enable job seekers to apply for jobs and employers to review applications, short
   - Secure file URLs (signed URLs for S3)
   - Virus scanning (optional but recommended)
 
+#### n8n Workflow Automation Setup
+- **Files to Create:**
+  - `backend/services/n8n_service.py` - n8n API integration service
+  - `backend/utils/n8n_webhooks.py` - Webhook handlers for n8n
+  
+- **n8n Workflows to Configure:**
+  - Application status tracking workflow (applied, reviewed, interview scheduled, interviewed, offered, rejected)
+  - Automated email notifications based on status changes
+  - Status change logging and audit trail
+  - Integration with notification service
+  
+- **Tasks:**
+  - Set up n8n instance (self-hosted or cloud)
+  - Create webhooks for status updates
+  - Configure workflow triggers for each status transition
+  - Test workflow automation end-to-end
+  - Document workflow configurations
+
 ### Dependencies
 - Phase 2 (need jobs to apply to)
 - Phase 1 (need authentication)
@@ -540,6 +568,8 @@ Enable job seekers to apply for jobs and employers to review applications, short
 - ✓ Duplicate applications are prevented
 - ✓ Resume files are stored securely
 - ✓ File uploads are validated (type, size)
+- ✓ n8n workflows trigger correctly on status changes
+- ✓ Application status reporting works through n8n automation
 
 ---
 
@@ -938,6 +968,7 @@ Implement notification system, email alerts, and final polish for production rea
 | File storage costs | Set file size limits, implement cleanup policies |
 | Database performance degradation | Add proper indexes, implement caching layer (Redis) |
 | Third-party API downtime | Implement circuit breakers, fallback mechanisms |
+| n8n workflow automation failures | Implement retry logic, fallback to direct status updates, monitor workflow health |
 
 ### Development Risks
 | Risk | Mitigation Strategy |
@@ -980,6 +1011,7 @@ Implement notification system, email alerts, and final polish for production rea
 - MongoDB 6.x, Beanie ODM
 - ChromaDB (vector store)
 - LangChain, OpenAI/Anthropic
+- n8n (workflow automation)
 - Redis (caching)
 - Celery (background tasks)
 - Docker
@@ -995,6 +1027,7 @@ Implement notification system, email alerts, and final polish for production rea
 ### Infrastructure
 - Docker Compose (development)
 - MongoDB Atlas (database)
+- n8n (workflow automation - self-hosted or cloud)
 - AWS S3 (file storage)
 - SendGrid/AWS SES (email)
 - Vercel/AWS (hosting)
@@ -1005,9 +1038,11 @@ Implement notification system, email alerts, and final polish for production rea
 
 This phased implementation plan provides a structured approach to building the JobPortal platform. Each phase builds upon the previous one, ensuring a solid foundation before adding complex features. The AI capabilities in Phase 4 are built on top of a working job board, allowing for iteration and improvement based on real data.
 
+The integration of n8n workflow automation in Phase 3 enables sophisticated application tracking and status reporting workflows, providing automated notifications and audit trails for the entire hiring process.
+
 Key priorities:
 1. **Phase 0-1**: Get authentication and user management right
-2. **Phase 2-3**: Build core job board functionality
+2. **Phase 2-3**: Build core job board functionality (including n8n workflow automation)
 3. **Phase 4**: Layer in AI features for differentiation
 4. **Phase 5**: Polish and prepare for production
 

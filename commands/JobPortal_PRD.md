@@ -47,9 +47,9 @@
 * Company profile management
 * Job posting creation with detailed descriptions
 * Application review and candidate shortlisting
-* Interview scheduling with automated notifications
-* Application tracking and candidate status reporting
-* AI-powered candidate recommendations for posted jobs
+* Interview scheduling with automated notifications through email
+* Application tracking and candidate status reporting with using n8n (applied, reviewed, interview scheduled,interviewed, offered,reject) 
+* AI-powered candidate recommendations for posted jobs 
 
 #### AI Features
 * Resume parsing and skill extraction
@@ -142,9 +142,7 @@
   * Caching layer (Redis) for frequently accessed data
 
 * **Hardware / Software**: 
-  * Cloud hosting environment (AWS, GCP, or Azure)
   * Docker runtime environment
-  * Minimum 4GB RAM per service instance
   * SSL/TLS certificates for secure communication
 
 ## 6. Data Requirements
@@ -158,20 +156,10 @@
   * Chat/communication history between employers and candidates
   * Notification and alert preferences
 
-* **Data Retention / Archival Policies**: 
-  * Active user data retained indefinitely while account is active
-  * Inactive accounts archived after 2 years
-  * Application data retained for 3 years
-  * Audit logs retained for 1 year
-  * Backup retention for 30 days
 
 * **Privacy and Regulatory Considerations**: 
-  * Personal data encrypted at rest and in transit
-  * User consent required for data processing
-  * Data anonymization for analytics
-  * Ability for users to export their data
   * Ability for users to request data deletion
-  * Resume data treated as sensitive personal information
+
 
 ## 7. Constraints
 
@@ -237,7 +225,6 @@
 * Data privacy and security vulnerabilities
 * User adoption challenges if platform is not intuitive
 * Competition from established job platforms
-* Potential bias in AI matching algorithms
 
 ### **Dependencies**:
 * MongoDB Atlas availability and performance
