@@ -2,6 +2,10 @@
 
 A secure, scalable, and user-friendly platform connecting job seekers and employers with AI-powered recommendations.
 
+
+**JM!!** - Right now, the containers bring up only the backend as I thought it would be easiest to start with one container.
+The code added to /backend is temporary to show that the backend FastAPI runs at a basic level.
+
 ## Docker Setup
 
 This project uses Docker Compose for containerized development and deployment.
@@ -25,6 +29,11 @@ This project uses Docker Compose for containerized development and deployment.
    ```
    The backend API will be available at `http://localhost:8000`
 
+   JM!! - Open a terminal in the backend container: 
+    ```bash
+   docker compose run backend bash
+   ```
+
 3. **Run the frontend service** (when ready):
    ```bash
    docker compose run frontend
@@ -36,6 +45,22 @@ This project uses Docker Compose for containerized development and deployment.
    docker compose up
    ```
    This starts all services (backend, frontend, and MongoDB) defined in `docker-compose.yml`
+
+
+   **JM!!** - Rebuild all containers (start fresh build):
+   ```bash
+   docker compose up --build
+   ```
+
+   **JM!!** - Clean up containers (good to run after done with developing session):
+   ```bash
+   docker compose down -v --remove-orphans
+   ```
+
+   **JM!!** - To view what containers you have running:
+   ```bash
+   docker ps
+   ```
 
 ### Docker Services
 

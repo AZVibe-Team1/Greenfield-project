@@ -1,8 +1,6 @@
 # Docker Compose configuration for Job Portal Application
 # This file defines the services, networks, and volumes for the application
 
-version: '3.8'
-
 services:
   # Backend Service - FastAPI Application
   # This service runs the Python FastAPI backend API server
@@ -26,6 +24,7 @@ services:
     volumes:
       - ./backend:/app/backend
       - ./pyproject.toml:/app/pyproject.toml
+      - ./uv.lock:/app/uv.lock
     # Restart policy: restart container if it stops unexpectedly
     restart: unless-stopped
     # Health check to ensure service is running
@@ -99,7 +98,7 @@ services:
 
 # Named volumes for data persistence
 # These volumes persist data even when containers are removed
-volumes:
+# volumes:
   # MongoDB data volume
   # mongodb_data:
   # MongoDB config volume

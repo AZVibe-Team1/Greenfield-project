@@ -28,8 +28,10 @@ RUN apt-get update && apt-get install -y \
 
 # Install uv - fast Python package installer and resolver
 # uv is used for dependency management in this project
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh
-ENV PATH="/root/.cargo/bin:$PATH"
+# RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+# ENV PATH="/root/.cargo/bin:$PATH"
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
 
 # Copy dependency files first for better Docker layer caching
 # This allows Docker to cache dependencies separately from code changes
@@ -37,6 +39,7 @@ COPY pyproject.toml ./
 
 # Install Python dependencies using uv
 # uv sync installs all dependencies from pyproject.toml
+COPY uv.lock ./
 RUN uv sync --frozen
 
 # Copy the rest of the backend application code
