@@ -1,0 +1,74 @@
+Application Overview
+The JobPortal project aims to develop a secure, scalable, and user-friendly platform connecting job seekers and employers. The core functionalities for job seekers include creating profiles, uploading resumes, searching and applying for jobs, and receiving notifications. Employers can post jobs, review applications, schedule interviews, and communicate with candidates.
+
+The system will also leverage AI for personalized job recommendations, resume parsing, and candidate matching.
+
+Core Functional Scope
+Job Seeker Account
+As a job seeker, I want to:
+
+Register and create a profile with personal details and resume upload.
+
+Login to my account securely.
+
+Search jobs by title, skills, location, or company.
+
+Apply for jobs with a single click or via resume submission.
+
+Receive job alerts and notifications via email.
+
+View application status and history.
+
+Receive AI-powered job recommendations based on profile and preferences.
+
+Employer Account
+As an employer, I want to:
+
+Register and create a company profile.
+
+Post new job openings with detailed descriptions.
+
+Review applications and shortlist candidates.
+
+Schedule interviews and send email notifications.
+
+Track applications and generate reports on candidate status.
+
+Receive AI-powered candidate recommendations for posted jobs.
+
+Note: Any additional features that improve user experience, engagement, or operational efficiency are encouraged
+
+Definition of Done
+Fully working application demo.
+
+For MongoDB document definition remember to use the chart on this project spec
+
+Share code repository for technical evaluation with:
+
+ERD Diagram
+
+Architecture Diagram
+
+System Expectations
+Secure password encryption using strong hashing algorithms.
+
+JWT or equivalent token-based authentication for session management.
+
+Input validation, exception handling, and logging implemented consistently.
+
+Platform / Tech Stack
+Backend: Python 3.11+, FastAPI (async), Uvicorn/Gunicorn
+
+Frontend: Next.js 14 (App Router), TypeScript, React, Tailwind CSS (or equivalent design system)
+
+Database: MongoDB 6.x (Atlas or managed); Pydantic + Beanie ODM
+
+Vector Store: ChromaDB
+
+AI Orchestration: LangChain for prompt chains, tools, retrieval pipelines, n8n
+
+Models: OpenAI (GPT-4o/4.1) or Anthropic Claude 3.x/4; OpenAI text-embedding-3-small for embeddings; fallback to open-source (all-MiniLM-L6-v2)
+
+Containerization: Docker.
+
+Observability: Structured logging

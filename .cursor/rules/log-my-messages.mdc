@@ -1,8 +1,6 @@
 ---
-
-alwaysApply: true
+alwaysApply: false
 ---
-
 # Log My Messages
 
 System Proompt:
