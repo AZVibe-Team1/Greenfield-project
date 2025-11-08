@@ -4,9 +4,6 @@ alwaysApply: true
 Assume the following environment variables are set in a file named .env at the root of the project:
 Variables without an equals sign are set but hidden to you.
 
-# Essential Environment Variables for Job Portal
-# Copy this file to .env and fill in your actual values
-
 # Database - MongoDB Connection
 # Replace with your values from slack
 MONGO_DB_USER=test_db_user
