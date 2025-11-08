@@ -1,0 +1,48 @@
+---
+alwaysApply: true
+---
+Assume the following environment variables are set in a file named .env at the root of the project:
+Variables without an equals sign are set but hidden to you.
+
+# Essential Environment Variables for Job Portal
+# Copy this file to .env and fill in your actual values
+
+# Database - MongoDB Connection
+# Replace with your values from slack
+MONGO_DB_USER=test_db_user
+MONGO_DB_PASSWORD=
+MONGO_DB_URL=mongodb+srv://${MONGO_DB_USER}:${MONGO_DB_PASSWORD}@job-portal.rwdy5sh.mongodb.net/?appName=job-portal
+MONGO_DB_NAME='job-portal'
+
+# ChromaDB Configuration
+CHROMA_PC_PATH=./chroma_db
+ALLOW_ORIGINS=http://localhost:3000
+
+# AWS Credentials (if we use bedrock)
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_REGION=us-east-1
+AWS_SESSION_TOKEN=
+# Non permament (12hours)
+AWS_BEARER_TOKEN_BEDROCK=""
+BEDROCK_MODEL=amazon.nova-lite-v1:0
+
+# OPENAI (if we use chatgpt models)
+OPENAI_API_KEY=
+OPENAI_MODEL=gpt-4o-mini
+
+# Langsmith (if we use langsmith)
+LANGSMITH_API_KEY=
+LANGSMITH_TRACING="true"
+LANGSMITH_ENDPOINT="https://api.smith.langchain.com"
+LANGSMITH_PROJECT="job_portal"
+
+# CORS - Frontend URL
+CORS_ORIGINS=http://localhost:3000
+FRONTEND_URL=http://localhost:3000
+
+# Next.js
+# Local Machine
+# NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
+# Docker
+NEXT_PUBLIC_BACKEND_URL=http://backend:8000
