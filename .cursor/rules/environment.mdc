@@ -1,5 +1,8 @@
-# Essential Environment Variables for Job Portal
-# Copy this file to .env and fill in your actual values
+---
+alwaysApply: true
+---
+Assume the following environment variables are set in a file named .env at the root of the project:
+Variables without an equals sign are set but hidden to you.
 
 # Database - MongoDB Connection
 # Replace with your values from slack
@@ -31,8 +34,6 @@ LANGSMITH_TRACING="true"
 LANGSMITH_ENDPOINT="https://api.smith.langchain.com"
 LANGSMITH_PROJECT="job_portal"
 
-# n8n (if we use n8n)
-
 # CORS - Frontend URL
 CORS_ORIGINS=http://localhost:3000
 FRONTEND_URL=http://localhost:3000
@@ -42,19 +43,3 @@ FRONTEND_URL=http://localhost:3000
 # NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
 # Docker
 NEXT_PUBLIC_BACKEND_URL=http://backend:8000
-
-######
-# Potentially needed later...
-######
-
-# Authentication - JWT Configuration
-# JWT_SECRET_KEY=your-jwt-secret-key-here
-# JWT_ALGORITHM=HS256
-# JWT_EXPIRATION_TIME=3600
-
-# Email - SMTP Configuration
-# SMTP_HOST=smtp.gmail.com
-# SMTP_PORT=587
-# SMTP_USERNAME=your-email@gmail.com
-# SMTP_PASSWORD=your-smtp-password-here
-# EMAIL_FROM=noreply@jobportal.com
