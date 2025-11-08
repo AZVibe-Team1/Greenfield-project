@@ -74,7 +74,7 @@ Establish the development environment, project structure, core dependencies, and
 
 #### Infrastructure
 - **Files to Create:**
-  - `docker-compose.yml` - Multi-service orchestration (backend, frontend, MongoDB, Redis)
+  - `docker-compose.yml` - Multi-service orchestration (backend, frontend, MongoDB)
   - `backend/Dockerfile` - Backend container
   - `frontend/Dockerfile` - Frontend container
   - `.env.example` - Environment variables template (include n8n credentials)
@@ -710,16 +710,18 @@ Implement AI-powered features including resume parsing, job recommendations, can
   GET    /api/v1/applications/:id/match-explanation
   ```
 
-#### Backend - Workers/Tasks
+#### Backend - Background Tasks
 - **Files to Create:**
-  - `backend/workers/tasks/embedding_tasks.py` - Generate embeddings async
-  - `backend/workers/tasks/recommendation_tasks.py` - Update recommendations
+  - `backend/workers/tasks/embedding_tasks.py` - Generate embeddings async with FastAPI BackgroundTasks
+  - `backend/workers/tasks/recommendation_tasks.py` - Update recommendations with FastAPI BackgroundTasks
 
-- **Background Tasks:**
+- **Background Tasks (using FastAPI BackgroundTasks):**
   - Generate embeddings when job is created
   - Generate embeddings when resume is uploaded
-  - Refresh recommendations daily
+  - Refresh recommendations periodically
   - Update candidate rankings when new applications arrive
+  
+- **Note:** Use FastAPI's built-in `BackgroundTasks` for async job processing instead of external task queues
 
 #### Frontend - AI Features
 - **Files to Create:**
@@ -788,7 +790,7 @@ Implement notification system, email alerts, and final polish for production rea
   - `backend/model/email_template.py` - Email template model
   - `backend/services/notification_service.py` - Notification logic
   - `backend/services/email_service.py` - Email sending service
-  - `backend/workers/tasks/email_tasks.py` - Async email tasks
+  - `backend/workers/tasks/email_tasks.py` - Async email tasks (using FastAPI BackgroundTasks)
   - `backend/utils/email_templates.py` - HTML email templates
 
 - **Dependencies to Install:**
@@ -809,7 +811,7 @@ Implement notification system, email alerts, and final polish for production rea
 - **Files to Create:**
   - `backend/model/job_alert.py` - Alert subscription model
   - `backend/services/job_alert_service.py` - Alert logic
-  - `backend/workers/tasks/alert_tasks.py` - Daily alert generation
+  - `backend/workers/tasks/alert_tasks.py` - Daily alert generation (using FastAPI BackgroundTasks)
 
 - **Alert Fields:**
   ```python
@@ -888,7 +890,6 @@ Implement notification system, email alerts, and final polish for production rea
 
 #### Performance Optimizations
 - **Backend:**
-  - Add Redis caching for frequently accessed data
   - Optimize database queries (add missing indexes)
   - Implement rate limiting on endpoints
   - Add request/response compression
@@ -966,7 +967,7 @@ Implement notification system, email alerts, and final polish for production rea
 | AI API costs exceed budget | Implement caching, rate limiting, use fallback models |
 | Vector search performance issues | Optimize indexes, use hybrid search, implement pagination |
 | File storage costs | Set file size limits, implement cleanup policies |
-| Database performance degradation | Add proper indexes, implement caching layer (Redis) |
+| Database performance degradation | Add proper indexes, optimize queries, implement pagination |
 | Third-party API downtime | Implement circuit breakers, fallback mechanisms |
 | n8n workflow automation failures | Implement retry logic, fallback to direct status updates, monitor workflow health |
 
@@ -1012,8 +1013,7 @@ Implement notification system, email alerts, and final polish for production rea
 - ChromaDB (vector store)
 - LangChain, OpenAI/Anthropic
 - n8n (workflow automation)
-- Redis (caching)
-- Celery (background tasks)
+- FastAPI BackgroundTasks (async background jobs)
 - Docker
 
 ### Frontend

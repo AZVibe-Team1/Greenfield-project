@@ -139,7 +139,6 @@
   * MongoDB for primary application data
   * ChromaDB for vector embeddings
   * Object storage for resume files and documents
-  * Caching layer (Redis) for frequently accessed data
 
 * **Hardware / Software**: 
   * Docker runtime environment
@@ -234,6 +233,7 @@
 * Cloud hosting infrastructure uptime
 * Third-party authentication providers (if used)
 * LangChain framework updates and compatibility
+* n8n workflow automation platform availability
 * Docker runtime environment
 
 ## 11. Glossary
@@ -244,6 +244,7 @@
 * **RAG (Retrieval-Augmented Generation)**: AI technique that combines information retrieval with text generation
 * **ChromaDB**: An open-source vector database for storing and querying embeddings
 * **LangChain**: A framework for developing applications powered by language models
+* **n8n**: An open-source workflow automation tool for connecting apps and automating processes
 * **Beanie**: Asynchronous Python ODM for MongoDB based on Pydantic
 * **RBAC (Role-Based Access Control)**: A method of regulating access based on user roles
 * **Semantic Search**: Search technique that understands the intent and contextual meaning of search terms
