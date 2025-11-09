@@ -144,3 +144,140 @@ See `.env.example` for all required environment variables. Key variables include
 - `frontend/` - Next.js frontend application
 - `docker-compose.yml` - Docker Compose configuration
 - `.env.example` - Environment variables template
+
+## ChromaDB Quick Start Guide
+
+### Overview
+
+✅ **ChromaDB RAG setup is complete!** Vector database configured with OpenAI embeddings for intelligent job portal features.
+
+### Components
+
+**Mock Data** (`backend/chroma_data/`):
+- `job_postings.txt` - Sample tech job listings
+- `company_profiles.txt` - Company information
+- `interview_tips.txt` - Interview preparation
+- `resume_writing.txt` - Resume best practices
+- `career_development.txt` - Career advice
+
+**Ingestion Script** (`backend/ingest_data.py`):
+- Loads and chunks text documents
+- Generates embeddings via OpenAI's `text-embedding-3-small`
+- Persists to ChromaDB at `CHROMA_PC_PATH`
+- Includes verification and logging
+
+**Dependencies** (`pyproject.toml`):
+- `chromadb` - Vector database
+- `openai` - Embeddings API
+- `python-dotenv` - Environment management
+
+### Usage
+
+### 1. Configure Environment
+
+Ensure `.env` file contains:
+```env
+OPENAI_API_KEY=your-api-key-here
+CHROMA_PC_PATH=./chroma_db
+```
+
+### 2. Run Ingestion
+
+**Docker (Recommended):**
+```bash
+docker compose run backend uv run backend/ingest_data.py
+```
+
+**Local:**
+```bash
+uv run backend/ingest_data.py
+```
+
+### 3. Verify
+
+Successful output:
+```
+✓ Loaded 5 documents
+✓ Created 61 chunks from 5 documents
+✓ OpenAI embeddings initialized
+✓ Vector store created with 61 chunks
+✅ Data ingestion completed successfully!
+```
+
+### 4. Query the Vector Store
+
+```python
+import chromadb
+from chromadb.config import Settings
+from openai import OpenAI
+
+# Load persisted ChromaDB
+client = chromadb.PersistentClient(
+    path="./chroma_db",
+    settings=Settings(anonymized_telemetry=False)
+)
+collection = client.get_collection(name="job_portal_knowledge")
+
+# Generate query embedding
+openai_client = OpenAI()
+query = "What are the requirements for a backend engineer?"
+embedding = openai_client.embeddings.create(
+    model="text-embedding-3-small",
+    input=[query]
+).data[0].embedding
+
+# Search
+results = collection.query(
+    query_embeddings=[embedding],
+    n_results=3
+)
+```
+
+### Configuration
+
+**Required Environment Variables:**
+```env
+OPENAI_API_KEY=sk-...              # Required for embeddings
+CHROMA_PC_PATH=./chroma_db         # Vector store location
+```
+
+**ChromaDB Settings:**
+- **Collection Name:** `job_portal_knowledge`
+- **Embedding Model:** `text-embedding-3-small` (1536 dimensions)
+- **Persistence:** Enabled via `PersistentClient`
+- **Settings:** `anonymized_telemetry=False`, `allow_reset=True`
+
+### Adding More Data
+
+1. Add `.txt` files to `backend/chroma_data/`
+2. Re-run ingestion: `docker compose run backend uv run backend/ingest_data.py`
+
+### File Structure
+
+```
+backend/
+├── chroma_data/           # Source documents
+├── ingest_data.py         # Ingestion script
+└── ai/rag/               # RAG implementation (TODO)
+
+chroma_db/                # Persisted vector store
+└── [generated files]
+```
+
+### Next Steps
+
+1. Implement RAG endpoints in `backend/ai/rag/`
+2. Build AI features: job recommendations, resume analysis, interview prep
+3. Integrate with frontend for intelligent responses
+
+### Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| No documents found | Verify `.txt` files exist in `backend/chroma_data/` |
+| Dependencies missing | Run `uv sync` or rebuild Docker: `docker compose build backend` |
+| OpenAI API errors | Verify `OPENAI_API_KEY` is set correctly in `.env` |
+
+---
+
+**Status:** ✅ Ready for RAG implementation

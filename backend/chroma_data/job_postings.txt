@@ -1,0 +1,160 @@
+Job Posting: Senior Software Engineer - Backend
+
+Company: TechCorp Inc.
+Location: San Francisco, CA (Remote Available)
+Job Type: Full-time
+Salary Range: $140,000 - $180,000
+
+Job Description:
+We are seeking an experienced Senior Software Engineer to join our backend team. You will be responsible for designing, developing, and maintaining scalable microservices and APIs that power our platform.
+
+Key Responsibilities:
+- Design and implement RESTful APIs using Python and FastAPI
+- Build and maintain microservices architecture
+- Optimize database queries and improve system performance
+- Collaborate with frontend teams and product managers
+- Participate in code reviews and mentor junior engineers
+- Ensure high code quality and test coverage
+
+Required Qualifications:
+- 5+ years of experience in backend development
+- Strong proficiency in Python, FastAPI, or Django
+- Experience with relational and NoSQL databases (PostgreSQL, MongoDB)
+- Knowledge of Docker, Kubernetes, and cloud platforms (AWS, GCP, Azure)
+- Strong understanding of RESTful API design principles
+- Experience with CI/CD pipelines and automated testing
+
+Preferred Qualifications:
+- Experience with event-driven architecture and message queues
+- Knowledge of GraphQL
+- Experience with AI/ML integration
+- Open-source contributions
+
+---
+
+Job Posting: Full Stack Developer
+
+Company: StartupXYZ
+Location: New York, NY (Hybrid)
+Job Type: Full-time
+Salary Range: $100,000 - $130,000
+
+Job Description:
+Join our growing startup as a Full Stack Developer! You'll work on building innovative features for our web application, touching both frontend and backend technologies.
+
+Key Responsibilities:
+- Develop user-facing features using React and Next.js
+- Build backend services using Node.js or Python
+- Write clean, maintainable, and well-tested code
+- Participate in design discussions and sprint planning
+- Deploy and monitor applications in production
+
+Required Qualifications:
+- 3+ years of full stack development experience
+- Proficiency in JavaScript/TypeScript and React
+- Experience with backend frameworks (Express, FastAPI, Django)
+- Familiarity with SQL and NoSQL databases
+- Understanding of web security best practices
+
+Preferred Qualifications:
+- Experience with serverless architecture
+- Knowledge of TypeScript
+- Experience with TailwindCSS or other CSS frameworks
+- Startup experience
+
+---
+
+Job Posting: Data Engineer
+
+Company: DataFlow Analytics
+Location: Austin, TX (Remote)
+Job Type: Full-time
+Salary Range: $120,000 - $160,000
+
+Job Description:
+We are looking for a talented Data Engineer to build and maintain our data infrastructure. You will work on ETL pipelines, data warehousing, and ensuring data quality across our platform.
+
+Key Responsibilities:
+- Design and implement scalable ETL pipelines
+- Build and optimize data warehouses
+- Ensure data quality and implement validation checks
+- Collaborate with data scientists and analysts
+- Monitor and troubleshoot data pipeline issues
+
+Required Qualifications:
+- 4+ years of data engineering experience
+- Strong SQL skills and database optimization knowledge
+- Experience with Apache Spark, Airflow, or similar tools
+- Knowledge of cloud data platforms (Snowflake, Redshift, BigQuery)
+- Programming skills in Python or Scala
+
+Preferred Qualifications:
+- Experience with real-time data processing
+- Knowledge of data modeling and dimensional design
+- Experience with dbt or similar data transformation tools
+- AWS or GCP certifications
+
+---
+
+Job Posting: Frontend Developer
+
+Company: DesignHub
+Location: Los Angeles, CA (On-site)
+Job Type: Full-time
+Salary Range: $90,000 - $120,000
+
+Job Description:
+DesignHub is seeking a creative Frontend Developer to join our team. You will be responsible for building beautiful, responsive, and performant user interfaces.
+
+Key Responsibilities:
+- Build responsive web applications using React and TypeScript
+- Implement pixel-perfect designs from Figma mockups
+- Optimize frontend performance and accessibility
+- Collaborate with designers and backend developers
+- Write unit and integration tests
+
+Required Qualifications:
+- 3+ years of frontend development experience
+- Expert knowledge of React and modern JavaScript
+- Strong CSS skills and responsive design principles
+- Experience with state management (Redux, Zustand, etc.)
+- Understanding of web accessibility standards (WCAG)
+
+Preferred Qualifications:
+- Experience with Next.js or similar frameworks
+- Knowledge of animation libraries (Framer Motion, GSAP)
+- Experience with design systems
+- TypeScript expertise
+
+---
+
+Job Posting: DevOps Engineer
+
+Company: CloudScale Solutions
+Location: Seattle, WA (Remote)
+Job Type: Full-time
+Salary Range: $130,000 - $170,000
+
+Job Description:
+We are looking for a skilled DevOps Engineer to help us scale our infrastructure and improve our deployment processes. You will work on automation, monitoring, and ensuring high availability of our systems.
+
+Key Responsibilities:
+- Design and maintain CI/CD pipelines
+- Manage cloud infrastructure using Infrastructure as Code (Terraform, CloudFormation)
+- Implement monitoring and alerting solutions
+- Optimize system performance and cost
+- Ensure security best practices are followed
+
+Required Qualifications:
+- 4+ years of DevOps/SRE experience
+- Strong knowledge of AWS, GCP, or Azure
+- Experience with Docker and Kubernetes
+- Proficiency in scripting languages (Python, Bash)
+- Experience with CI/CD tools (Jenkins, GitLab CI, GitHub Actions)
+
+Preferred Qualifications:
+- Kubernetes certifications (CKA, CKAD)
+- Experience with service mesh (Istio, Linkerd)
+- Knowledge of observability tools (Prometheus, Grafana, ELK)
+- Experience with chaos engineering
+

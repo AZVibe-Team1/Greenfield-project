@@ -24,7 +24,10 @@ services:
     volumes:
       - ./backend:/app/backend
       - ./pyproject.toml:/app/pyproject.toml
-      - ./uv.lock:/app/uv.lock
+      # ChromaDB persistent storage
+      # - chroma_data:/app/chroma_db
+      ###^^ JM - May change this back later, just using the local chroma_db folder for now
+      - ./chroma_db:/app/chroma_db
     # Restart policy: restart container if it stops unexpectedly
     restart: unless-stopped
     # Health check to ensure service is running
@@ -98,7 +101,9 @@ services:
 
 # Named volumes for data persistence
 # These volumes persist data even when containers are removed
-# volumes:
+volumes:
+  # ChromaDB vector store data volume
+  chroma_data:
   # MongoDB data volume
   # mongodb_data:
   # MongoDB config volume

@@ -218,3 +218,6 @@ __marimo__/
 
 #M Mac side
 .DS_Store
+
+# ChromaDB vector store data
+chroma_db/
