@@ -11,8 +11,8 @@ from typing import ClassVar, Literal
 from beanie import Document
 from pydantic import BaseModel, Field
 
-from backend.utils.validators import Address
 from backend.utils.gics_helper import is_valid_gics_code
+from backend.utils.validators import Address
 
 
 class IndustryInfo(BaseModel):
@@ -31,10 +31,12 @@ class IndustryInfo(BaseModel):
         super().__init__(**data)
         # Validate GICS code format (must be 2, 4, 6, or 8 digits)
         if len(self.code) not in [2, 4, 6, 8] or not self.code.isdigit():
-            raise ValueError(f"Invalid GICS code format: {self.code}. Must be 2, 4, 6, or 8 digits.")
+            msg = f"Invalid GICS code format: {self.code}. Must be 2, 4, 6, or 8 digits."
+            raise ValueError(msg)
         # Validate GICS code exists
         if not is_valid_gics_code(self.code):
-            raise ValueError(f"Invalid GICS code: {self.code}")
+            msg = f"Invalid GICS code: {self.code}"
+            raise ValueError(msg)
 
 
 class CompanyInformation(BaseModel):
@@ -83,6 +85,10 @@ class OpenJob(BaseModel):
     department: str = Field(..., min_length=1, description="Department")
     hire_mgr_first: str = Field(..., min_length=1, description="Hiring manager first name")
     hire_mgr_last: str = Field(..., min_length=1, description="Hiring manager last name")
+    current_status: Literal["Posted", "Withdrawn", "Pending", "Canceled"] = Field(
+        default="Posted",
+        description="Current job posting status"
+    )
     pay_range: list[int] = Field(
         ...,
         min_length=2,
@@ -198,6 +204,10 @@ class Employer(Document):
         description="Hashed password"
     )
     created_at: datetime = Field(
+        default_factory=datetime.now,
+        description="Account creation timestamp"
+    )
+    updated_at: datetime = Field(
         default_factory=datetime.now,
         description="Account creation timestamp"
     )
