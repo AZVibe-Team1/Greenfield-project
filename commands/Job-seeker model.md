@@ -10,6 +10,7 @@ Using Beanie, create a mongodb data structure that has the following requirement
 3.3 entity: address type: class address from backend.utils.validators.py required
 4. Entity: password_hash type: string Required Field(..., min_length=6, description="Hashed password")
 5. Entity: created_at timestamp type: datetime Field(default_factory=datetime.now)
+5.1 Entity: updated_at timestamp type: datetime Field(default_factory=datetime.now
 6. Entity: Resume type: sub-document (string)
 7. Entity: Pay_range type: integer array 2 element (high/low)
 8. Entity: Pay_unit type: string {"Hourly", "Monthly", "Yearly"}
