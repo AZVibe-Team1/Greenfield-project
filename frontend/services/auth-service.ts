@@ -3,7 +3,7 @@
  * 
  * API calls for authentication (login, register)
  */
-import { apiClient } from '@/lib/api-client';
+import apiClient from '@/lib/api';
 import {
   LoginRequest,
   LoginResponse,
