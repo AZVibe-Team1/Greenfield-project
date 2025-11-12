@@ -97,8 +97,7 @@ class EmployerService:
             # Create employer in database
             return await EmployerCRUD.create_employer(employer_data)
 
-        except Exception as e:
-            print(f"Error in create_new_employer: {e}")
+        except Exception:
             raise
 
     @staticmethod
@@ -139,8 +138,7 @@ class EmployerService:
             # Update employer in database
             return await EmployerCRUD.update_employer(employer_id, update_data)
 
-        except Exception as e:
-            print(f"Error in update_employer: {e}")
+        except Exception:
             raise
 
     @staticmethod
@@ -218,8 +216,7 @@ class EmployerService:
             # Add job posting to employer
             return await EmployerCRUD.add_job_posting(employer_id, job_data)
 
-        except Exception as e:
-            print(f"Error in create_job: {e}")
+        except Exception:
             raise
 
     @staticmethod
@@ -259,8 +256,7 @@ class EmployerService:
                 update_data
             )
 
-        except Exception as e:
-            print(f"Error in modify_job: {e}")
+        except Exception:
             raise
 
     @staticmethod
@@ -284,14 +280,12 @@ class EmployerService:
             employer = await EmployerCRUD.get_employer_by_company_name(company_name)
 
             if not employer or not employer.id:
-                print(f"Employer not found: {company_name}")
                 return False
 
             # Delete employer
             return await EmployerCRUD.delete_employer(employer.id)
 
-        except Exception as e:
-            print(f"Error in delete_employer: {e}")
+        except Exception:
             return False
 
     @staticmethod
@@ -317,7 +311,6 @@ class EmployerService:
             employer = await EmployerCRUD.get_employer_by_company_name(company_name)
 
             if not employer or not employer.id:
-                print(f"Employer not found: {company_name}")
                 return False
 
             # Remove job posting
@@ -327,8 +320,7 @@ class EmployerService:
             )
             return updated_employer is not None
 
-        except Exception as e:
-            print(f"Error in delete_job: {e}")
+        except Exception:
             return False
 
     @staticmethod
@@ -387,8 +379,7 @@ class EmployerService:
             # Apply pagination
             return all_jobs[skip:skip + limit]
 
-        except Exception as e:
-            print(f"Error in search_all_jobs: {e}")
+        except Exception:
             return []
 
     @staticmethod
@@ -511,8 +502,7 @@ class EmployerService:
             # Apply pagination
             return results[skip:skip + limit]
 
-        except Exception as e:
-            print(f"Error in search_by_parameter: {e}")
+        except Exception:
             raise
 
 
@@ -522,63 +512,13 @@ if __name__ == "__main__":
 
     async def test_employer_services():
         """Test employer services."""
-        print("=== Employer Services Tests ===\n")
 
         # Note: These are example function calls
         # Actual execution requires MongoDB connection via Beanie
 
-        print("Example 1: Create new employer")
-        print("""
-        employer = await EmployerService.create_new_employer(
-            company_name="Tech Innovations Inc.",
-            address={
-                "street": "456 Innovation Drive",
-                "city": "San Francisco",
-                "state": "CA",
-                "zip_code": "94105"
-            },
-            industry=[
-                {"code": "45", "description": "Information Technology"},
-                {"code": "4510", "description": "Software & Services"}
-            ],
-            contact_first_name="Jane",
-            contact_last_name="Smith",
-            password_hash="hashed_password_here",
-            benefits="Health, Dental, Vision, 401k, Remote Work"
-        )
-        """)
 
-        print("\nExample 2: Create job posting")
-        print("""
-        employer = await EmployerService.create_job(
-            employer_id="507f1f77bcf86cd799439011",
-            job_title="Senior Python Developer",
-            job_description="Build scalable backend systems...",
-            department="Engineering",
-            hire_mgr_first="John",
-            hire_mgr_last="Doe",
-            pay_range=[120000, 180000],
-            pay_unit="Yearly",
-            education_level="BS",
-            edu_focus="Computer Science",
-            key_skills=["Python", "FastAPI", "MongoDB", "Docker"]
-        )
-        """)
 
-        print("\nExample 3: Search all jobs")
-        print("""
-        jobs = await EmployerService.search_all_jobs(skip=0, limit=50)
-        for job in jobs:
-            print(f"{job['job_title']} at {job['company_name']}")
-        """)
 
-        print("\nExample 4: Search by skill")
-        print("""
-        results = await EmployerService.search_by_parameter(
-            parameter="skill",
-            value="Python"
-        )
-        """)
 
     # Run tests
     asyncio.run(test_employer_services())

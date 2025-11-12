@@ -25,16 +25,13 @@ async def lifespan(app: FastAPI):
     # Startup: Connect to MongoDB
     try:
         await connect_to_mongodb()
-        print("✅ Application startup complete")
-    except Exception as e:
-        print(f"❌ Failed to start application: {e}")
+    except Exception:
         raise
 
     yield
 
     # Shutdown: Close MongoDB connection
     await close_mongodb_connection()
-    print("👋 Application shutdown complete")
 
 
 # Create FastAPI application instance

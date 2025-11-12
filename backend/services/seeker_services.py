@@ -5,7 +5,6 @@ This module provides business logic services for job seeker operations including
 account management, resume handling, job applications, and searches.
 """
 
-import io
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -113,8 +112,7 @@ class SeekerService:
             # Create seeker in database
             return await SeekerCRUD.create_seeker(seeker_data)
 
-        except Exception as e:
-            print(f"Error creating new seeker: {e}")
+        except Exception:
             return None
 
     @staticmethod
@@ -132,7 +130,7 @@ class SeekerService:
             Exception: If PDF cannot be read
         """
         try:
-            with open(file_path, 'rb') as file:
+            with open(file_path, "rb") as file:
                 pdf_reader = PyPDF2.PdfReader(file)
                 text = ""
                 for page in pdf_reader.pages:
@@ -203,12 +201,12 @@ class SeekerService:
                 file_path = Path(file_path)
                 suffix = file_path.suffix.lower()
 
-                if suffix == '.pdf':
+                if suffix == ".pdf":
                     resume_text = SeekerService.extract_text_from_pdf(file_path)
-                elif suffix == '.docx':
+                elif suffix == ".docx":
                     resume_text = SeekerService.extract_text_from_docx(file_path)
-                elif suffix == '.txt':
-                    with open(file_path, 'r', encoding='utf-8') as f:
+                elif suffix == ".txt":
+                    with open(file_path, encoding="utf-8") as f:
                         resume_text = f.read()
                 else:
                     msg = f"Unsupported file type: {suffix}. Use .pdf, .docx, or .txt"
@@ -224,8 +222,7 @@ class SeekerService:
 
             return await SeekerCRUD.update_seeker(seeker_id, update_data)
 
-        except Exception as e:
-            print(f"Error uploading resume: {e}")
+        except Exception:
             return None
 
     @staticmethod
@@ -257,17 +254,14 @@ class SeekerService:
             # Prevent updating first_name and last_name
             restricted_fields = ["first_name", "last_name"]
             for field in restricted_fields:
-                if field in update_fields:
-                    print(f"Warning: Cannot update restricted field '{field}'")
-                    del update_fields[field]
+                update_fields.pop(field, None)
 
             # Add updated_at timestamp
             update_fields["updated_at"] = datetime.now()
 
             return await SeekerCRUD.update_seeker(seeker_id, update_fields)
 
-        except Exception as e:
-            print(f"Error updating seeker profile: {e}")
+        except Exception:
             return None
 
     @staticmethod
@@ -300,8 +294,7 @@ class SeekerService:
                 employer_id=employer_id,
                 application_status="Submitted"
             )
-        except Exception as e:
-            print(f"Error applying for job: {e}")
+        except Exception:
             return None
 
     @staticmethod
@@ -327,11 +320,9 @@ class SeekerService:
                     seeker.information.last_name == last_name):
                     return await SeekerCRUD.delete_seeker(seeker.id)
 
-            print(f"Seeker not found: {first_name} {last_name}")
             return False
 
-        except Exception as e:
-            print(f"Error deleting user: {e}")
+        except Exception:
             return False
 
     @staticmethod
@@ -358,26 +349,23 @@ class SeekerService:
             # Get seeker
             seeker = await SeekerCRUD.get_seeker_by_id(seeker_id)
             if not seeker:
-                print(f"Seeker not found: {seeker_id}")
                 return None
 
             # Find and verify the application
             original_count = len(seeker.applications)
             seeker.applications = [
                 app for app in seeker.applications
-                if not (app.job_id == job_id)
+                if app.job_id != job_id
             ]
 
             if len(seeker.applications) == original_count:
-                print(f"Application not found: job_id={job_id}")
                 return None
 
             # Save updated seeker
             await seeker.save()
             return seeker
 
-        except Exception as e:
-            print(f"Error deleting application: {e}")
+        except Exception:
             return None
 
     @staticmethod
@@ -419,8 +407,7 @@ class SeekerService:
 
             return all_jobs
 
-        except Exception as e:
-            print(f"Error searching all jobs: {e}")
+        except Exception:
             return []
 
     @staticmethod
@@ -445,7 +432,6 @@ class SeekerService:
         try:
             seeker = await SeekerCRUD.get_seeker_by_id(seeker_id)
             if not seeker:
-                print(f"Seeker not found: {seeker_id}")
                 return []
 
             matching_applications = []
@@ -461,8 +447,7 @@ class SeekerService:
 
             return matching_applications
 
-        except Exception as e:
-            print(f"Error searching by status: {e}")
+        except Exception:
             return []
 
     @staticmethod
@@ -532,8 +517,7 @@ class SeekerService:
 
             return matching_jobs
 
-        except Exception as e:
-            print(f"Error searching by parameter: {e}")
+        except Exception:
             return []
 
 
@@ -557,13 +541,11 @@ if __name__ == "__main__":
 
     async def test_seeker_services():
         """Test seeker services."""
-        print("=== Seeker Services Test ===\n")
 
         await connect_to_mongodb()
 
         try:
             # Test 1: Create new seeker
-            print("Test 1: Create New Seeker")
             new_seeker = await create_new_seeker(
                 first_name="Service",
                 last_name="Test",
@@ -581,40 +563,32 @@ if __name__ == "__main__":
             )
 
             if new_seeker:
-                print(f"✓ Created seeker: {new_seeker.information.first_name} {new_seeker.information.last_name}")
                 test_seeker_id = str(new_seeker.id)
             else:
-                print("✗ Failed to create seeker")
                 return
 
             # Test 2: Upload resume (text)
-            print("\nTest 2: Upload Resume")
             updated_seeker = await upload_resume(
                 test_seeker_id,
                 resume_content="This is my resume. I have 5 years of experience..."
             )
             if updated_seeker and updated_seeker.resume:
-                print(f"✓ Resume uploaded: {len(updated_seeker.resume)} characters")
+                pass
             else:
-                print("✗ Failed to upload resume")
+                pass
 
             # Test 3: Search all jobs
-            print("\nTest 3: Search All Jobs")
-            all_jobs = await search_all_jobs()
-            print(f"✓ Found {len(all_jobs)} job postings")
+            await search_all_jobs()
 
             # Test 4: Delete user
-            print("\nTest 4: Delete User")
             deleted = await delete_user("Service", "Test")
             if deleted:
-                print("✓ User deleted successfully")
+                pass
             else:
-                print("✗ Failed to delete user")
+                pass
 
-            print("\n✅ Seeker services tested successfully!")
 
-        except Exception as e:
-            print(f"\n❌ Test failed: {e}")
+        except Exception:
             import traceback
             traceback.print_exc()
 

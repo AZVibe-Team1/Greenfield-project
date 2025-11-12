@@ -6,11 +6,12 @@ Handles job seeker profile management, job search, and applications.
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from backend.core.security import get_current_user_id, get_current_user_role
 from backend.db.seeker_db_ops import SeekerCRUD
 from backend.services.seeker_services import SeekerService
+
 
 router = APIRouter(prefix="/seekers", tags=["Job Seekers"])
 
@@ -93,7 +94,7 @@ async def get_my_profile(
 ):
     """
     Get current seeker's profile.
-    
+
     Returns:
         Seeker profile information
     """
@@ -104,7 +105,7 @@ async def get_my_profile(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Seeker profile not found"
             )
-        
+
         return SeekerProfileResponse(
             id=str(seeker.id),
             first_name=seeker.information.first_name,
@@ -138,7 +139,7 @@ async def get_my_profile(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get profile: {str(e)}"
+            detail=f"Failed to get profile: {e!s}"
         )
 
 
@@ -150,17 +151,17 @@ async def update_my_profile(
 ):
     """
     Update current seeker's profile.
-    
+
     Args:
         request: Fields to update
-        
+
     Returns:
         Success message
     """
     try:
         # Build update dictionary (only include non-None fields)
         update_data = {}
-        
+
         if request.phone is not None:
             update_data["information.phone"] = request.phone
         if request.street is not None or request.city is not None or request.state is not None or request.zip_code is not None:
@@ -174,7 +175,7 @@ async def update_my_profile(
                     "zip_code": request.zip_code or seeker.information.address.zip_code
                 }
                 update_data["information.address"] = address
-        
+
         if request.education_level is not None:
             update_data["education_level"] = request.education_level
         if request.edu_focus is not None:
@@ -185,23 +186,23 @@ async def update_my_profile(
             update_data["pay_unit"] = request.pay_unit
         if request.key_skills is not None:
             update_data["key_skills"] = request.key_skills
-        
+
         updated_seeker = await SeekerService.update_seeker_profile(user_id, update_data)
-        
+
         if not updated_seeker:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to update profile"
             )
-        
+
         return {"message": "Profile updated successfully"}
-        
+
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update profile: {str(e)}"
+            detail=f"Failed to update profile: {e!s}"
         )
 
 
@@ -213,10 +214,10 @@ async def upload_resume(
 ):
     """
     Upload or update resume.
-    
+
     Args:
         request: Resume content
-        
+
     Returns:
         Success message
     """
@@ -225,21 +226,21 @@ async def upload_resume(
             seeker_id=user_id,
             resume_content=request.resume_content
         )
-        
+
         if not updated_seeker:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to upload resume"
             )
-        
+
         return {"message": "Resume uploaded successfully"}
-        
+
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to upload resume: {str(e)}"
+            detail=f"Failed to upload resume: {e!s}"
         )
 
 
@@ -251,10 +252,10 @@ async def apply_for_job(
 ):
     """
     Apply for a job.
-    
+
     Args:
         request: Job and employer IDs
-        
+
     Returns:
         Success message
     """
@@ -264,21 +265,21 @@ async def apply_for_job(
             job_id=request.job_id,
             employer_id=request.employer_id
         )
-        
+
         if not updated_seeker:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to apply for job"
             )
-        
+
         return {"message": "Application submitted successfully"}
-        
+
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to apply for job: {str(e)}"
+            detail=f"Failed to apply for job: {e!s}"
         )
 
 
@@ -289,7 +290,7 @@ async def get_my_applications(
 ):
     """
     Get all applications for current seeker.
-    
+
     Returns:
         List of applications
     """
@@ -300,7 +301,7 @@ async def get_my_applications(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Seeker not found"
             )
-        
+
         return {
             "applications": [
                 {
@@ -312,13 +313,13 @@ async def get_my_applications(
                 for app in seeker.applications
             ]
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get applications: {str(e)}"
+            detail=f"Failed to get applications: {e!s}"
         )
 
 
@@ -330,10 +331,10 @@ async def delete_application(
 ):
     """
     Delete/withdraw an application.
-    
+
     Args:
         job_id: Job ID to withdraw application from
-        
+
     Returns:
         Success message
     """
@@ -343,21 +344,21 @@ async def delete_application(
             job_id=job_id,
             company_name=""  # Not needed for withdrawal
         )
-        
+
         if not updated_seeker:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Application not found"
             )
-        
+
         return {"message": "Application withdrawn successfully"}
-        
+
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to delete application: {str(e)}"
+            detail=f"Failed to delete application: {e!s}"
         )
 
 
@@ -370,12 +371,12 @@ async def search_jobs(
 ):
     """
     Search for jobs.
-    
+
     Args:
         title: Search by job title (optional)
         company: Search by company name (optional)
         skill: Search by required skill (optional)
-        
+
     Returns:
         List of matching jobs
     """
@@ -389,7 +390,7 @@ async def search_jobs(
         else:
             # Get all jobs if no filter specified
             jobs = await SeekerService.search_all_jobs()
-        
+
         return [
             JobSearchResponse(
                 job_id=job["job_id"],
@@ -408,11 +409,11 @@ async def search_jobs(
             )
             for job in jobs
         ]
-        
+
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to search jobs: {str(e)}"
+            detail=f"Failed to search jobs: {e!s}"
         )
 
 
@@ -423,17 +424,17 @@ async def get_job_details(
 ):
     """
     Get details of a specific job.
-    
+
     Args:
         job_id: Job ID
-        
+
     Returns:
         Job details
     """
     try:
         # Search all jobs and find the matching one
         all_jobs = await SeekerService.search_all_jobs()
-        
+
         for job in all_jobs:
             if job["job_id"] == job_id:
                 return JobSearchResponse(
@@ -451,17 +452,17 @@ async def get_job_details(
                     key_skills=job["key_skills"],
                     hiring_manager=job["hiring_manager"]
                 )
-        
+
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Job not found"
         )
-        
+
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get job details: {str(e)}"
+            detail=f"Failed to get job details: {e!s}"
         )
 

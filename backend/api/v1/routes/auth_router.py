@@ -12,6 +12,7 @@ from backend.db.seeker_db_ops import SeekerCRUD
 from backend.services.employer_services import EmployerService
 from backend.services.seeker_services import SeekerService
 
+
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
@@ -77,13 +78,13 @@ class RegisterResponse(BaseModel):
 async def login(request: LoginRequest):
     """
     Authenticate user and return access token.
-    
+
     Args:
         request: Login credentials (email, password, role)
-        
+
     Returns:
         Access token and user information
-        
+
     Raises:
         HTTPException: If credentials are invalid or user not found
     """
@@ -96,27 +97,27 @@ async def login(request: LoginRequest):
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="Invalid email or password"
                 )
-            
+
             # Verify password
             if not verify_password(request.password, seeker.password_hash):
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="Invalid email or password"
                 )
-            
+
             # Create access token
             access_token = create_access_token(
                 data={"sub": str(seeker.id), "role": "seeker", "email": request.email}
             )
-            
+
             return LoginResponse(
                 access_token=access_token,
                 user_id=str(seeker.id),
                 role="seeker",
                 email=request.email
             )
-            
-        elif request.role == "employer":
+
+        if request.role == "employer":
             # Find employer by email
             employer = await EmployerCRUD.get_employer_by_email(request.email)
             if not employer:
@@ -124,38 +125,37 @@ async def login(request: LoginRequest):
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="Invalid email or password"
                 )
-            
+
             # Verify password
             if not verify_password(request.password, employer.password_hash):
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="Invalid email or password"
                 )
-            
+
             # Create access token
             access_token = create_access_token(
                 data={"sub": str(employer.id), "role": "employer", "email": request.email}
             )
-            
+
             return LoginResponse(
                 access_token=access_token,
                 user_id=str(employer.id),
                 role="employer",
                 email=request.email
             )
-            
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid role. Must be 'seeker' or 'employer'"
-            )
-            
+
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid role. Must be 'seeker' or 'employer'"
+        )
+
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Login failed: {str(e)}"
+            detail=f"Login failed: {e!s}"
         )
 
 
@@ -163,13 +163,13 @@ async def login(request: LoginRequest):
 async def register_seeker(request: SeekerRegisterRequest):
     """
     Register a new job seeker account.
-    
+
     Args:
         request: Seeker registration data
-        
+
     Returns:
         Created user information
-        
+
     Raises:
         HTTPException: If registration fails or email already exists
     """
@@ -181,10 +181,10 @@ async def register_seeker(request: SeekerRegisterRequest):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Email already registered"
             )
-        
+
         # Hash password
         password_hash = hash_password(request.password)
-        
+
         # Create seeker
         seeker = await SeekerService.create_new_seeker(
             first_name=request.first_name,
@@ -202,25 +202,25 @@ async def register_seeker(request: SeekerRegisterRequest):
             pay_unit=request.pay_unit,
             key_skills=request.key_skills
         )
-        
+
         if not seeker:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to create seeker account"
             )
-        
+
         return RegisterResponse(
             user_id=str(seeker.id),
             email=request.email,
             role="seeker"
         )
-        
+
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Registration failed: {str(e)}"
+            detail=f"Registration failed: {e!s}"
         )
 
 
@@ -228,13 +228,13 @@ async def register_seeker(request: SeekerRegisterRequest):
 async def register_employer(request: EmployerRegisterRequest):
     """
     Register a new employer account.
-    
+
     Args:
         request: Employer registration data
-        
+
     Returns:
         Created user information
-        
+
     Raises:
         HTTPException: If registration fails or company already exists
     """
@@ -246,10 +246,10 @@ async def register_employer(request: EmployerRegisterRequest):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Company already registered"
             )
-        
+
         # Hash password
         password_hash = hash_password(request.password)
-        
+
         # Create address
         address = {
             "street": request.street,
@@ -257,7 +257,7 @@ async def register_employer(request: EmployerRegisterRequest):
             "state": request.state,
             "zip_code": request.zip_code
         }
-        
+
         # Check if email already exists
         existing_email = await EmployerCRUD.get_employer_by_email(request.email)
         if existing_email:
@@ -265,7 +265,7 @@ async def register_employer(request: EmployerRegisterRequest):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Email already registered"
             )
-        
+
         # Create employer
         employer = await EmployerService.create_new_employer(
             company_name=request.company_name,
@@ -278,24 +278,24 @@ async def register_employer(request: EmployerRegisterRequest):
             benefits=request.benefits,
             open_jobs=[]
         )
-        
+
         if not employer:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to create employer account"
             )
-        
+
         return RegisterResponse(
             user_id=str(employer.id),
             email=request.email,
             role="employer"
         )
-        
+
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Registration failed: {str(e)}"
+            detail=f"Registration failed: {e!s}"
         )
 
