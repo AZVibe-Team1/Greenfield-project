@@ -55,7 +55,7 @@ class EmployerRegisterRequest(BaseModel):
     company_name: str = Field(..., min_length=1)
     contact_first_name: str = Field(..., min_length=1)
     contact_last_name: str = Field(..., min_length=1)
-    email: str
+    email: EmailStr
     password: str = Field(..., min_length=6)
     street: str
     city: str
