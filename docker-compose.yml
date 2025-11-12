@@ -39,31 +39,31 @@ services:
       - jobportal-network
 
   # Frontend Service - Next.js Application
-  # NOTE: Currently commented out - uncomment when ready to add frontend
   # This service runs the Next.js frontend application
-  # frontend:
-  #   build:
-  #     context: .
-  #     dockerfile: frontend/Dockerfile
-  #   container_name: jobportal-frontend
-  #   # Port mapping: host:container
-  #   # Access frontend at http://localhost:3000
-  #   ports:
-  #     - "3000:3000"
-  #   env_file:
-  #     - .env
-  #   # Volume mounts for development hot-reload
-  #   volumes:
-  #     - ./frontend:/app
-  #     - /app/node_modules
-  #     - /app/.next
-  #   # Depends on backend service
-  #   # Frontend will wait for backend to be ready
-  #   depends_on:
-  #     - backend
-  #   restart: unless-stopped
-  #   networks:
-  #     - jobportal-network
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: jobportal-frontend
+    # Port mapping: host:container
+    # Access frontend at http://localhost:3000
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_BACKEND_URL=http://backend:8000
+      - NODE_ENV=development
+    # Volume mounts for development hot-reload
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    # Depends on backend service
+    # Frontend will wait for backend to be ready
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - jobportal-network
 
   # MongoDB Service - Database
   # NOTE: Currently commented out - uncomment when ready to add database

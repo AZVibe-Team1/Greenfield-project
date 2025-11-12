@@ -83,6 +83,26 @@ class EmployerCRUD:
             return None
 
     @staticmethod
+    async def get_employer_by_email(email: str) -> Employer | None:
+        """
+        Retrieve an employer by email address.
+
+        Args:
+            email: Contact email address
+
+        Returns:
+            Employer document or None if not found
+
+        Example:
+            >>> employer = await get_employer_by_email("contact@techcorp.com")
+        """
+        try:
+            return await Employer.find_one(Employer.email == email)
+        except Exception as e:
+            print(f"Error retrieving employer by email: {e}")
+            return None
+
+    @staticmethod
     async def get_employer_by_company_name(company_name: str) -> Employer | None:
         """
         Retrieve an employer by company name.
