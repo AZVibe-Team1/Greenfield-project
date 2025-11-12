@@ -6,12 +6,15 @@ for the Employer collection in MongoDB using Beanie ODM.
 """
 
 import traceback
+from datetime import datetime
 from typing import Any
+from zoneinfo import ZoneInfo
 
 from beanie import PydanticObjectId
+from loguru import logger
 from pymongo.errors import DuplicateKeyError
 
-from backend.schemas.employer import Employer
+from backend.schemas.employer import ApplicationReceived, Employer, OpenJob
 
 
 class EmployerCRUD:
@@ -54,10 +57,10 @@ class EmployerCRUD:
             employer = Employer(**employer_data)
             await employer.insert()
         except DuplicateKeyError as e:
-            print(f"Duplicate employer error: {e}")
+            logger.critical(f"Duplicate employer error: {e}")
             raise
         except Exception as e:
-            print(f"Error creating employer: {e}")
+            logger.critical(f"Error creating employer: {e}")
             return None
         else:
             return employer
@@ -81,7 +84,7 @@ class EmployerCRUD:
                 employer_id = PydanticObjectId(employer_id)
             return await Employer.get(employer_id)
         except Exception as e:
-            print(f"Error retrieving employer: {e}")
+            logger.critical(f"Error retrieving employer: {e}")
             return None
 
     @staticmethod
@@ -101,7 +104,7 @@ class EmployerCRUD:
         try:
             return await Employer.find_one(Employer.email == email)
         except Exception as e:
-            print(f"Error retrieving employer by email: {e}")
+            logger.critical(f"Error retrieving employer by email: {e}")
             return None
 
     @staticmethod
@@ -123,7 +126,7 @@ class EmployerCRUD:
                 Employer.company_information.company_name == company_name
             )
         except Exception as e:
-            print(f"Error retrieving employer by company name: {e}")
+            logger.critical(f"Error retrieving employer by company name: {e}")
             return None
 
     @staticmethod
@@ -144,7 +147,7 @@ class EmployerCRUD:
         try:
             return await Employer.find_all().skip(skip).limit(limit).to_list()
         except Exception as e:
-            print(f"Error retrieving employers: {e}")
+            logger.critical(f"Error retrieving employers: {e}")
             return []
 
     @staticmethod
@@ -169,7 +172,7 @@ class EmployerCRUD:
         try:
             employer = await EmployerCRUD.get_employer_by_id(employer_id)
             if not employer:
-                print(f"Employer not found: {employer_id}")
+                logger.critical(f"Employer not found: {employer_id}")
                 return None
 
             # Update fields
@@ -179,7 +182,7 @@ class EmployerCRUD:
 
             await employer.save()
         except Exception as e:
-            print(f"Error updating employer: {e}")
+            logger.critical(f"Error updating employer: {e}")
             return None
         else:
             return employer
@@ -204,15 +207,13 @@ class EmployerCRUD:
             ...     "job_id": "job_123",
             ...     "job_title": "Software Engineer",
             ...     "job_description": "...",
-            ...     "posted_date": datetime.now(),
+            ...     "posted_date": datetime.now(ZoneInfo("America/Denver")),
             ...     "department": "Engineering",
             ...     ...
             ... }
             >>> employer = await add_job_posting(employer_id, job_data)
         """
         try:
-            from backend.schemas.employer import OpenJob
-
             employer = await EmployerCRUD.get_employer_by_id(employer_id)
             if not employer:
                 return None
@@ -220,10 +221,11 @@ class EmployerCRUD:
             new_job = OpenJob(**job_data)
             employer.open_jobs.append(new_job)
             await employer.save()
-            return employer
         except Exception as e:
-            print(f"Error adding job posting: {e}")
+            logger.critical(f"Error adding job posting: {e}")
             return None
+        else:
+            return employer
 
     @staticmethod
     async def update_job_posting(
@@ -260,10 +262,10 @@ class EmployerCRUD:
                     await employer.save()
                     return employer
 
-            print(f"Job not found: {job_id}")
+            logger.critical(f"Job not found: {job_id}")
             return None
         except Exception as e:
-            print(f"Error updating job posting: {e}")
+            logger.critical(f"Error updating job posting: {e}")
             return None
 
     @staticmethod
@@ -294,7 +296,7 @@ class EmployerCRUD:
             await employer.save()
             return employer
         except Exception as e:
-            print(f"Error removing job posting: {e}")
+            logger.critical(f"Error removing job posting: {e}")
             return None
 
     @staticmethod
@@ -321,8 +323,6 @@ class EmployerCRUD:
             >>> employer = await add_application_received(employer_id, app_data)
         """
         try:
-            from backend.schemas.employer import ApplicationReceived
-
             employer = await EmployerCRUD.get_employer_by_id(employer_id)
             if not employer:
                 return None
@@ -332,7 +332,7 @@ class EmployerCRUD:
             await employer.save()
             return employer
         except Exception as e:
-            print(f"Error adding application: {e}")
+            logger.critical(f"Error adding application: {e}")
             return None
 
     @staticmethod
@@ -360,8 +360,6 @@ class EmployerCRUD:
             ... )
         """
         try:
-            from datetime import datetime
-
             employer = await EmployerCRUD.get_employer_by_id(employer_id)
             if not employer:
                 return None
@@ -373,14 +371,14 @@ class EmployerCRUD:
                     app.candidate_tracking.previous_status = app.candidate_tracking.current_status
                     app.candidate_tracking.previous_status_date = app.candidate_tracking.current_status_date
                     app.candidate_tracking.current_status = new_status
-                    app.candidate_tracking.current_status_date = datetime.now()
+                    app.candidate_tracking.current_status_date = datetime.now(ZoneInfo("America/Denver"))
                     await employer.save()
                     return employer
 
-            print(f"Application not found for applicant {applicant_id} and job {job_id}")
+            logger.critical(f"Application not found for applicant {applicant_id} and job {job_id}")
             return None
         except Exception as e:
-            print(f"Error updating application status: {e}")
+            logger.critical(f"Error updating application status: {e}")
             return None
 
     @staticmethod
@@ -400,14 +398,15 @@ class EmployerCRUD:
         try:
             employer = await EmployerCRUD.get_employer_by_id(employer_id)
             if not employer:
-                print(f"Employer not found: {employer_id}")
+                logger.critical(f"Employer not found: {employer_id}")
                 return False
 
             await employer.delete()
-            return True
         except Exception as e:
-            print(f"Error deleting employer: {e}")
+            logger.critical(f"Error deleting employer: {e}")
             return False
+        else:
+            return True
 
     @staticmethod
     async def search_employers_by_industry(industry_code: str) -> list[Employer]:
@@ -428,7 +427,7 @@ class EmployerCRUD:
                 {"company_information.industry.code": industry_code}
             ).to_list()
         except Exception as e:
-            print(f"Error searching employers by industry: {e}")
+            logger.critical(f"Error searching employers by industry: {e}")
             return []
 
     @staticmethod
@@ -447,7 +446,7 @@ class EmployerCRUD:
                 {"open_jobs": {"$exists": True, "$ne": []}}
             ).to_list()
         except Exception as e:
-            print(f"Error retrieving employers with open jobs: {e}")
+            logger.critical(f"Error retrieving employers with open jobs: {e}")
             return []
 
     @staticmethod
@@ -464,7 +463,7 @@ class EmployerCRUD:
         try:
             return await Employer.count()
         except Exception as e:
-            print(f"Error counting employers: {e}")
+            logger.critical(f"Error counting employers: {e}")
             return 0
 
 
@@ -480,19 +479,19 @@ delete_employer = EmployerCRUD.delete_employer
 # Example usage
 if __name__ == "__main__":
     import asyncio
-    from datetime import datetime
-    from backend.db.settings import connect_to_mongodb, close_mongodb_connection
+
+    from backend.db.settings import close_mongodb_connection, connect_to_mongodb
 
     async def test_employer_crud():
         """Test CRUD operations for Employer collection."""
-        print("=== Employer CRUD Operations Test ===\n")
+        logger.debug("=== Employer CRUD Operations Test ===\n")
 
         # Connect to database
         await connect_to_mongodb()
 
         try:
             # Test 1: Create an employer
-            print("Test 1: Create Employer")
+            logger.debug("Test 1: Create Employer")
             employer_data = {
                 "company_information": {
                     "company_name": f"Test Corp {asyncio.get_event_loop().time()}",
@@ -516,7 +515,7 @@ if __name__ == "__main__":
                         "job_id": "test_job_001",
                         "job_title": "Software Engineer",
                         "job_description": "We are hiring!",
-                        "posted_date": datetime.now(),
+                        "posted_date": datetime.now(ZoneInfo("America/Denver")),
                         "department": "Engineering",
                         "hire_mgr_first": "John",
                         "hire_mgr_last": "Doe",
@@ -529,46 +528,47 @@ if __name__ == "__main__":
                 ]
             }
             new_employer = await create_employer(employer_data)
-            if new_employer:
-                print(f"✓ Created employer: {new_employer.id}")
-                test_id = new_employer.id
-            else:
-                print("✗ Failed to create employer")
+            if not new_employer:
+                logger.critical("✗ Failed to create employer")
                 return
 
+            logger.debug(f"✓ Created employer: {new_employer.id}")
+            test_id = new_employer.id
+            assert test_id is not None, "Employer ID should not be None"
+
             # Test 2: Read employer
-            print("\nTest 2: Read Employer")
+            logger.debug("\nTest 2: Read Employer")
             employer = await get_employer_by_id(test_id)
             if employer:
-                print(f"✓ Retrieved employer: {employer.company_information.company_name}")
+                logger.debug(f"✓ Retrieved employer: {employer.company_information.company_name}")
             else:
-                print("✗ Failed to retrieve employer")
+                logger.critical("✗ Failed to retrieve employer")
 
             # Test 3: Update employer
-            print("\nTest 3: Update Employer")
+            logger.debug("\nTest 3: Update Employer")
             updated = await update_employer(test_id, {"contact_first_name": "Updated"})
             if updated:
-                print(f"✓ Updated employer contact: {updated.contact_first_name}")
+                logger.debug(f"✓ Updated employer contact: {updated.contact_first_name}")
             else:
-                print("✗ Failed to update employer")
+                logger.critical("✗ Failed to update employer")
 
             # Test 4: Count employers
-            print("\nTest 4: Count Employers")
+            logger.debug("\nTest 4: Count Employers")
             count = await EmployerCRUD.count_employers()
-            print(f"✓ Total employers in database: {count}")
+            logger.debug(f"✓ Total employers in database: {count}")
 
             # Test 5: Delete employer
-            print("\nTest 5: Delete Employer")
+            logger.debug("\nTest 5: Delete Employer")
             deleted = await delete_employer(test_id)
             if deleted:
-                print("✓ Employer deleted successfully")
+                logger.debug("✓ Employer deleted successfully")
             else:
-                print("✗ Failed to delete employer")
+                logger.critical("✗ Failed to delete employer")
 
-            print("\n✅ All CRUD operations tested successfully!")
+            logger.debug("\n✅ All CRUD operations tested successfully!")
 
         except Exception as e:
-            print(f"\n❌ Test failed: {e}")
+            logger.critical(f"\n❌ Test failed: {e}")
             traceback.print_exc()
 
         finally:

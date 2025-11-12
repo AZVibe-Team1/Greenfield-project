@@ -5,12 +5,14 @@ This module provides Create, Read, Update, and Delete operations
 for the Seeker collection in MongoDB using Beanie ODM.
 """
 
+from datetime import datetime
 from typing import Any
 
 from beanie import PydanticObjectId
+from loguru import logger
 from pymongo.errors import DuplicateKeyError
 
-from backend.schemas.seeker import Seeker
+from backend.schemas.seeker import Application, Seeker
 
 
 class SeekerCRUD:
@@ -54,13 +56,14 @@ class SeekerCRUD:
         try:
             seeker = Seeker(**seeker_data)
             await seeker.insert()
-            return seeker
         except DuplicateKeyError as e:
-            print(f"Duplicate seeker error: {e}")
+            logger.critical(f"Duplicate seeker error: {e}")
             raise
         except Exception as e:
-            print(f"Error creating seeker: {e}")
+            logger.critical(f"Error creating seeker: {e}")
             return None
+        else:
+            return seeker
 
     @staticmethod
     async def get_seeker_by_id(seeker_id: str | PydanticObjectId) -> Seeker | None:
@@ -81,7 +84,7 @@ class SeekerCRUD:
                 seeker_id = PydanticObjectId(seeker_id)
             return await Seeker.get(seeker_id)
         except Exception as e:
-            print(f"Error retrieving seeker: {e}")
+            logger.critical(f"Error retrieving seeker: {e}")
             return None
 
     @staticmethod
@@ -101,7 +104,7 @@ class SeekerCRUD:
         try:
             return await Seeker.find_one(Seeker.information.email == email)
         except Exception as e:
-            print(f"Error retrieving seeker by email: {e}")
+            logger.critical(f"Error retrieving seeker by email: {e}")
             return None
 
     @staticmethod
@@ -122,7 +125,7 @@ class SeekerCRUD:
         try:
             return await Seeker.find_all().skip(skip).limit(limit).to_list()
         except Exception as e:
-            print(f"Error retrieving seekers: {e}")
+            logger.critical(f"Error retrieving seekers: {e}")
             return []
 
     @staticmethod
@@ -147,7 +150,7 @@ class SeekerCRUD:
         try:
             seeker = await SeekerCRUD.get_seeker_by_id(seeker_id)
             if not seeker:
-                print(f"Seeker not found: {seeker_id}")
+                logger.critical(f"Seeker not found: {seeker_id}")
                 return None
 
             # Update fields
@@ -157,7 +160,7 @@ class SeekerCRUD:
 
             await seeker.save()
         except Exception as e:
-            print(f"Error updating seeker: {e}")
+            logger.critical(f"Error updating seeker: {e}")
             return None
         else:
             return seeker
@@ -182,7 +185,7 @@ class SeekerCRUD:
             >>> updated_seeker = await update_seeker_skills(seeker_id, skills)
         """
         if len(skills) > 15:
-            print("Skills list cannot exceed 15 items")
+            logger.critical("Skills list cannot exceed 15 items")
             return None
 
         return await SeekerCRUD.update_seeker(seeker_id, {"key_skills": skills})
@@ -210,9 +213,6 @@ class SeekerCRUD:
             >>> seeker = await add_application(seeker_id, "job_123", "emp_456")
         """
         try:
-            from datetime import datetime
-            from backend.schemas.seeker import Application
-
             seeker = await SeekerCRUD.get_seeker_by_id(seeker_id)
             if not seeker:
                 return None
@@ -227,7 +227,7 @@ class SeekerCRUD:
             seeker.applications.append(new_application)
             await seeker.save()
         except Exception as e:
-            print(f"Error adding application: {e}")
+            logger.critical(f"Error adding application: {e}")
             return None
         else:
             return seeker
@@ -249,12 +249,12 @@ class SeekerCRUD:
         try:
             seeker = await SeekerCRUD.get_seeker_by_id(seeker_id)
             if not seeker:
-                print(f"Seeker not found: {seeker_id}")
+                logger.critical(f"Seeker not found: {seeker_id}")
                 return False
 
             await seeker.delete()
         except Exception as e:
-            print(f"Error deleting seeker: {e}")
+            logger.critical(f"Error deleting seeker: {e}")
             return False
         else:
             return True
@@ -278,7 +278,7 @@ class SeekerCRUD:
                 {"key_skills": {"$in": skills}}
             ).to_list()
         except Exception as e:
-            print(f"Error searching seekers by skills: {e}")
+            logger.critical(f"Error searching seekers by skills: {e}")
             return []
 
     @staticmethod
@@ -306,7 +306,7 @@ class SeekerCRUD:
 
             return await Seeker.find(query).to_list()
         except Exception as e:
-            print(f"Error searching seekers by education: {e}")
+            logger.critical(f"Error searching seekers by education: {e}")
             return []
 
     @staticmethod
@@ -323,7 +323,7 @@ class SeekerCRUD:
         try:
             return await Seeker.count()
         except Exception as e:
-            print(f"Error counting seekers: {e}")
+            logger.critical(f"Error counting seekers: {e}")
             return 0
 
 
@@ -339,18 +339,19 @@ delete_seeker = SeekerCRUD.delete_seeker
 # Example usage
 if __name__ == "__main__":
     import asyncio
-    from backend.db.settings import connect_to_mongodb, close_mongodb_connection
+
+    from backend.db.settings import close_mongodb_connection, connect_to_mongodb
 
     async def test_seeker_crud():
         """Test CRUD operations for Seeker collection."""
-        print("=== Seeker CRUD Operations Test ===\n")
+        logger.debug("=== Seeker CRUD Operations Test ===\n")
 
         # Connect to database
         await connect_to_mongodb()
 
         try:
             # Test 1: Create a seeker
-            print("Test 1: Create Seeker")
+            logger.debug("Test 1: Create Seeker")
             seeker_data = {
                 "information": {
                     "first_name": "Test",
@@ -370,46 +371,47 @@ if __name__ == "__main__":
                 "key_skills": ["Python", "FastAPI", "MongoDB"]
             }
             new_seeker = await create_seeker(seeker_data)
-            if new_seeker:
-                print(f"✓ Created seeker: {new_seeker.id}")
-                test_id = new_seeker.id
-            else:
-                print("✗ Failed to create seeker")
+            if not new_seeker:
+                logger.critical("✗ Failed to create seeker")
                 return
 
+            logger.debug(f"✓ Created seeker: {new_seeker.id}")
+            test_id = new_seeker.id
+            assert test_id is not None, "Seeker ID should not be None"
+
             # Test 2: Read seeker
-            print("\nTest 2: Read Seeker")
+            logger.debug("\nTest 2: Read Seeker")
             seeker = await get_seeker_by_id(test_id)
             if seeker:
-                print(f"✓ Retrieved seeker: {seeker.information.first_name} {seeker.information.last_name}")
+                logger.debug(f"✓ Retrieved seeker: {seeker.information.first_name} {seeker.information.last_name}")
             else:
-                print("✗ Failed to retrieve seeker")
+                logger.critical("✗ Failed to retrieve seeker")
 
             # Test 3: Update seeker
-            print("\nTest 3: Update Seeker")
+            logger.debug("\nTest 3: Update Seeker")
             updated = await update_seeker(test_id, {"edu_focus": "Data Science"})
             if updated:
-                print(f"✓ Updated seeker focus to: {updated.edu_focus}")
+                logger.debug(f"✓ Updated seeker focus to: {updated.edu_focus}")
             else:
-                print("✗ Failed to update seeker")
+                logger.critical("✗ Failed to update seeker")
 
             # Test 4: Count seekers
-            print("\nTest 4: Count Seekers")
+            logger.debug("\nTest 4: Count Seekers")
             count = await SeekerCRUD.count_seekers()
-            print(f"✓ Total seekers in database: {count}")
+            logger.debug(f"✓ Total seekers in database: {count}")
 
             # Test 5: Delete seeker
-            print("\nTest 5: Delete Seeker")
+            logger.debug("\nTest 5: Delete Seeker")
             deleted = await delete_seeker(test_id)
             if deleted:
-                print("✓ Seeker deleted successfully")
+                logger.debug("✓ Seeker deleted successfully")
             else:
-                print("✗ Failed to delete seeker")
+                logger.critical("✗ Failed to delete seeker")
 
-            print("\n✅ All CRUD operations tested successfully!")
+            logger.debug("\n✅ All CRUD operations tested successfully!")
 
         except Exception as e:
-            print(f"\n❌ Test failed: {e}")
+            logger.critical(f"\n❌ Test failed: {e}")
 
         finally:
             await close_mongodb_connection()
