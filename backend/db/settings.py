@@ -9,15 +9,21 @@ import os
 from typing import Any
 
 from beanie import init_beanie
-from motor.motor_asyncio import AsyncIOMotorClient
 from dotenv import load_dotenv
+from loguru import logger
+from motor.motor_asyncio import AsyncIOMotorClient
 
-from backend.schemas.seeker import Seeker
 from backend.schemas.employer import Employer
+from backend.schemas.seeker import Seeker
 
 
 # Load environment variables from .env file
 load_dotenv()
+
+# Configure loguru logging
+logger.remove(0)
+logger.add("Logs/Debug_log.log", level="DEBUG", format="{time} {level} {message}", rotation="50MB")
+logger.add("Logs/Error_log.log", level="ERROR", format="{time} {level} {message}", rotation="50MB")
 
 
 class MongoDBSettings:
@@ -56,10 +62,12 @@ class MongoDBSettings:
         missing_vars = [var for var, value in required_vars.items() if not value]
 
         if missing_vars:
-            raise ValueError(
+            error_message = (
                 f"Missing required environment variables: {', '.join(missing_vars)}\n"
                 "Please ensure your .env file is properly configured."
             )
+            logger.critical(error_message)
+            raise ValueError(error_message)
 
     def get_connection_string(self) -> str:
         """
@@ -73,9 +81,23 @@ class MongoDBSettings:
         """
         # Replace placeholders in URL with actual credentials
         connection_string = self.MONGO_DB_URL
+        if not connection_string:
+            error_msg = "MONGO_DB_URL is not set"
+            logger.critical(error_msg)
+            raise ValueError(error_msg)
+
         if "${MONGO_DB_USER}" in connection_string:
+            if not self.MONGO_DB_USER:
+                error_msg = "MONGO_DB_USER is not set"
+                logger.critical(error_msg)
+                raise ValueError(error_msg)
             connection_string = connection_string.replace("${MONGO_DB_USER}", self.MONGO_DB_USER)
+
         if "${MONGO_DB_PASSWORD}" in connection_string:
+            if not self.MONGO_DB_PASSWORD:
+                error_msg = "MONGO_DB_PASSWORD is not set"
+                logger.critical(error_msg)
+                raise ValueError(error_msg)
             connection_string = connection_string.replace("${MONGO_DB_PASSWORD}", self.MONGO_DB_PASSWORD)
 
         return connection_string
@@ -94,8 +116,34 @@ class MongoDBSettings:
 settings = MongoDBSettings()
 
 
-# Global MongoDB client
-mongodb_client: AsyncIOMotorClient | None = None
+class _MongoDBClient:
+    """Internal singleton to manage MongoDB client connection."""
+
+    def __init__(self):
+        self._client: AsyncIOMotorClient | None = None
+
+    def set_client(self, client: AsyncIOMotorClient) -> None:
+        """Set the MongoDB client."""
+        self._client = client
+
+    def get_client(self) -> AsyncIOMotorClient | None:
+        """Get the MongoDB client."""
+        return self._client
+
+    def close_client(self) -> None:
+        """Close the MongoDB client."""
+        if self._client:
+            self._client.close()
+            self._client = None
+
+
+# Module-level client manager
+_client_manager = _MongoDBClient()
+
+
+def get_mongodb_client() -> AsyncIOMotorClient | None:
+    """Get the current MongoDB client instance."""
+    return _client_manager.get_client()
 
 
 async def connect_to_mongodb() -> AsyncIOMotorClient:
@@ -108,49 +156,49 @@ async def connect_to_mongodb() -> AsyncIOMotorClient:
     Raises:
         Exception: If connection fails
     """
-    global mongodb_client
-
     try:
-        print("🔌 Connecting to MongoDB...")
-        print(f"   Database: {settings.MONGO_DB_NAME}")
-        print(f"   User: {settings.MONGO_DB_USER}")
+        logger.debug("🔌 Connecting to MongoDB...")
+        logger.debug(f"   Database: {settings.MONGO_DB_NAME}")
+        logger.debug(f"   User: {settings.MONGO_DB_USER}")
 
         # Create MongoDB client
         connection_string = settings.get_connection_string()
-        mongodb_client = AsyncIOMotorClient(connection_string)
+        client = AsyncIOMotorClient(connection_string)
 
         # Get database
-        database = mongodb_client[settings.MONGO_DB_NAME]
+        database = client[settings.MONGO_DB_NAME]
 
         # Initialize Beanie with document models
         await init_beanie(
-            database=database,
+            database=database,  # type: ignore[arg-type]
             document_models=[Seeker, Employer]
         )
 
         # Verify connection by pinging the server
-        await mongodb_client.admin.command('ping')
+        await client.admin.command("ping")
 
-        print("✅ MongoDB connection established successfully!")
-        print(f"   Collections: {settings.MONGO_SEEKER_NAME}, {settings.MONGO_EMPLOYER_NAME}")
+        logger.debug("✅ MongoDB connection established successfully!")
+        logger.debug(f"   Collections: {settings.MONGO_SEEKER_NAME}, {settings.MONGO_EMPLOYER_NAME}")
 
-        return mongodb_client
+        # Store the client in the manager
+        _client_manager.set_client(client)
 
     except Exception as e:
-        print(f"❌ Failed to connect to MongoDB: {e}")
+        logger.critical(f"❌ Failed to connect to MongoDB: {e}")
         raise
+    else:
+        return client
 
 
 async def close_mongodb_connection():
     """Close the MongoDB connection."""
-    global mongodb_client
-
-    if mongodb_client:
+    client = _client_manager.get_client()
+    if client:
         try:
-            mongodb_client.close()
-            print("🔌 MongoDB connection closed")
+            _client_manager.close_client()
+            logger.debug("🔌 MongoDB connection closed")
         except Exception as e:
-            print(f"⚠️  Error closing MongoDB connection: {e}")
+            logger.critical(f"⚠️  Error closing MongoDB connection: {e}")
 
 
 async def verify_mongodb_connection() -> dict[str, Any]:
@@ -161,19 +209,26 @@ async def verify_mongodb_connection() -> dict[str, Any]:
         Dictionary with connection status and database info
     """
     try:
-        if not mongodb_client:
+        client = _client_manager.get_client()
+        if not client:
             return {
                 "connected": False,
                 "error": "No active connection"
             }
 
         # Ping the database
-        await mongodb_client.admin.command('ping')
+        await client.admin.command("ping")
 
         # Get database info
-        db = mongodb_client[settings.MONGO_DB_NAME]
+        db = client[settings.MONGO_DB_NAME]
         collections = await db.list_collection_names()
 
+    except Exception as e:
+        return {
+            "connected": False,
+            "error": str(e)
+        }
+    else:
         return {
             "connected": True,
             "database": settings.MONGO_DB_NAME,
@@ -183,12 +238,6 @@ async def verify_mongodb_connection() -> dict[str, Any]:
             "employer_collection": settings.MONGO_EMPLOYER_NAME,
         }
 
-    except Exception as e:
-        return {
-            "connected": False,
-            "error": str(e)
-        }
-
 
 # Example usage and testing
 if __name__ == "__main__":
@@ -196,10 +245,10 @@ if __name__ == "__main__":
 
     async def test_connection():
         """Test the MongoDB connection."""
-        print("=== MongoDB Connection Test ===\n")
+        logger.debug("=== MongoDB Connection Test ===\n")
 
         # Display settings (without sensitive data)
-        print(f"Settings: {settings}\n")
+        logger.debug(f"Settings: {settings}\n")
 
         # Connect to MongoDB
         try:
@@ -207,21 +256,21 @@ if __name__ == "__main__":
 
             # Verify connection
             status = await verify_mongodb_connection()
-            print("\n=== Connection Status ===")
-            print(f"Connected: {status['connected']}")
-            if status['connected']:
-                print(f"Database: {status['database']}")
-                print(f"Collections: {status['collections']}")
-                print(f"Seeker Collection: {status['seeker_collection']}")
-                print(f"Employer Collection: {status['employer_collection']}")
+            logger.debug("\n=== Connection Status ===")
+            logger.debug(f"Connected: {status['connected']}")
+            if status["connected"]:
+                logger.debug(f"Database: {status['database']}")
+                logger.debug(f"Collections: {status['collections']}")
+                logger.debug(f"Seeker Collection: {status['seeker_collection']}")
+                logger.debug(f"Employer Collection: {status['employer_collection']}")
             else:
-                print(f"Error: {status['error']}")
+                logger.critical(f"Error: {status['error']}")
 
             # Close connection
             await close_mongodb_connection()
 
         except Exception as e:
-            print(f"\n❌ Connection test failed: {e}")
+            logger.critical(f"\n❌ Connection test failed: {e}")
 
     # Run the test
     asyncio.run(test_connection())

@@ -7,12 +7,17 @@ for the Seeker collection in MongoDB using Beanie ODM.
 
 from datetime import datetime
 from typing import Any
+from zoneinfo import ZoneInfo
 
 from beanie import PydanticObjectId
 from loguru import logger
 from pymongo.errors import DuplicateKeyError
 
 from backend.schemas.seeker import Application, Seeker
+
+
+# Constants
+MAX_SKILLS_COUNT = 15
 
 
 class SeekerCRUD:
@@ -184,8 +189,8 @@ class SeekerCRUD:
             >>> skills = ["Python", "FastAPI", "MongoDB"]
             >>> updated_seeker = await update_seeker_skills(seeker_id, skills)
         """
-        if len(skills) > 15:
-            logger.critical("Skills list cannot exceed 15 items")
+        if len(skills) > MAX_SKILLS_COUNT:
+            logger.critical(f"Skills list cannot exceed {MAX_SKILLS_COUNT} items")
             return None
 
         return await SeekerCRUD.update_seeker(seeker_id, {"key_skills": skills})
@@ -220,8 +225,8 @@ class SeekerCRUD:
             new_application = Application(
                 job_id=job_id,
                 employer_id=employer_id,
-                date_applied=datetime.now(),
-                application_status=application_status
+                date_applied=datetime.now(ZoneInfo("America/Denver")),
+                application_status=application_status  # type: ignore[arg-type]
             )
 
             seeker.applications.append(new_application)
@@ -302,7 +307,7 @@ class SeekerCRUD:
         try:
             query = {"education_level": education_level}
             if edu_focus:
-                query["edu_focus"] = {"$regex": edu_focus, "$options": "i"}
+                query["edu_focus"] = {"$regex": edu_focus, "$options": "i"}  # type: ignore[assignment]
 
             return await Seeker.find(query).to_list()
         except Exception as e:

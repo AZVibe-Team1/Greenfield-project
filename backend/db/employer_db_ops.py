@@ -263,9 +263,10 @@ class EmployerCRUD:
                     return employer
 
             logger.critical(f"Job not found: {job_id}")
-            return None
         except Exception as e:
             logger.critical(f"Error updating job posting: {e}")
+            return None
+        else:
             return None
 
     @staticmethod
@@ -294,10 +295,11 @@ class EmployerCRUD:
             # Remove the job
             employer.open_jobs = [job for job in employer.open_jobs if job.job_id != job_id]
             await employer.save()
-            return employer
         except Exception as e:
             logger.critical(f"Error removing job posting: {e}")
             return None
+        else:
+            return employer
 
     @staticmethod
     async def add_application_received(
@@ -330,10 +332,11 @@ class EmployerCRUD:
             new_application = ApplicationReceived(**application_data)
             employer.apps_received.append(new_application)
             await employer.save()
-            return employer
         except Exception as e:
             logger.critical(f"Error adding application: {e}")
             return None
+        else:
+            return employer
 
     @staticmethod
     async def update_application_status(
@@ -370,15 +373,16 @@ class EmployerCRUD:
                     # Update tracking
                     app.candidate_tracking.previous_status = app.candidate_tracking.current_status
                     app.candidate_tracking.previous_status_date = app.candidate_tracking.current_status_date
-                    app.candidate_tracking.current_status = new_status
+                    app.candidate_tracking.current_status = new_status  # type: ignore[assignment]
                     app.candidate_tracking.current_status_date = datetime.now(ZoneInfo("America/Denver"))
                     await employer.save()
                     return employer
 
             logger.critical(f"Application not found for applicant {applicant_id} and job {job_id}")
-            return None
         except Exception as e:
             logger.critical(f"Error updating application status: {e}")
+            return None
+        else:
             return None
 
     @staticmethod

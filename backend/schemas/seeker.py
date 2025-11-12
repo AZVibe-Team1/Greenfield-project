@@ -9,6 +9,7 @@ from datetime import datetime
 from typing import ClassVar, Literal
 
 from beanie import Document
+from loguru import logger
 from pydantic import BaseModel, Field
 
 from backend.utils.validators import Address, Email, USPhoneNumber
@@ -134,7 +135,7 @@ class Seeker(Document):
 if __name__ == "__main__":
     from pydantic import ValidationError
 
-    print("=== Seeker Model Validation Tests ===\n")
+    logger.debug("=== Seeker Model Validation Tests ===\n")
 
     # Test with valid seeker data
     try:
@@ -161,16 +162,16 @@ if __name__ == "__main__":
 
         # Note: In actual usage, this would be created with Seeker(**seeker_data)
         # For testing without DB connection, we just validate the structure
-        print("✓ Valid seeker data structure")
-        print(f"  Name: {seeker_data['information']['first_name']} {seeker_data['information']['last_name']}")
-        print(f"  Email: {seeker_data['information']['email']}")
-        print(f"  Education: {seeker_data['education_level']} in {seeker_data['edu_focus']}")
-        print(f"  Pay Range: ${seeker_data['pay_range'][0]:,} - ${seeker_data['pay_range'][1]:,} {seeker_data['pay_unit']}")
+        logger.debug("✓ Valid seeker data structure")
+        logger.debug(f"  Name: {seeker_data['information']['first_name']} {seeker_data['information']['last_name']}")
+        logger.debug(f"  Email: {seeker_data['information']['email']}")
+        logger.debug(f"  Education: {seeker_data['education_level']} in {seeker_data['edu_focus']}")
+        logger.debug(f"  Pay Range: ${seeker_data['pay_range'][0]:,} - ${seeker_data['pay_range'][1]:,} {seeker_data['pay_unit']}")
 
     except ValidationError as e:
-        print(f"✗ Validation error: {e}")
+        logger.critical(f"✗ Validation error: {e}")
 
-    print("\n=== Application Sub-document Test ===\n")
+    logger.debug("\n=== Application Sub-document Test ===\n")
 
     # Test Application sub-document
     try:
@@ -179,16 +180,16 @@ if __name__ == "__main__":
             employer_id="employer_67890",
             application_status="Submitted"
         )
-        print(f"✓ Valid application created")
-        print(f"  Job ID: {application.job_id}")
-        print(f"  Employer ID: {application.employer_id}")
-        print(f"  Status: {application.application_status}")
-        print(f"  Date Applied: {application.date_applied}")
+        logger.debug("✓ Valid application created")
+        logger.debug(f"  Job ID: {application.job_id}")
+        logger.debug(f"  Employer ID: {application.employer_id}")
+        logger.debug(f"  Status: {application.application_status}")
+        logger.debug(f"  Date Applied: {application.date_applied}")
 
     except ValidationError as e:
-        print(f"✗ Validation error: {e}")
+        logger.critical(f"✗ Validation error: {e}")
 
-    print("\n=== Information Sub-document Test ===\n")
+    logger.debug("\n=== Information Sub-document Test ===\n")
 
     # Test Information sub-document
     try:
@@ -204,11 +205,11 @@ if __name__ == "__main__":
                 zip_code="94102"
             )
         )
-        print(f"✓ Valid information created")
-        print(f"  Name: {info.first_name} {info.last_name}")
-        print(f"  Email: {info.email}")
-        print(f"  Phone: {info.phone}")
-        print(f"  Address: {info.address.street}, {info.address.city}, {info.address.state} {info.address.zip_code}")
+        logger.debug("✓ Valid information created")
+        logger.debug(f"  Name: {info.first_name} {info.last_name}")
+        logger.debug(f"  Email: {info.email}")
+        logger.debug(f"  Phone: {info.phone}")
+        logger.debug(f"  Address: {info.address.street}, {info.address.city}, {info.address.state} {info.address.zip_code}")
 
     except ValidationError as e:
-        print(f"✗ Validation error: {e}")
+        logger.critical(f"✗ Validation error: {e}")

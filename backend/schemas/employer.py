@@ -9,10 +9,11 @@ from datetime import UTC, datetime
 from typing import ClassVar, Literal
 
 from beanie import Document
+from loguru import logger
 from pydantic import BaseModel, Field
 
 from backend.utils.gics_helper import is_valid_gics_code
-from backend.utils.validators import Address
+from backend.utils.validators import Address, Email
 
 
 class IndustryInfo(BaseModel):
@@ -199,7 +200,7 @@ class Employer(Document):
         min_length=1,
         description="Contact last name"
     )
-    email: str = Field(
+    email: Email = Field(
         ...,
         description="Contact email address (unique)"
     )
@@ -237,13 +238,11 @@ class Employer(Document):
 
 # Example usage
 if __name__ == "__main__":
-    import sys
-
     from pydantic import ValidationError
-    sys.stdout.write("=== Employer Model Validation Tests ===\n\n")
+    logger.debug("=== Employer Model Validation Tests ===\n")
 
     # Test with valid employer data
-    sys.stdout.write("Test 1: Creating valid CompanyInformation sub-document...\n")
+    logger.debug("Test 1: Creating valid CompanyInformation sub-document...")
     try:
         company_info = CompanyInformation(
             company_name="Tech Innovations Inc.",
@@ -259,15 +258,15 @@ if __name__ == "__main__":
             ],
             benefits="Health insurance, 401k, Remote work options"
         )
-        sys.stdout.write("✓ Valid CompanyInformation created\n")
-        sys.stdout.write(f"  Company: {company_info.company_name}\n")
-        sys.stdout.write(f"  Address: {company_info.address.city}, {company_info.address.state}\n")
-        sys.stdout.write(f"  Industries: {len(company_info.industry)}\n")
-        sys.stdout.write("\n")
+        logger.debug("✓ Valid CompanyInformation created")
+        logger.debug(f"  Company: {company_info.company_name}")
+        logger.debug(f"  Address: {company_info.address.city}, {company_info.address.state}")
+        logger.debug(f"  Industries: {len(company_info.industry)}")
+        logger.debug("")
     except ValidationError as e:
-        sys.stdout.write(f"✗ Validation error: {e}\n\n")
+        logger.critical(f"✗ Validation error: {e}\n")
 
-    sys.stdout.write("Test 2: Creating valid OpenJob sub-document...\n")
+    logger.debug("Test 2: Creating valid OpenJob sub-document...")
     try:
         job = OpenJob(
             job_id="job_001",
@@ -283,16 +282,16 @@ if __name__ == "__main__":
             edu_focus="Computer Science",
             key_skills=["Python", "FastAPI", "MongoDB", "Docker", "AWS"]
         )
-        sys.stdout.write("✓ Valid OpenJob created\n")
-        sys.stdout.write(f"  Title: {job.job_title}\n")
-        sys.stdout.write(f"  Department: {job.department}\n")
-        sys.stdout.write(f"  Pay Range: ${job.pay_range[0]:,} - ${job.pay_range[1]:,} {job.pay_unit}\n")
-        sys.stdout.write(f"  Skills Required: {len(job.key_skills)}\n")
-        sys.stdout.write("\n")
+        logger.debug("✓ Valid OpenJob created")
+        logger.debug(f"  Title: {job.job_title}")
+        logger.debug(f"  Department: {job.department}")
+        logger.debug(f"  Pay Range: ${job.pay_range[0]:,} - ${job.pay_range[1]:,} {job.pay_unit}")
+        logger.debug(f"  Skills Required: {len(job.key_skills)}")
+        logger.debug("")
     except ValidationError as e:
-        sys.stdout.write(f"✗ Validation error: {e}\n\n")
+        logger.critical(f"✗ Validation error: {e}\n")
 
-    sys.stdout.write("Test 3: Creating valid ApplicationReceived sub-document...\n")
+    logger.debug("Test 3: Creating valid ApplicationReceived sub-document...")
     try:
         app = ApplicationReceived(
             applicant_id="seeker_123",
@@ -302,26 +301,26 @@ if __name__ == "__main__":
                 previous_status="Received"
             )
         )
-        sys.stdout.write("✓ Valid ApplicationReceived created\n")
-        sys.stdout.write(f"  Applicant: {app.applicant_id}\n")
-        sys.stdout.write(f"  Job: {app.job_id}\n")
-        sys.stdout.write(f"  Status: {app.candidate_tracking.current_status}\n")
-        sys.stdout.write("\n")
+        logger.debug("✓ Valid ApplicationReceived created")
+        logger.debug(f"  Applicant: {app.applicant_id}")
+        logger.debug(f"  Job: {app.job_id}")
+        logger.debug(f"  Status: {app.candidate_tracking.current_status}")
+        logger.debug("")
     except ValidationError as e:
-        sys.stdout.write(f"✗ Validation error: {e}\n\n")
+        logger.critical(f"✗ Validation error: {e}\n")
 
-    sys.stdout.write("Test 4: Testing field validations...\n")
+    logger.debug("Test 4: Testing field validations...")
 
     # Test invalid GICS code
-    sys.stdout.write("  - Testing invalid GICS code...\n")
+    logger.debug("  - Testing invalid GICS code...")
     try:
         bad_industry = IndustryInfo(code="INVALID", description="Test")
-        sys.stdout.write("  ✗ Should have failed with invalid GICS code\n")
+        logger.debug("  ✗ Should have failed with invalid GICS code")
     except (ValidationError, ValueError):
-        sys.stdout.write("  ✓ Correctly rejected invalid GICS code\n")
+        logger.debug("  ✓ Correctly rejected invalid GICS code")
 
     # Test industry array length validation (must be exactly 2)
-    sys.stdout.write("  - Testing industry array length (must be 2)...\n")
+    logger.debug("  - Testing industry array length (must be 2)...")
     try:
         bad_company = CompanyInformation(
             company_name="Test Corp",
@@ -334,16 +333,16 @@ if __name__ == "__main__":
             industry=[IndustryInfo(code="10", description="Energy")],  # Only 1 element
             benefits="Test"
         )
-        sys.stdout.write("  ✗ Should have failed with wrong industry array length\n")
+        logger.debug("  ✗ Should have failed with wrong industry array length")
     except ValidationError:
-        sys.stdout.write("  ✓ Correctly rejected industry array with wrong length\n")
+        logger.debug("  ✓ Correctly rejected industry array with wrong length")
 
-    sys.stdout.write("\n=== All Tests Passed! ===\n")
-    sys.stdout.write("\nModel Summary:\n")
-    sys.stdout.write("✓ CompanyInformation sub-document with Address and Industry validation\n")
-    sys.stdout.write("✓ OpenJob sub-document with pay range and education requirements\n")
-    sys.stdout.write("✓ ApplicationReceived sub-document with CandidateTracking\n")
-    sys.stdout.write("✓ Employer document with all required fields\n")
-    sys.stdout.write("✓ Field validations (GICS codes, array lengths, literals)\n")
-    sys.stdout.write("✓ Status tracking for candidate applications\n")
+    logger.debug("\n=== All Tests Passed! ===")
+    logger.debug("\nModel Summary:")
+    logger.debug("✓ CompanyInformation sub-document with Address and Industry validation")
+    logger.debug("✓ OpenJob sub-document with pay range and education requirements")
+    logger.debug("✓ ApplicationReceived sub-document with CandidateTracking")
+    logger.debug("✓ Employer document with all required fields")
+    logger.debug("✓ Field validations (GICS codes, array lengths, literals)")
+    logger.debug("✓ Status tracking for candidate applications")
 
