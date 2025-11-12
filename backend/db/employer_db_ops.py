@@ -5,6 +5,7 @@ This module provides Create, Read, Update, and Delete operations
 for the Employer collection in MongoDB using Beanie ODM.
 """
 
+import traceback
 from typing import Any
 
 from beanie import PydanticObjectId
@@ -52,13 +53,14 @@ class EmployerCRUD:
         try:
             employer = Employer(**employer_data)
             await employer.insert()
-            return employer
         except DuplicateKeyError as e:
             print(f"Duplicate employer error: {e}")
             raise
         except Exception as e:
             print(f"Error creating employer: {e}")
             return None
+        else:
+            return employer
 
     @staticmethod
     async def get_employer_by_id(employer_id: str | PydanticObjectId) -> Employer | None:
@@ -176,10 +178,11 @@ class EmployerCRUD:
                     setattr(employer, key, value)
 
             await employer.save()
-            return employer
         except Exception as e:
             print(f"Error updating employer: {e}")
             return None
+        else:
+            return employer
 
     @staticmethod
     async def add_job_posting(
@@ -566,7 +569,6 @@ if __name__ == "__main__":
 
         except Exception as e:
             print(f"\n❌ Test failed: {e}")
-            import traceback
             traceback.print_exc()
 
         finally:
