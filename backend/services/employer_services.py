@@ -27,6 +27,7 @@ class EmployerService:
         industry: list[dict[str, str]],
         contact_first_name: str,
         contact_last_name: str,
+        email: str,
         password_hash: str,
         benefits: str = "",
         open_jobs: list[dict[str, Any]] | None = None
@@ -40,6 +41,7 @@ class EmployerService:
             industry: List of 2 industry classifications with code and description
             contact_first_name: Primary contact's first name
             contact_last_name: Primary contact's last name
+            email: Contact email address (for authentication)
             password_hash: Hashed password for authentication
             benefits: Description of company benefits (optional)
             open_jobs: List of open job postings (optional, defaults to empty list)
@@ -60,6 +62,7 @@ class EmployerService:
             ...     ],
             ...     contact_first_name="John",
             ...     contact_last_name="Doe",
+            ...     email="john@techcorp.com",
             ...     password_hash="hashed_password",
             ...     benefits="Health, 401k"
             ... )
@@ -83,6 +86,7 @@ class EmployerService:
                 },
                 "contact_first_name": contact_first_name,
                 "contact_last_name": contact_last_name,
+                "email": email,
                 "password_hash": password_hash,
                 "created_at": datetime.now(),
                 "updated_at": datetime.now(),

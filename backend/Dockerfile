@@ -39,8 +39,9 @@ COPY pyproject.toml ./
 
 # Install Python dependencies using uv
 # uv sync installs all dependencies from pyproject.toml
-COPY uv.lock ./
-RUN uv sync --frozen
+# COPY uv.lock ./
+# RUN uv sync --frozen
+RUN uv sync
 
 # Copy the rest of the backend application code
 # This is done after dependency installation to leverage Docker cache
