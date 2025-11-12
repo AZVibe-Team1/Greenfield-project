@@ -19,7 +19,8 @@ import {
   CheckCircle,
   Clock,
   XCircle,
-  Building2
+  Building2,
+  Sparkles
 } from 'lucide-react';
 
 export default function SeekerDashboard() {
@@ -144,7 +145,19 @@ export default function SeekerDashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Link
+            href="/seeker/recommendations"
+            className="bg-gradient-to-br from-purple-50 to-emerald-50 rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all hover:-translate-y-1 group border-2 border-purple-100"
+          >
+            <div className="bg-gradient-to-br from-purple-100 to-emerald-100 w-14 h-14 rounded-xl flex items-center justify-center mb-4 group-hover:from-purple-600 group-hover:to-emerald-600 transition-all">
+              <Sparkles className="h-7 w-7 text-purple-600 group-hover:text-white transition-colors" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">AI Recommendations</h3>
+            <p className="text-gray-600">Personalized job matches</p>
+            <span className="inline-block mt-2 px-2 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">Coming Soon</span>
+          </Link>
+
           <Link
             href="/seeker/jobs"
             className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all hover:-translate-y-1 group"

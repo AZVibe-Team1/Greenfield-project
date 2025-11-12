@@ -505,3 +505,40 @@ async def get_job_details(
             detail=f"Failed to get job details: {str(e)}"
         )
 
+
+@router.get("/recommendations")
+async def get_ai_job_recommendations(
+    user_id: str = Depends(get_current_user_id),
+    role: str = Depends(verify_seeker_role)
+):
+    """
+    Get AI-powered job recommendations for the current seeker.
+    
+    This endpoint will use AI to analyze the seeker's profile, skills, education,
+    and preferences to recommend the most suitable job opportunities.
+    
+    Returns:
+        List of recommended jobs with match scores
+        
+    Note:
+        AI logic will be implemented in future iterations.
+        Currently returns a placeholder response.
+    """
+    try:
+        # TODO: Implement AI recommendation logic
+        # This will analyze seeker profile, skills, preferences
+        # and match with available jobs using embeddings and semantic search
+        
+        return {
+            "message": "AI Job Recommendations feature coming soon!",
+            "status": "under_development",
+            "recommendations": [],
+            "seeker_id": user_id
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get recommendations: {str(e)}"
+        )
+

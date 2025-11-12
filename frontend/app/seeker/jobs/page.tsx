@@ -94,6 +94,12 @@ export default function JobSearchPage() {
                 Dashboard
               </Link>
               <Link 
+                href="/seeker/recommendations" 
+                className="text-gray-700 hover:text-emerald-600 transition-colors font-medium"
+              >
+                AI Recommendations
+              </Link>
+              <Link 
                 href="/seeker/applications" 
                 className="text-gray-700 hover:text-emerald-600 transition-colors font-medium"
               >

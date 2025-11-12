@@ -58,6 +58,12 @@ export default function ApplicationsPage() {
                 Dashboard
               </Link>
               <Link 
+                href="/seeker/recommendations" 
+                className="text-gray-700 hover:text-emerald-600 transition-colors font-medium"
+              >
+                AI Recommendations
+              </Link>
+              <Link 
                 href="/seeker/jobs" 
                 className="text-gray-700 hover:text-emerald-600 transition-colors font-medium"
               >
