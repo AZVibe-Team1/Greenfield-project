@@ -85,6 +85,10 @@ class Seeker(Document):
         description="Hashed password"
     )
 
+    created_at: datetime = Field(
+        default_factory=datetime.now,
+        description="Account creation timestamp"
+    )
     updated_at: datetime = Field(
         default_factory=datetime.now,
         description="Account updated timestamp"

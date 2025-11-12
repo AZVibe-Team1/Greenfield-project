@@ -199,8 +199,8 @@ class Employer(Document):
         min_length=1,
         description="Contact last name"
     )
-    email: str = Field(
-        ...,
+    email: str | None = Field(
+        default=None,
         description="Contact email address (unique)"
     )
     password_hash: str = Field(
