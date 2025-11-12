@@ -120,6 +120,8 @@ export interface Application {
   employer_id: string;
   date_applied: string;
   application_status: string;
+  job_title?: string;
+  company_name?: string;
 }
 
 export interface ApplicationReceived {

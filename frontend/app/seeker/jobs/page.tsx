@@ -136,7 +136,7 @@ export default function JobSearchPage() {
               <select
                 value={searchType}
                 onChange={(e) => setSearchType(e.target.value as any)}
-                className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 font-medium"
+                className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 font-medium text-gray-900 bg-white"
               >
                 <option value="title">Job Title</option>
                 <option value="company">Company</option>

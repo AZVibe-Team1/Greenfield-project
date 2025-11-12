@@ -98,12 +98,41 @@ async def get_my_profile(
         Seeker profile information
     """
     try:
+        from backend.db.employer_db_ops import EmployerCRUD
+        
         seeker = await SeekerCRUD.get_seeker_by_id(user_id)
         if not seeker:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Seeker profile not found"
             )
+        
+        # Enrich applications with job and company details
+        enriched_applications = []
+        for app in seeker.applications:
+            app_dict = {
+                "job_id": app.job_id,
+                "employer_id": app.employer_id,
+                "date_applied": app.date_applied.isoformat(),
+                "application_status": app.application_status,
+                "job_title": "Unknown Job",
+                "company_name": "Unknown Company"
+            }
+            
+            # Try to fetch employer and job details
+            try:
+                employer = await EmployerCRUD.get_employer_by_id(app.employer_id)
+                if employer:
+                    app_dict["company_name"] = employer.company_information.company_name
+                    # Find the specific job
+                    for job in employer.open_jobs:
+                        if job.job_id == app.job_id:
+                            app_dict["job_title"] = job.job_title
+                            break
+            except Exception as e:
+                print(f"Error enriching application {app.job_id}: {e}")
+            
+            enriched_applications.append(app_dict)
         
         return SeekerProfileResponse(
             id=str(seeker.id),
@@ -123,15 +152,7 @@ async def get_my_profile(
             pay_unit=seeker.pay_unit,
             key_skills=seeker.key_skills,
             resume=seeker.resume,
-            applications=[
-                {
-                    "job_id": app.job_id,
-                    "employer_id": app.employer_id,
-                    "date_applied": app.date_applied.isoformat(),
-                    "application_status": app.application_status
-                }
-                for app in seeker.applications
-            ]
+            applications=enriched_applications
         )
     except HTTPException:
         raise
@@ -291,9 +312,11 @@ async def get_my_applications(
     Get all applications for current seeker.
     
     Returns:
-        List of applications
+        List of applications with job and company details
     """
     try:
+        from backend.db.employer_db_ops import EmployerCRUD
+        
         seeker = await SeekerCRUD.get_seeker_by_id(user_id)
         if not seeker:
             raise HTTPException(
@@ -301,17 +324,34 @@ async def get_my_applications(
                 detail="Seeker not found"
             )
         
-        return {
-            "applications": [
-                {
-                    "job_id": app.job_id,
-                    "employer_id": app.employer_id,
-                    "date_applied": app.date_applied.isoformat(),
-                    "application_status": app.application_status
-                }
-                for app in seeker.applications
-            ]
-        }
+        # Enrich applications with job and company details
+        enriched_applications = []
+        for app in seeker.applications:
+            app_dict = {
+                "job_id": app.job_id,
+                "employer_id": app.employer_id,
+                "date_applied": app.date_applied.isoformat(),
+                "application_status": app.application_status,
+                "job_title": "Unknown Job",
+                "company_name": "Unknown Company"
+            }
+            
+            # Try to fetch employer and job details
+            try:
+                employer = await EmployerCRUD.get_employer_by_id(app.employer_id)
+                if employer:
+                    app_dict["company_name"] = employer.company_information.company_name
+                    # Find the specific job
+                    for job in employer.open_jobs:
+                        if job.job_id == app.job_id:
+                            app_dict["job_title"] = job.job_title
+                            break
+            except Exception as e:
+                print(f"Error enriching application {app.job_id}: {e}")
+            
+            enriched_applications.append(app_dict)
+        
+        return {"applications": enriched_applications}
         
     except HTTPException:
         raise

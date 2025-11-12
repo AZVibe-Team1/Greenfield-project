@@ -18,7 +18,8 @@ import {
   Eye,
   CheckCircle,
   Clock,
-  XCircle
+  XCircle,
+  Building2
 } from 'lucide-react';
 
 export default function SeekerDashboard() {
@@ -87,14 +88,14 @@ export default function SeekerDashboard() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Banner */}
-        <div className="bg-gradient-to-r from-emerald-600 to-emerald-500 rounded-2xl shadow-xl p-8 mb-8 text-white">
-          <div className="flex items-center gap-3 mb-2">
-            <User className="h-8 w-8" />
-            <h1 className="text-3xl md:text-4xl font-bold">
+        <div className="bg-gradient-to-r from-emerald-600 to-emerald-500 rounded-xl shadow-lg p-4 mb-6 text-white">
+          <div className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            <h1 className="text-xl md:text-2xl font-bold">
               Welcome back, {profile?.first_name}!
             </h1>
           </div>
-          <p className="text-emerald-100 text-lg">
+          <p className="text-emerald-100 text-sm ml-7">
             Ready to find your next opportunity? Let's get started.
           </p>
         </div>
@@ -256,7 +257,11 @@ export default function SeekerDashboard() {
                 <div key={index} className="border border-gray-200 rounded-xl p-4 hover:border-emerald-300 hover:bg-emerald-50 transition-all">
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <p className="font-bold text-gray-900 mb-1">Job ID: {app.job_id}</p>
+                      <p className="font-bold text-gray-900 mb-1 text-lg">{app.job_title || 'Unknown Job'}</p>
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <Building2 className="h-4 w-4 text-emerald-600" />
+                        <p className="text-sm text-emerald-600 font-medium">{app.company_name || 'Unknown Company'}</p>
+                      </div>
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <Clock className="h-4 w-4" />
                         <span>Applied: {new Date(app.date_applied).toLocaleDateString()}</span>

@@ -229,7 +229,7 @@ export default function RegisterPage() {
                         required
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 text-gray-900 placeholder:text-gray-400"
                       />
                     </div>
                     <div>
@@ -239,7 +239,7 @@ export default function RegisterPage() {
                         required
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 text-gray-900 placeholder:text-gray-400"
                       />
                     </div>
                   </>
@@ -252,7 +252,7 @@ export default function RegisterPage() {
                         required
                         value={companyName}
                         onChange={(e) => setCompanyName(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 text-gray-900 placeholder:text-gray-400"
                       />
                     </div>
                     <div>
@@ -262,7 +262,7 @@ export default function RegisterPage() {
                         required
                         value={contactFirstName}
                         onChange={(e) => setContactFirstName(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 text-gray-900 placeholder:text-gray-400"
                       />
                     </div>
                     <div>
@@ -272,7 +272,7 @@ export default function RegisterPage() {
                         required
                         value={contactLastName}
                         onChange={(e) => setContactLastName(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 text-gray-900 placeholder:text-gray-400"
                       />
                     </div>
                   </>
@@ -387,7 +387,7 @@ export default function RegisterPage() {
                         required
                         value={educationLevel}
                         onChange={(e) => setEducationLevel(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 text-gray-900 placeholder:text-gray-400"
                       >
                         <option value="BA">BA</option>
                         <option value="BS">BS</option>
@@ -405,7 +405,7 @@ export default function RegisterPage() {
                         value={eduFocus}
                         onChange={(e) => setEduFocus(e.target.value)}
                         placeholder="Computer Science"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 text-gray-900 placeholder:text-gray-400"
                       />
                     </div>
                   </div>

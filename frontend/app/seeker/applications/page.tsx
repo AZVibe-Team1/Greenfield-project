@@ -128,10 +128,10 @@ export default function ApplicationsPage() {
                       <Briefcase className="h-6 w-6 text-emerald-600" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-xl font-semibold text-gray-900 mb-1">Job ID: {app.job_id}</h3>
+                      <h3 className="text-xl font-semibold text-gray-900 mb-1">{app.job_title || 'Unknown Job'}</h3>
                       <div className="flex items-center gap-2 text-gray-600 mb-3">
                         <Building2 className="h-4 w-4" />
-                        <span>Employer ID: {app.employer_id}</span>
+                        <span>{app.company_name || 'Unknown Company'}</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm text-gray-500">
                         <Calendar className="h-4 w-4" />
