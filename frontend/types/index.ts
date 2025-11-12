@@ -6,6 +6,9 @@ export interface User {
   id: string;
   email: string;
   role: 'seeker' | 'employer';
+  first_name?: string;
+  last_name?: string;
+  company_name?: string;
 }
 
 export interface LoginRequest {

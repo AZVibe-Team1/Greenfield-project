@@ -24,21 +24,38 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+      // Call authentication service to login
+      // This implements the login flow from frontend_auth.txt section 3
       const response = await authService.login(formData);
+      
+      // Store JWT token and user information in Zustand store
+      // Token is also saved to localStorage for persistence
       login(response.access_token, {
         id: response.user_id,
         email: response.email,
         role: response.role as 'seeker' | 'employer',
       });
 
-      // Redirect to appropriate dashboard
+      // Redirect to appropriate dashboard based on user role
+      // Implements role-based routing from frontend_auth.txt section 4
       if (response.role === 'seeker') {
         router.push('/seeker/dashboard');
       } else {
         router.push('/employer/dashboard');
       }
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Login failed. Please try again.');
+      // Handle login errors with user-friendly messages
+      // Implements error handling from frontend_auth.txt section 6
+      console.error('Login error:', err);
+      
+      const errorMessage = 
+        err.response?.status === 401 
+          ? 'Invalid email or password. Please check your credentials.'
+          : err.response?.status === 500
+          ? 'Server error. Please try again later.'
+          : err.response?.data?.detail || 'Login failed. Please try again.';
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

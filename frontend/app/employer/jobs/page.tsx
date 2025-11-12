@@ -1,9 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuthStore } from '@/store/auth-store';
+import { useEmployerAuth } from '@/hooks/useAuth';
 import { employerService } from '@/services/employer-service';
 import { Job } from '@/types';
 import { 
@@ -19,22 +18,17 @@ import {
 } from 'lucide-react';
 
 export default function EmployerJobsPage() {
-  const router = useRouter();
-  const { isAuthenticated, checkAuth, logout } = useAuthStore();
+  // Use the custom authentication hook for employer-specific protection
+  const { user, isLoading: authLoading, logout } = useEmployerAuth();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Load jobs once authentication is confirmed
   useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/login');
-      return;
+    if (!authLoading && user) {
+      loadJobs();
     }
-    loadJobs();
-  }, [isAuthenticated, router]);
+  }, [authLoading, user]);
 
   const loadJobs = async () => {
     try {

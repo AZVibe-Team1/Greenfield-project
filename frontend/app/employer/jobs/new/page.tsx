@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { employerService } from '@/services/employer-service';
-import { useAuthStore } from '@/store/auth-store';
+import { useEmployerAuth } from '@/hooks/useAuth';
 import { 
   Briefcase, 
   ArrowLeft, 
@@ -19,7 +19,8 @@ import {
 
 export default function NewJobPage() {
   const router = useRouter();
-  const { logout } = useAuthStore();
+  // Use the custom authentication hook for employer-specific protection
+  const { logout } = useEmployerAuth();
   const [formData, setFormData] = useState({
     job_title: '',
     job_description: '',

@@ -1,9 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuthStore } from '@/store/auth-store';
+import { useSeekerAuth } from '@/hooks/useAuth';
 import { seekerService } from '@/services/seeker-service';
 import { SeekerProfile } from '@/types';
 import { 
@@ -23,27 +22,18 @@ import {
 } from 'lucide-react';
 
 export default function SeekerDashboard() {
-  const router = useRouter();
-  const { user, isAuthenticated, logout, checkAuth } = useAuthStore();
+  // Use the custom authentication hook for seeker-specific protection
+  // This implements the protected routes strategy from frontend_auth.txt
+  const { user, isLoading: authLoading, logout } = useSeekerAuth();
   const [profile, setProfile] = useState<SeekerProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Load profile data once authentication is confirmed
   useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/login');
-      return;
+    if (!authLoading && user) {
+      loadProfile();
     }
-    if (user?.role !== 'seeker') {
-      router.push('/employer/dashboard');
-      return;
-    }
-
-    loadProfile();
-  }, [isAuthenticated, user, router]);
+  }, [authLoading, user]);
 
   const loadProfile = async () => {
     try {
@@ -56,7 +46,8 @@ export default function SeekerDashboard() {
     }
   };
 
-  if (loading) {
+  // Show loading state while authentication is being verified
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white flex items-center justify-center">
         <div className="text-center">

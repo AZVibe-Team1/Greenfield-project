@@ -2,11 +2,19 @@
 Authentication API routes.
 
 Handles user registration and login for both job seekers and employers.
+Implements JWT-based authentication with token validation endpoints.
 """
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
 from pydantic import BaseModel, EmailStr, Field
 
-from backend.core.security import create_access_token, hash_password, verify_password
+from backend.core.security import (
+    create_access_token, 
+    hash_password, 
+    verify_password,
+    get_current_user_id,
+    get_current_user_role,
+    decode_access_token
+)
 from backend.db.employer_db_ops import EmployerCRUD
 from backend.db.seeker_db_ops import SeekerCRUD
 from backend.services.employer_services import EmployerService
@@ -297,5 +305,90 @@ async def register_employer(request: EmployerRegisterRequest):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Registration failed: {str(e)}"
+        )
+
+
+class UserInfoResponse(BaseModel):
+    """User information response for token validation."""
+    user_id: str
+    email: str
+    role: str
+    first_name: str | None = None
+    last_name: str | None = None
+    company_name: str | None = None
+
+
+@router.get("/me", response_model=UserInfoResponse)
+async def get_current_user(
+    user_id: str = Depends(get_current_user_id),
+    role: str = Depends(get_current_user_role)
+):
+    """
+    Get current authenticated user information.
+    
+    This endpoint validates the JWT token and returns user information.
+    Used by frontend to verify token validity and get user details.
+    
+    Args:
+        user_id: User ID from JWT token (injected by dependency)
+        role: User role from JWT token (injected by dependency)
+        
+    Returns:
+        User information including ID, email, role, and name
+        
+    Raises:
+        HTTPException: If token is invalid or user not found
+    """
+    try:
+        # Based on role, fetch the appropriate user data
+        if role == "seeker":
+            # Retrieve seeker information from database
+            # IMPORTANT: Seeker model stores personal info in 'information' sub-document
+            seeker = await SeekerCRUD.get_seeker_by_id(user_id)
+            if not seeker:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="User not found"
+                )
+            
+            return UserInfoResponse(
+                user_id=str(seeker.id),
+                email=seeker.information.email,
+                role="seeker",
+                first_name=seeker.information.first_name,
+                last_name=seeker.information.last_name
+            )
+            
+        elif role == "employer":
+            # Retrieve employer information from database
+            # IMPORTANT: Employer model stores contact info directly, company name in 'company_information'
+            employer = await EmployerCRUD.get_employer_by_id(user_id)
+            if not employer:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="User not found"
+                )
+            
+            return UserInfoResponse(
+                user_id=str(employer.id),
+                email=employer.email,
+                role="employer",
+                first_name=employer.contact_first_name,
+                last_name=employer.contact_last_name,
+                company_name=employer.company_information.company_name
+            )
+            
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid role"
+            )
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get user information: {str(e)}"
         )
 

@@ -1,9 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuthStore } from '@/store/auth-store';
+import { useSeekerAuth } from '@/hooks/useAuth';
 import { seekerService } from '@/services/seeker-service';
 import { SeekerProfile } from '@/types';
 import { 
@@ -21,8 +20,8 @@ import {
 } from 'lucide-react';
 
 export default function SeekerProfilePage() {
-  const router = useRouter();
-  const { isAuthenticated, checkAuth, logout } = useAuthStore();
+  // Use the custom authentication hook for seeker-specific protection
+  const { user, isLoading: authLoading, logout } = useSeekerAuth();
   const [profile, setProfile] = useState<SeekerProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
@@ -32,17 +31,12 @@ export default function SeekerProfilePage() {
     key_skills: '',
   });
 
+  // Load profile data once authentication is confirmed
   useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/login');
-      return;
+    if (!authLoading && user) {
+      loadProfile();
     }
-    loadProfile();
-  }, [isAuthenticated, router]);
+  }, [authLoading, user]);
 
   const loadProfile = async () => {
     try {

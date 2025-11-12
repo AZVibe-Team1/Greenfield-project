@@ -1,29 +1,23 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuthStore } from '@/store/auth-store';
+import { useSeekerAuth } from '@/hooks/useAuth';
 import { seekerService } from '@/services/seeker-service';
 import { FileText, Briefcase, Building2, Calendar, XCircle } from 'lucide-react';
 
 export default function ApplicationsPage() {
-  const router = useRouter();
-  const { isAuthenticated, checkAuth, logout } = useAuthStore();
+  // Use the custom authentication hook for seeker-specific protection
+  const { user, isLoading: authLoading, logout } = useSeekerAuth();
   const [applications, setApplications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Load applications once authentication is confirmed
   useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/login');
-      return;
+    if (!authLoading && user) {
+      loadApplications();
     }
-    loadApplications();
-  }, [isAuthenticated, router]);
+  }, [authLoading, user]);
 
   const loadApplications = async () => {
     try {
