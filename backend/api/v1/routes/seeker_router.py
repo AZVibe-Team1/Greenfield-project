@@ -90,7 +90,7 @@ async def verify_seeker_role(role: str = Depends(get_current_user_role)) -> str:
 @router.get("/me", response_model=SeekerProfileResponse)
 async def get_my_profile(
     user_id: str = Depends(get_current_user_id),
-    role: str = Depends(verify_seeker_role)
+    _role: str = Depends(verify_seeker_role)
 ):
     """
     Get current seeker's profile.
@@ -98,20 +98,25 @@ async def get_my_profile(
     Returns:
         Seeker profile information
     """
+    def raise_not_found() -> None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Seeker profile not found"
+        )
+
     try:
         seeker = await SeekerCRUD.get_seeker_by_id(user_id)
         if not seeker:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Seeker profile not found"
-            )
+            raise_not_found()
+
+        assert seeker is not None  # Type narrowing
 
         return SeekerProfileResponse(
             id=str(seeker.id),
             first_name=seeker.information.first_name,
             last_name=seeker.information.last_name,
             email=seeker.information.email,
-            phone=seeker.information.phone,
+            phone=str(seeker.information.phone),
             address={
                 "street": seeker.information.address.street,
                 "city": seeker.information.address.city,
@@ -140,14 +145,14 @@ async def get_my_profile(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get profile: {e!s}"
-        )
+        ) from e
 
 
 @router.put("/me")
 async def update_my_profile(
     request: UpdateSeekerRequest,
     user_id: str = Depends(get_current_user_id),
-    role: str = Depends(verify_seeker_role)
+    _role: str = Depends(verify_seeker_role)
 ):
     """
     Update current seeker's profile.
@@ -158,6 +163,12 @@ async def update_my_profile(
     Returns:
         Success message
     """
+    def raise_update_failed() -> None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update profile"
+        )
+
     try:
         # Build update dictionary (only include non-None fields)
         update_data = {}
@@ -190,12 +201,9 @@ async def update_my_profile(
         updated_seeker = await SeekerService.update_seeker_profile(user_id, update_data)
 
         if not updated_seeker:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to update profile"
-            )
-
-        return {"message": "Profile updated successfully"}
+            raise_update_failed()
+        else:
+            return {"message": "Profile updated successfully"}
 
     except HTTPException:
         raise
@@ -203,14 +211,14 @@ async def update_my_profile(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to update profile: {e!s}"
-        )
+        ) from e
 
 
 @router.post("/resume")
 async def upload_resume(
     request: UploadResumeRequest,
     user_id: str = Depends(get_current_user_id),
-    role: str = Depends(verify_seeker_role)
+    _role: str = Depends(verify_seeker_role)
 ):
     """
     Upload or update resume.
@@ -221,6 +229,12 @@ async def upload_resume(
     Returns:
         Success message
     """
+    def raise_upload_failed() -> None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to upload resume"
+        )
+
     try:
         updated_seeker = await SeekerService.upload_resume(
             seeker_id=user_id,
@@ -228,12 +242,9 @@ async def upload_resume(
         )
 
         if not updated_seeker:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to upload resume"
-            )
-
-        return {"message": "Resume uploaded successfully"}
+            raise_upload_failed()
+        else:
+            return {"message": "Resume uploaded successfully"}
 
     except HTTPException:
         raise
@@ -241,14 +252,14 @@ async def upload_resume(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to upload resume: {e!s}"
-        )
+        ) from e
 
 
 @router.post("/applications")
 async def apply_for_job(
     request: ApplyForJobRequest,
     user_id: str = Depends(get_current_user_id),
-    role: str = Depends(verify_seeker_role)
+    _role: str = Depends(verify_seeker_role)
 ):
     """
     Apply for a job.
@@ -259,6 +270,12 @@ async def apply_for_job(
     Returns:
         Success message
     """
+    def raise_apply_failed() -> None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to apply for job"
+        )
+
     try:
         updated_seeker = await SeekerService.apply_for_job(
             seeker_id=user_id,
@@ -267,12 +284,9 @@ async def apply_for_job(
         )
 
         if not updated_seeker:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to apply for job"
-            )
-
-        return {"message": "Application submitted successfully"}
+            raise_apply_failed()
+        else:
+            return {"message": "Application submitted successfully"}
 
     except HTTPException:
         raise
@@ -280,13 +294,13 @@ async def apply_for_job(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to apply for job: {e!s}"
-        )
+        ) from e
 
 
 @router.get("/applications")
 async def get_my_applications(
     user_id: str = Depends(get_current_user_id),
-    role: str = Depends(verify_seeker_role)
+    _role: str = Depends(verify_seeker_role)
 ):
     """
     Get all applications for current seeker.
@@ -294,13 +308,18 @@ async def get_my_applications(
     Returns:
         List of applications
     """
+    def raise_seeker_not_found() -> None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Seeker not found"
+        )
+
     try:
         seeker = await SeekerCRUD.get_seeker_by_id(user_id)
         if not seeker:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Seeker not found"
-            )
+            raise_seeker_not_found()
+
+        assert seeker is not None  # Type narrowing
 
         return {
             "applications": [
@@ -320,14 +339,14 @@ async def get_my_applications(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get applications: {e!s}"
-        )
+        ) from e
 
 
 @router.delete("/applications/{job_id}")
 async def delete_application(
     job_id: str,
     user_id: str = Depends(get_current_user_id),
-    role: str = Depends(verify_seeker_role)
+    _role: str = Depends(verify_seeker_role)
 ):
     """
     Delete/withdraw an application.
@@ -338,6 +357,12 @@ async def delete_application(
     Returns:
         Success message
     """
+    def raise_application_not_found() -> None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Application not found"
+        )
+
     try:
         updated_seeker = await SeekerService.delete_application(
             seeker_id=user_id,
@@ -346,12 +371,9 @@ async def delete_application(
         )
 
         if not updated_seeker:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Application not found"
-            )
-
-        return {"message": "Application withdrawn successfully"}
+            raise_application_not_found()
+        else:
+            return {"message": "Application withdrawn successfully"}
 
     except HTTPException:
         raise
@@ -359,7 +381,7 @@ async def delete_application(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to delete application: {e!s}"
-        )
+        ) from e
 
 
 @router.get("/jobs", response_model=list[JobSearchResponse])
@@ -367,7 +389,7 @@ async def search_jobs(
     title: str | None = None,
     company: str | None = None,
     skill: str | None = None,
-    role: str = Depends(verify_seeker_role)
+    _role: str = Depends(verify_seeker_role)
 ):
     """
     Search for jobs.
@@ -414,13 +436,13 @@ async def search_jobs(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to search jobs: {e!s}"
-        )
+        ) from e
 
 
 @router.get("/jobs/{job_id}", response_model=JobSearchResponse)
 async def get_job_details(
     job_id: str,
-    role: str = Depends(verify_seeker_role)
+    _role: str = Depends(verify_seeker_role)
 ):
     """
     Get details of a specific job.
@@ -431,6 +453,12 @@ async def get_job_details(
     Returns:
         Job details
     """
+    def raise_job_not_found() -> None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Job not found"
+        )
+
     try:
         # Search all jobs and find the matching one
         all_jobs = await SeekerService.search_all_jobs()
@@ -453,10 +481,7 @@ async def get_job_details(
                     hiring_manager=job["hiring_manager"]
                 )
 
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Job not found"
-        )
+        raise_job_not_found()
 
     except HTTPException:
         raise
@@ -464,5 +489,5 @@ async def get_job_details(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get job details: {e!s}"
-        )
+        ) from e
 
