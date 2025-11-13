@@ -7,6 +7,7 @@ It includes sub-documents for company information, job postings, and application
 
 from datetime import datetime
 from typing import ClassVar, Literal
+from uuid import UUID, uuid4
 from zoneinfo import ZoneInfo
 
 from beanie import Document
@@ -175,6 +176,7 @@ class Employer(Document):
     company information, contact details, job postings, and applications.
 
     Attributes:
+        employer_id: Unique identifier for the employer (UUID, required)
         company_information: Company details and address (required)
         contact_first_name: Primary contact first name (required)
         contact_last_name: Primary contact last name (required)
@@ -187,6 +189,10 @@ class Employer(Document):
     Collection Settings:
         name: "employers" - MongoDB collection name
     """
+    employer_id: UUID = Field(
+        default_factory=uuid4,
+        description="Unique employer identifier"
+    )
     company_information: CompanyInformation = Field(
         ...,
         description="Company information"

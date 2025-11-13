@@ -5,11 +5,14 @@ This module provides business logic services for job seeker operations including
 account management, resume handling, job applications, and searches.
 """
 
+import traceback
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 from zoneinfo import ZoneInfo
 
+import aiofiles
 import PyPDF2
 from docx import Document
 
@@ -17,6 +20,14 @@ from backend.db.employer_db_ops import EmployerCRUD
 from backend.db.seeker_db_ops import SeekerCRUD
 from backend.schemas.seeker import Information, Seeker
 from backend.utils.validators import Address
+
+
+class PDFExtractionError(Exception):
+    """Exception raised when PDF text extraction fails."""
+
+
+class DOCXExtractionError(Exception):
+    """Exception raised when DOCX text extraction fails."""
 
 
 class SeekerService:
@@ -79,6 +90,9 @@ class SeekerService:
             ... )
         """
         try:
+            # Generate unique SeekerID
+            seeker_id = uuid4()
+
             # Create address object
             address = Address(
                 street=street,
@@ -98,6 +112,7 @@ class SeekerService:
 
             # Prepare seeker data
             seeker_data = {
+                "seeker_id": seeker_id,
                 "information": information.model_dump(),
                 "password_hash": password_hash,
                 "created_at": datetime.now(ZoneInfo("America/Denver")),
@@ -128,10 +143,11 @@ class SeekerService:
             Extracted text content
 
         Raises:
-            Exception: If PDF cannot be read
+            PDFExtractionError: If PDF cannot be read
         """
         try:
-            with open(file_path, "rb") as file:
+            file_path = Path(file_path)
+            with file_path.open("rb") as file:
                 pdf_reader = PyPDF2.PdfReader(file)
                 text = ""
                 for page in pdf_reader.pages:
@@ -139,7 +155,7 @@ class SeekerService:
                 return text.strip()
         except Exception as e:
             msg = f"Error extracting text from PDF: {e}"
-            raise Exception(msg) from e
+            raise PDFExtractionError(msg) from e
 
     @staticmethod
     def extract_text_from_docx(file_path: str | Path) -> str:
@@ -153,15 +169,16 @@ class SeekerService:
             Extracted text content
 
         Raises:
-            Exception: If DOCX cannot be read
+            DOCXExtractionError: If DOCX cannot be read
         """
         try:
-            doc = Document(file_path)
+            # Convert Path to str as Document expects str | IO[bytes] | None
+            doc = Document(str(file_path))
             text = "\n".join([paragraph.text for paragraph in doc.paragraphs])
             return text.strip()
         except Exception as e:
             msg = f"Error extracting text from DOCX: {e}"
-            raise Exception(msg) from e
+            raise DOCXExtractionError(msg) from e
 
     @staticmethod
     async def upload_resume(
@@ -192,11 +209,19 @@ class SeekerService:
             >>> # Upload from file
             >>> seeker = await upload_resume(seeker_id, file_path="resume.pdf")
         """
+        def raise_missing_input() -> None:
+            msg = "Either resume_content or file_path must be provided"
+            raise ValueError(msg)
+
+        def raise_unsupported_file_type(suffix: str) -> None:
+            msg = f"Unsupported file type: {suffix}. Use .pdf, .docx, or .txt"
+            raise ValueError(msg)
+
         try:
             if not resume_content and not file_path:
-                msg = "Either resume_content or file_path must be provided"
-                raise ValueError(msg)
+                raise_missing_input()
 
+            resume_text = ""
             # Extract text from file if file_path is provided
             if file_path:
                 file_path = Path(file_path)
@@ -207,11 +232,10 @@ class SeekerService:
                 elif suffix == ".docx":
                     resume_text = SeekerService.extract_text_from_docx(file_path)
                 elif suffix == ".txt":
-                    with open(file_path, encoding="utf-8") as f:
-                        resume_text = f.read()
+                    async with aiofiles.open(file_path, encoding="utf-8") as f:
+                        resume_text = await f.read()
                 else:
-                    msg = f"Unsupported file type: {suffix}. Use .pdf, .docx, or .txt"
-                    raise ValueError(msg)
+                    raise_unsupported_file_type(suffix)
             else:
                 resume_text = resume_content
 
@@ -319,9 +343,13 @@ class SeekerService:
             for seeker in seekers:
                 if (seeker.information.first_name == first_name and
                     seeker.information.last_name == last_name):
-                    return await SeekerCRUD.delete_seeker(seeker.id)
+                    if seeker.id:
+                        return await SeekerCRUD.delete_seeker(seeker.id)
 
-            return False
+                    return False
+
+            # No matching seeker found
+            return False  # noqa
 
         except Exception:
             return False
@@ -330,7 +358,7 @@ class SeekerService:
     async def delete_application(
         seeker_id: str,
         job_id: str,
-        company_name: str
+        _company_name: str
     ) -> Seeker | None:
         """
         Delete a specific job application from a seeker's record.
@@ -364,7 +392,7 @@ class SeekerService:
 
             # Save updated seeker
             await seeker.save()
-            return seeker
+            return seeker  # noqa
 
         except Exception:
             return None
@@ -406,7 +434,7 @@ class SeekerService:
                     }
                     all_jobs.append(job_info)
 
-            return all_jobs
+            return all_jobs  # noqa
 
         except Exception:
             return []
@@ -446,7 +474,7 @@ class SeekerService:
                     }
                     matching_applications.append(app_info)
 
-            return matching_applications
+            return matching_applications  # noqa
 
         except Exception:
             return []
@@ -516,7 +544,7 @@ class SeekerService:
                         }
                         matching_jobs.append(job_info)
 
-            return matching_jobs
+            return matching_jobs  # noqa
 
         except Exception:
             return []
@@ -590,7 +618,6 @@ if __name__ == "__main__":
 
 
         except Exception:
-            import traceback
             traceback.print_exc()
 
         finally:

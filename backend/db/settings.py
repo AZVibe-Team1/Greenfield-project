@@ -6,7 +6,9 @@ and provides connection initialization and verification functionality.
 """
 
 import os
+from datetime import datetime
 from typing import Any
+from zoneinfo import ZoneInfo
 
 import chromadb
 from beanie import init_beanie
@@ -45,7 +47,11 @@ try:
     name="Seeker_Resume",
     embedding_function=OpenAIEmbeddingFunction(  # type: ignore[arg-type]
         model_name="text-embedding-3-small"
-    )
+    ),
+    metadata={
+        "description": "Contains Resume of Seeker",
+        "created": str(datetime.now(ZoneInfo("America/Denver")))
+    }
 )
 except Exception as e:
     logger.critical(f"Error creating Seeker_Resume collection: {e}")
@@ -56,7 +62,11 @@ try:
     name="Seeker_Skills",
     embedding_function=OpenAIEmbeddingFunction(  # type: ignore[arg-type]
         model_name="text-embedding-3-small"
-    )
+    ),
+        metadata={
+        "description": "Contains Skills of Seeker",
+        "created": str(datetime.now(ZoneInfo("America/Denver")))
+    }
 )
 except Exception as e:
     logger.critical(f"Error creating Seeker_Skills collection: {e}")
@@ -66,7 +76,11 @@ try:
     name="Employer_JobDescr",
     embedding_function=OpenAIEmbeddingFunction(  # type: ignore[arg-type]
         model_name="text-embedding-3-small"
-    )
+    ),
+        metadata={
+        "description": "Contains Job Description of Employer",
+        "created": str(datetime.now(ZoneInfo("America/Denver")))
+    }
 )
 except Exception as e:
     logger.critical(f"Error creating Employer_JobDescr collection: {e}")
@@ -76,7 +90,11 @@ try:
     name="Employer_Skillswish",
     embedding_function=OpenAIEmbeddingFunction(  # type: ignore[arg-type]
         model_name="text-embedding-3-small"
-    )
+    ),
+    metadata={
+        "description": "Contains Desired skills of Employer",
+        "created": str(datetime.now(ZoneInfo("America/Denver")))
+    }
 )
 except Exception as e:
     logger.critical(f"Error creating Employer_Skillswish collection: {e}")

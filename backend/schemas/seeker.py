@@ -7,6 +7,7 @@ It includes sub-documents for personal information and job applications.
 
 from datetime import datetime
 from typing import ClassVar, Literal
+from uuid import UUID, uuid4
 from zoneinfo import ZoneInfo
 
 from beanie import Document
@@ -66,6 +67,7 @@ class Seeker(Document):
     personal information, preferences, and application history.
 
     Attributes:
+        seeker_id: Unique identifier for the seeker (UUID, required)
         information: Personal and contact information (required)
         password_hash: Hashed password for authentication (required)
         created_at: Account creation timestamp
@@ -80,6 +82,10 @@ class Seeker(Document):
     Collection Settings:
         name: "seekers" - MongoDB collection name
     """
+    seeker_id: UUID = Field(
+        default_factory=uuid4,
+        description="Unique seeker identifier"
+    )
     information: Information = Field(..., description="Personal information")
     password_hash: str = Field(
         ...,

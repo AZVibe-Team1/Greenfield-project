@@ -7,6 +7,7 @@ account management, job posting management, and application tracking.
 
 from datetime import datetime
 from typing import Any
+from uuid import uuid4
 from zoneinfo import ZoneInfo
 
 from beanie import PydanticObjectId
@@ -77,8 +78,12 @@ class EmployerService:
                     msg = f"Invalid GICS code: {code}"
                     raise ValueError(msg)
 
+        # Generate unique EmployerID
+        employer_id = uuid4()
+
         # Build employer data structure
         employer_data = {
+            "employer_id": employer_id,
             "company_information": {
                 "company_name": company_name,
                 "address": address,
