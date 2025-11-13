@@ -8,6 +8,7 @@ and provides connection initialization and verification functionality.
 import os
 from typing import Any
 
+import chromadb
 from beanie import init_beanie
 from dotenv import load_dotenv
 from loguru import logger
@@ -24,6 +25,15 @@ load_dotenv()
 logger.remove(0)
 logger.add("Logs/Debug_log.log", level="DEBUG", format="{time} {level} {message}", rotation="50MB")
 logger.add("Logs/Error_log.log", level="ERROR", format="{time} {level} {message}", rotation="50MB")
+
+# Initialize ChromaDB client
+try:
+    client = chromadb.PersistentClient(path="./chroma_db")
+    logger.debug("Persistent client initialized successfully")
+except PermissionError:
+    logger.critical("Error: Insufficient permissions to create database directory")
+except Exception as e:
+    logger.critical(f"Initialization failed: {e}")
 
 
 class MongoDBSettings:
