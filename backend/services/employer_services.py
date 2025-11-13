@@ -7,6 +7,7 @@ account management, job posting management, and application tracking.
 
 from datetime import datetime
 from typing import Any
+from zoneinfo import ZoneInfo
 
 from beanie import PydanticObjectId
 
@@ -15,6 +16,7 @@ from backend.schemas.employer import (
     Employer,
 )
 from backend.utils.gics_helper import is_valid_gics_code
+from backend.utils.validators import Email
 
 
 class EmployerService:
@@ -27,7 +29,7 @@ class EmployerService:
         industry: list[dict[str, str]],
         contact_first_name: str,
         contact_last_name: str,
-        email: str,
+        email: Email,
         password_hash: str,
         benefits: str = "",
         open_jobs: list[dict[str, Any]] | None = None
@@ -67,38 +69,34 @@ class EmployerService:
             ...     benefits="Health, 401k"
             ... )
         """
-        try:
-            # Validate GICS codes if industry info is provided
-            if industry:
-                for industry_item in industry:
-                    code = industry_item.get("code", "")
-                    if not is_valid_gics_code(code):
-                        msg = f"Invalid GICS code: {code}"
-                        raise ValueError(msg)
+        # Validate GICS codes if industry info is provided
+        if industry:
+            for industry_item in industry:
+                code = industry_item.get("code", "")
+                if not is_valid_gics_code(code):
+                    msg = f"Invalid GICS code: {code}"
+                    raise ValueError(msg)
 
-            # Build employer data structure
-            employer_data = {
-                "company_information": {
-                    "company_name": company_name,
-                    "address": address,
-                    "industry": industry,
-                    "benefits": benefits
-                },
-                "contact_first_name": contact_first_name,
-                "contact_last_name": contact_last_name,
-                "email": email,
-                "password_hash": password_hash,
-                "created_at": datetime.now(),
-                "updated_at": datetime.now(),
-                "open_jobs": open_jobs if open_jobs else [],
-                "apps_received": []
-            }
+        # Build employer data structure
+        employer_data = {
+            "company_information": {
+                "company_name": company_name,
+                "address": address,
+                "industry": industry,
+                "benefits": benefits
+            },
+            "contact_first_name": contact_first_name,
+            "contact_last_name": contact_last_name,
+            "email": email,
+            "password_hash": password_hash,
+            "created_at": datetime.now(ZoneInfo("America/Denver")),
+            "updated_at": datetime.now(ZoneInfo("America/Denver")),
+            "open_jobs": open_jobs if open_jobs else [],
+            "apps_received": []
+        }
 
-            # Create employer in database
-            return await EmployerCRUD.create_employer(employer_data)
-
-        except Exception:
-            raise
+        # Create employer in database
+        return await EmployerCRUD.create_employer(employer_data)
 
     @staticmethod
     async def update_employer(
@@ -131,15 +129,11 @@ class EmployerService:
             msg = "Company name cannot be updated"
             raise ValueError(msg)
 
-        try:
-            # Add updated_at timestamp
-            update_data["updated_at"] = datetime.now()
+        # Add updated_at timestamp
+        update_data["updated_at"] = datetime.now(ZoneInfo("America/Denver"))
 
-            # Update employer in database
-            return await EmployerCRUD.update_employer(employer_id, update_data)
-
-        except Exception:
-            raise
+        # Update employer in database
+        return await EmployerCRUD.update_employer(employer_id, update_data)
 
     @staticmethod
     async def create_job(
@@ -192,32 +186,28 @@ class EmployerService:
             ...     key_skills=["Python", "FastAPI", "MongoDB"]
             ... )
         """
-        try:
-            # Generate unique job ID
-            job_id = str(PydanticObjectId())
+        # Generate unique job ID
+        job_id = str(PydanticObjectId())
 
-            # Create job posting data
-            job_data = {
-                "job_id": job_id,
-                "job_title": job_title,
-                "job_description": job_description,
-                "posted_date": datetime.now(),
-                "department": department,
-                "hire_mgr_first": hire_mgr_first,
-                "hire_mgr_last": hire_mgr_last,
-                "current_status": "Posted",
-                "pay_range": pay_range,
-                "pay_unit": pay_unit,
-                "education_level": education_level,
-                "edu_focus": edu_focus,
-                "key_skills": key_skills if key_skills else []
-            }
+        # Create job posting data
+        job_data = {
+            "job_id": job_id,
+            "job_title": job_title,
+            "job_description": job_description,
+            "posted_date": datetime.now(ZoneInfo("America/Denver")),
+            "department": department,
+            "hire_mgr_first": hire_mgr_first,
+            "hire_mgr_last": hire_mgr_last,
+            "current_status": "Posted",
+            "pay_range": pay_range,
+            "pay_unit": pay_unit,
+            "education_level": education_level,
+            "edu_focus": edu_focus,
+            "key_skills": key_skills if key_skills else []
+        }
 
-            # Add job posting to employer
-            return await EmployerCRUD.add_job_posting(employer_id, job_data)
-
-        except Exception:
-            raise
+        # Add job posting to employer
+        return await EmployerCRUD.add_job_posting(employer_id, job_data)
 
     @staticmethod
     async def modify_job(
@@ -248,16 +238,12 @@ class EmployerService:
             ...     }
             ... )
         """
-        try:
-            # Update job posting
-            return await EmployerCRUD.update_job_posting(
-                employer_id,
-                job_id,
-                update_data
-            )
-
-        except Exception:
-            raise
+        # Update job posting
+        return await EmployerCRUD.update_job_posting(
+            employer_id,
+            job_id,
+            update_data
+        )
 
     @staticmethod
     async def delete_employer(
@@ -318,7 +304,7 @@ class EmployerService:
                 employer.id,
                 job_id
             )
-            return updated_employer is not None
+            return updated_employer is not None  # noqa
 
         except Exception:
             return False
@@ -420,90 +406,86 @@ class EmployerService:
             msg = f"Invalid search parameter: {parameter}. Use 'jobtitle', 'companyname', or 'skill'"
             raise ValueError(msg)
 
-        try:
-            results = []
+        results = []
 
-            if parameter_lower == "companyname":
-                # Search by company name
-                employers = await EmployerCRUD.get_all_employers()
-                for employer in employers:
-                    if value.lower() in employer.company_information.company_name.lower():
-                        employer_info = {
-                            "employer_id": str(employer.id),
+        if parameter_lower == "companyname":
+            # Search by company name
+            employers = await EmployerCRUD.get_all_employers()
+            for employer in employers:
+                if value.lower() in employer.company_information.company_name.lower():
+                    employer_info = {
+                        "employer_id": str(employer.id),
+                        "company_name": employer.company_information.company_name,
+                        "contact_name": f"{employer.contact_first_name} {employer.contact_last_name}",
+                        "address": {
+                            "street": employer.company_information.address.street,
+                            "city": employer.company_information.address.city,
+                            "state": employer.company_information.address.state,
+                            "zip_code": employer.company_information.address.zip_code
+                        },
+                        "benefits": employer.company_information.benefits,
+                        "open_jobs_count": len(employer.open_jobs),
+                        "open_jobs": [
+                            {
+                                "job_id": job.job_id,
+                                "job_title": job.job_title,
+                                "department": job.department,
+                                "current_status": job.current_status
+                            }
+                            for job in employer.open_jobs
+                        ]
+                    }
+                    results.append(employer_info)
+
+        elif parameter_lower == "jobtitle":
+            # Search by job title
+            employers = await EmployerCRUD.get_employers_with_open_jobs()
+            for employer in employers:
+                for job in employer.open_jobs:
+                    if value.lower() in job.job_title.lower():
+                        job_info = {
+                            "job_id": job.job_id,
+                            "job_title": job.job_title,
+                            "job_description": job.job_description,
+                            "posted_date": job.posted_date,
+                            "department": job.department,
+                            "current_status": job.current_status,
+                            "pay_range": job.pay_range,
+                            "pay_unit": job.pay_unit,
+                            "education_level": job.education_level,
+                            "edu_focus": job.edu_focus,
+                            "key_skills": job.key_skills,
                             "company_name": employer.company_information.company_name,
-                            "contact_name": f"{employer.contact_first_name} {employer.contact_last_name}",
-                            "address": {
-                                "street": employer.company_information.address.street,
-                                "city": employer.company_information.address.city,
-                                "state": employer.company_information.address.state,
-                                "zip_code": employer.company_information.address.zip_code
-                            },
-                            "benefits": employer.company_information.benefits,
-                            "open_jobs_count": len(employer.open_jobs),
-                            "open_jobs": [
-                                {
-                                    "job_id": job.job_id,
-                                    "job_title": job.job_title,
-                                    "department": job.department,
-                                    "current_status": job.current_status
-                                }
-                                for job in employer.open_jobs
-                            ]
+                            "employer_id": str(employer.id)
                         }
-                        results.append(employer_info)
+                        results.append(job_info)
 
-            elif parameter_lower == "jobtitle":
-                # Search by job title
-                employers = await EmployerCRUD.get_employers_with_open_jobs()
-                for employer in employers:
-                    for job in employer.open_jobs:
-                        if value.lower() in job.job_title.lower():
-                            job_info = {
-                                "job_id": job.job_id,
-                                "job_title": job.job_title,
-                                "job_description": job.job_description,
-                                "posted_date": job.posted_date,
-                                "department": job.department,
-                                "current_status": job.current_status,
-                                "pay_range": job.pay_range,
-                                "pay_unit": job.pay_unit,
-                                "education_level": job.education_level,
-                                "edu_focus": job.edu_focus,
-                                "key_skills": job.key_skills,
-                                "company_name": employer.company_information.company_name,
-                                "employer_id": str(employer.id)
-                            }
-                            results.append(job_info)
+        elif parameter_lower == "skill":
+            # Search by skill
+            employers = await EmployerCRUD.get_employers_with_open_jobs()
+            for employer in employers:
+                for job in employer.open_jobs:
+                    # Check if skill exists in key_skills list
+                    if any(value.lower() in skill.lower() for skill in job.key_skills):
+                        job_info = {
+                            "job_id": job.job_id,
+                            "job_title": job.job_title,
+                            "job_description": job.job_description,
+                            "posted_date": job.posted_date,
+                            "department": job.department,
+                            "current_status": job.current_status,
+                            "pay_range": job.pay_range,
+                            "pay_unit": job.pay_unit,
+                            "education_level": job.education_level,
+                            "edu_focus": job.edu_focus,
+                            "key_skills": job.key_skills,
+                            "company_name": employer.company_information.company_name,
+                            "employer_id": str(employer.id)
+                        }
+                        results.append(job_info)
 
-            elif parameter_lower == "skill":
-                # Search by skill
-                employers = await EmployerCRUD.get_employers_with_open_jobs()
-                for employer in employers:
-                    for job in employer.open_jobs:
-                        # Check if skill exists in key_skills list
-                        if any(value.lower() in skill.lower() for skill in job.key_skills):
-                            job_info = {
-                                "job_id": job.job_id,
-                                "job_title": job.job_title,
-                                "job_description": job.job_description,
-                                "posted_date": job.posted_date,
-                                "department": job.department,
-                                "current_status": job.current_status,
-                                "pay_range": job.pay_range,
-                                "pay_unit": job.pay_unit,
-                                "education_level": job.education_level,
-                                "edu_focus": job.edu_focus,
-                                "key_skills": job.key_skills,
-                                "company_name": employer.company_information.company_name,
-                                "employer_id": str(employer.id)
-                            }
-                            results.append(job_info)
-
-            # Apply pagination
-            return results[skip:skip + limit]
-
-        except Exception:
-            raise
+        # Apply pagination
+        return results[skip:skip + limit]
 
 
 # Example usage

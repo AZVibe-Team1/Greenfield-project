@@ -30,5 +30,6 @@ dependencies = [
     "python-dotenv>=1.2.1",
     "python-jose[cryptography]>=3.5.0",
     "requests>=2.32.5",
+    "tzdata>=2024.1",
     "uvicorn[standard]>=0.24.0",
 ]

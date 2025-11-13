@@ -5,8 +5,9 @@ This module defines the Employer document model for MongoDB using Beanie ODM.
 It includes sub-documents for company information, job postings, and application tracking.
 """
 
-from datetime import UTC, datetime
+from datetime import datetime
 from typing import ClassVar, Literal
+from zoneinfo import ZoneInfo
 
 from beanie import Document
 from loguru import logger
@@ -133,7 +134,7 @@ class CandidateTracking(BaseModel):
         description="Previous application status"
     )
     current_status_date: datetime = Field(
-        default_factory=lambda: datetime.now(UTC),
+        default_factory=lambda: datetime.now(ZoneInfo("America/Denver")),
         description="Date of current status"
     )
     previous_status_date: datetime | None = Field(
@@ -157,7 +158,7 @@ class ApplicationReceived(BaseModel):
     applicant_id: str = Field(..., description="Applicant ID (foreign key to Seeker)")
     job_id: str = Field(..., description="Job ID (foreign key to job posting)")
     initial_daterec: datetime = Field(
-        default_factory=lambda: datetime.now(UTC),
+        default_factory=lambda: datetime.now(ZoneInfo("America/Denver")),
         description="Initial date received"
     )
     candidate_tracking: CandidateTracking = Field(
@@ -210,11 +211,11 @@ class Employer(Document):
         description="Hashed password"
     )
     created_at: datetime = Field(
-        default_factory=lambda: datetime.now(UTC),
+        default_factory=lambda: datetime.now(ZoneInfo("America/Denver")),
         description="Account creation timestamp"
     )
     updated_at: datetime = Field(
-        default_factory=lambda: datetime.now(UTC),
+        default_factory=lambda: datetime.now(ZoneInfo("America/Denver")),
         description="Account update timestamp"
     )
     open_jobs: list[OpenJob] = Field(
@@ -272,7 +273,7 @@ if __name__ == "__main__":
             job_id="job_001",
             job_title="Senior Software Engineer",
             job_description="We are seeking an experienced software engineer...",
-            posted_date=datetime.now(UTC),
+            posted_date=datetime.now(ZoneInfo("America/Denver")),
             department="Engineering",
             hire_mgr_first="Jane",
             hire_mgr_last="Smith",

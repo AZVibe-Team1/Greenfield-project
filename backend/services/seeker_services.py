@@ -8,6 +8,7 @@ account management, resume handling, job applications, and searches.
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+from zoneinfo import ZoneInfo
 
 import PyPDF2
 from docx import Document
@@ -99,7 +100,7 @@ class SeekerService:
             seeker_data = {
                 "information": information.model_dump(),
                 "password_hash": password_hash,
-                "created_at": datetime.now(),
+                "created_at": datetime.now(ZoneInfo("America/Denver")),
                 "education_level": education_level,
                 "edu_focus": edu_focus,
                 "pay_range": pay_range or [0, 0],
@@ -217,7 +218,7 @@ class SeekerService:
             # Update seeker record
             update_data = {
                 "resume": resume_text,
-                "updated_at": datetime.now()
+                "updated_at": datetime.now(ZoneInfo("America/Denver"))
             }
 
             return await SeekerCRUD.update_seeker(seeker_id, update_data)
@@ -257,7 +258,7 @@ class SeekerService:
                 update_fields.pop(field, None)
 
             # Add updated_at timestamp
-            update_fields["updated_at"] = datetime.now()
+            update_fields["updated_at"] = datetime.now(ZoneInfo("America/Denver"))
 
             return await SeekerCRUD.update_seeker(seeker_id, update_fields)
 

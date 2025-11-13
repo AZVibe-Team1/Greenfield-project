@@ -10,6 +10,7 @@ from typing import Any
 
 import chromadb
 from beanie import init_beanie
+from chromadb.utils.embedding_functions import OpenAIEmbeddingFunction
 from dotenv import load_dotenv
 from loguru import logger
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -27,14 +28,59 @@ logger.add("Logs/Debug_log.log", level="DEBUG", format="{time} {level} {message}
 logger.add("Logs/Error_log.log", level="ERROR", format="{time} {level} {message}", rotation="50MB")
 
 # Initialize ChromaDB client
+# Validating that the db exists.  If not, it will be created, per ChromaDB documentation
 try:
     client = chromadb.PersistentClient(path="./chroma_db")
     logger.debug("Persistent client initialized successfully")
 except PermissionError:
     logger.critical("Error: Insufficient permissions to create database directory")
+    raise
 except Exception as e:
     logger.critical(f"Initialization failed: {e}")
+    raise
 
+# Create collections, using the OpenAI embedder "text-embedding-3"
+try:
+    Seeker_Resume_collection = client.create_collection(
+    name="Seeker_Resume",
+    embedding_function=OpenAIEmbeddingFunction(  # type: ignore[arg-type]
+        model_name="text-embedding-3-small"
+    )
+)
+except Exception as e:
+    logger.critical(f"Error creating Seeker_Resume collection: {e}")
+    raise
+
+try:
+    Seeker_Skill_collection = client.create_collection(
+    name="Seeker_Skills",
+    embedding_function=OpenAIEmbeddingFunction(  # type: ignore[arg-type]
+        model_name="text-embedding-3-small"
+    )
+)
+except Exception as e:
+    logger.critical(f"Error creating Seeker_Skills collection: {e}")
+    raise
+try:
+    Employer_JobDescr_collection = client.create_collection(
+    name="Employer_JobDescr",
+    embedding_function=OpenAIEmbeddingFunction(  # type: ignore[arg-type]
+        model_name="text-embedding-3-small"
+    )
+)
+except Exception as e:
+    logger.critical(f"Error creating Employer_JobDescr collection: {e}")
+    raise
+try:
+    Employer_Skillswish_collection = client.create_collection(
+    name="Employer_Skillswish",
+    embedding_function=OpenAIEmbeddingFunction(  # type: ignore[arg-type]
+        model_name="text-embedding-3-small"
+    )
+)
+except Exception as e:
+    logger.critical(f"Error creating Employer_Skillswish collection: {e}")
+    raise
 
 class MongoDBSettings:
     """

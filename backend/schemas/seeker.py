@@ -7,6 +7,7 @@ It includes sub-documents for personal information and job applications.
 
 from datetime import datetime
 from typing import ClassVar, Literal
+from zoneinfo import ZoneInfo
 
 from beanie import Document
 from loguru import logger
@@ -48,7 +49,7 @@ class Application(BaseModel):
     job_id: str = Field(..., description="Job posting ID (foreign key)")
     employer_id: str = Field(..., description="Employer ID (foreign key)")
     date_applied: datetime = Field(
-        default_factory=datetime.now,
+        default_factory=lambda: datetime.now(ZoneInfo("America/Denver")),
         description="Application submission date"
     )
     application_status: Literal["Submitted", "Interviewed", "Offered", "Rejected"] = Field(
@@ -87,7 +88,7 @@ class Seeker(Document):
     )
 
     updated_at: datetime = Field(
-        default_factory=datetime.now,
+        default_factory=lambda: datetime.now(ZoneInfo("America/Denver")),
         description="Account updated timestamp"
     )
     resume: str | None = Field(
