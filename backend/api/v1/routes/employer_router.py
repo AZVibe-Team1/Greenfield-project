@@ -12,6 +12,7 @@ from backend.core.security import get_current_user_id, get_current_user_role
 from backend.db.employer_db_ops import EmployerCRUD
 from backend.services.employer_services import EmployerService
 
+
 router = APIRouter(prefix="/employers", tags=["Employers"])
 
 
@@ -96,22 +97,27 @@ async def verify_employer_role(role: str = Depends(get_current_user_role)) -> st
 @router.get("/me", response_model=EmployerProfileResponse)
 async def get_my_profile(
     user_id: str = Depends(get_current_user_id),
-    role: str = Depends(verify_employer_role)
+    _role: str = Depends(verify_employer_role)
 ):
     """
     Get current employer's profile.
-    
+
     Returns:
         Employer profile information
     """
+    def raise_not_found() -> None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Employer profile not found"
+        )
+
     try:
         employer = await EmployerCRUD.get_employer_by_id(user_id)
-        if not employer:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Employer profile not found"
-            )
-        
+        if employer is None:
+            raise_not_found()
+
+        assert employer is not None  # Type narrowing
+
         return EmployerProfileResponse(
             id=str(employer.id),
             company_name=employer.company_information.company_name,
@@ -161,70 +167,79 @@ async def get_my_profile(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get profile: {str(e)}"
-        )
+            detail=f"Failed to get profile: {e!s}"
+        ) from e
 
 
 @router.put("/me")
 async def update_my_profile(
     request: UpdateEmployerRequest,
     user_id: str = Depends(get_current_user_id),
-    role: str = Depends(verify_employer_role)
+    _role: str = Depends(verify_employer_role)
 ):
     """
     Update current employer's profile.
-    
+
     Args:
         request: Fields to update
-        
+
     Returns:
         Success message
     """
+    def raise_update_failed() -> None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update profile"
+        )
+
     try:
         # Build update dictionary (only include non-None fields)
         update_data = {}
-        
+
         if request.contact_first_name is not None:
             update_data["contact_first_name"] = request.contact_first_name
         if request.contact_last_name is not None:
             update_data["contact_last_name"] = request.contact_last_name
         if request.benefits is not None:
             update_data["company_information.benefits"] = request.benefits
-        
+
         updated_employer = await EmployerService.update_employer(user_id, update_data)
-        
+
         if not updated_employer:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to update profile"
-            )
-        
-        return {"message": "Profile updated successfully"}
-        
+            raise_update_failed()
+        else:
+            return {"message": "Profile updated successfully"}
+
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update profile: {str(e)}"
-        )
+            detail=f"Failed to update profile: {e!s}"
+        ) from e
 
 
 @router.post("/jobs", response_model=JobResponse, status_code=status.HTTP_201_CREATED)
 async def create_job(
     request: CreateJobRequest,
     user_id: str = Depends(get_current_user_id),
-    role: str = Depends(verify_employer_role)
+    _role: str = Depends(verify_employer_role)
 ):
     """
     Create a new job posting.
-    
+
     Args:
         request: Job posting data
-        
+
     Returns:
         Created job information
     """
+    def raise_creation_failed() -> None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to create job"
+        )
+
     try:
         updated_employer = await EmployerService.create_job(
             employer_id=user_id,
@@ -239,16 +254,15 @@ async def create_job(
             edu_focus=request.edu_focus,
             key_skills=request.key_skills
         )
-        
+
         if not updated_employer:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to create job"
-            )
-        
+            raise_creation_failed()
+
+        assert updated_employer is not None  # Type narrowing
+
         # Get the last added job
         new_job = updated_employer.open_jobs[-1]
-        
+
         return JobResponse(
             job_id=new_job.job_id,
             job_title=new_job.job_title,
@@ -264,35 +278,40 @@ async def create_job(
             edu_focus=new_job.edu_focus,
             key_skills=new_job.key_skills
         )
-        
+
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to create job: {str(e)}"
-        )
+            detail=f"Failed to create job: {e!s}"
+        ) from e
 
 
 @router.get("/jobs", response_model=list[JobResponse])
 async def get_my_jobs(
     user_id: str = Depends(get_current_user_id),
-    role: str = Depends(verify_employer_role)
+    _role: str = Depends(verify_employer_role)
 ):
     """
     Get all jobs for current employer.
-    
+
     Returns:
         List of jobs
     """
+    def raise_employer_not_found() -> None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Employer not found"
+        )
+
     try:
         employer = await EmployerCRUD.get_employer_by_id(user_id)
         if not employer:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Employer not found"
-            )
-        
+            raise_employer_not_found()
+
+        assert employer is not None  # Type narrowing
+
         return [
             JobResponse(
                 job_id=job.job_id,
@@ -311,39 +330,50 @@ async def get_my_jobs(
             )
             for job in employer.open_jobs
         ]
-        
+
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get jobs: {str(e)}"
-        )
+            detail=f"Failed to get jobs: {e!s}"
+        ) from e
 
 
 @router.get("/jobs/{job_id}", response_model=JobResponse)
 async def get_job(
     job_id: str,
     user_id: str = Depends(get_current_user_id),
-    role: str = Depends(verify_employer_role)
+    _role: str = Depends(verify_employer_role)
 ):
     """
     Get a specific job.
-    
+
     Args:
         job_id: Job ID
-        
+
     Returns:
         Job details
     """
+    def raise_job_not_found() -> None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Job not found"
+        )
+
+    def raise_employer_not_found() -> None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Employer not found"
+        )
+
     try:
         employer = await EmployerCRUD.get_employer_by_id(user_id)
         if not employer:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Employer not found"
-            )
-        
+            raise_employer_not_found()
+
+        assert employer is not None  # Type narrowing
+
         for job in employer.open_jobs:
             if job.job_id == job_id:
                 return JobResponse(
@@ -361,19 +391,16 @@ async def get_job(
                     edu_focus=job.edu_focus,
                     key_skills=job.key_skills
                 )
-        
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Job not found"
-        )
-        
+
+        raise_job_not_found()
+
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get job: {str(e)}"
-        )
+            detail=f"Failed to get job: {e!s}"
+        ) from e
 
 
 @router.put("/jobs/{job_id}")
@@ -381,22 +408,28 @@ async def update_job(
     job_id: str,
     request: UpdateJobRequest,
     user_id: str = Depends(get_current_user_id),
-    role: str = Depends(verify_employer_role)
+    _role: str = Depends(verify_employer_role)
 ):
     """
     Update a job posting.
-    
+
     Args:
         job_id: Job ID
         request: Fields to update
-        
+
     Returns:
         Success message
     """
+    def raise_job_not_found() -> None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Job not found"
+        )
+
     try:
         # Build update dictionary (only include non-None fields)
         update_data = {}
-        
+
         if request.job_title is not None:
             update_data["job_title"] = request.job_title
         if request.job_description is not None:
@@ -419,94 +452,104 @@ async def update_job(
             update_data["key_skills"] = request.key_skills
         if request.current_status is not None:
             update_data["current_status"] = request.current_status
-        
+
         updated_employer = await EmployerService.modify_job(
             employer_id=user_id,
             job_id=job_id,
             update_data=update_data
         )
-        
+
         if not updated_employer:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Job not found"
-            )
-        
-        return {"message": "Job updated successfully"}
-        
+            raise_job_not_found()
+        else:
+            return {"message": "Job updated successfully"}
+
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update job: {str(e)}"
-        )
+            detail=f"Failed to update job: {e!s}"
+        ) from e
 
 
 @router.delete("/jobs/{job_id}")
 async def delete_job(
     job_id: str,
     user_id: str = Depends(get_current_user_id),
-    role: str = Depends(verify_employer_role)
+    _role: str = Depends(verify_employer_role)
 ):
     """
     Delete a job posting.
-    
+
     Args:
         job_id: Job ID
-        
+
     Returns:
         Success message
     """
+    def raise_employer_not_found() -> None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Employer not found"
+        )
+
+    def raise_job_not_found() -> None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Job not found"
+        )
+
     try:
         employer = await EmployerCRUD.get_employer_by_id(user_id)
         if not employer:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Employer not found"
-            )
-        
+            raise_employer_not_found()
+
+        assert employer is not None  # Type narrowing
+
         success = await EmployerService.delete_job(
             company_name=employer.company_information.company_name,
             job_id=job_id
         )
-        
+
         if not success:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Job not found"
-            )
-        
-        return {"message": "Job deleted successfully"}
-        
+            raise_job_not_found()
+        else:
+            return {"message": "Job deleted successfully"}
+
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to delete job: {str(e)}"
-        )
+            detail=f"Failed to delete job: {e!s}"
+        ) from e
 
 
 @router.get("/applications")
 async def get_applications(
     user_id: str = Depends(get_current_user_id),
-    role: str = Depends(verify_employer_role)
+    _role: str = Depends(verify_employer_role)
 ):
     """
     Get all applications received by employer.
-    
+
     Returns:
         List of applications
     """
+    def raise_employer_not_found() -> None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Employer not found"
+        )
+
     try:
         employer = await EmployerCRUD.get_employer_by_id(user_id)
         if not employer:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Employer not found"
-            )
-        
+            raise_employer_not_found()
+
+        assert employer is not None  # Type narrowing
+
         return {
             "applications": [
                 {
@@ -520,12 +563,12 @@ async def get_applications(
                 for app in employer.apps_received
             ]
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get applications: {str(e)}"
-        )
+            detail=f"Failed to get applications: {e!s}"
+        ) from e
 

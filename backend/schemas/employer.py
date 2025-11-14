@@ -5,14 +5,17 @@ This module defines the Employer document model for MongoDB using Beanie ODM.
 It includes sub-documents for company information, job postings, and application tracking.
 """
 
-from datetime import UTC, datetime
+from datetime import datetime
 from typing import ClassVar, Literal
+from uuid import UUID, uuid4
+from zoneinfo import ZoneInfo
 
-from beanie import Document
+from beanie import Document, PydanticObjectId
+from loguru import logger
 from pydantic import BaseModel, Field
 
 from backend.utils.gics_helper import is_valid_gics_code
-from backend.utils.validators import Address
+from backend.utils.validators import Address, Email
 
 
 class IndustryInfo(BaseModel):
@@ -65,7 +68,9 @@ class OpenJob(BaseModel):
     Open job posting sub-document.
 
     Attributes:
-        job_id: Unique identifier for the job (MongoDB ObjectId as string)
+        job_id: Unique identifier for the job (MongoDB ObjectId)
+        job_identification: Unique identifier for ChromaDB.  UUID value
+        employer_identification: Employer's UUID identifier (foreign key)
         job_title: Title of the position (required)
         job_description: Detailed job description (required)
         posted_date: Date when job was posted (required)
@@ -78,7 +83,12 @@ class OpenJob(BaseModel):
         edu_focus: Required field of study (required)
         key_skills: List of required skills (max 15)
     """
-    job_id: str = Field(..., description="Job posting ID")
+    job_id: PydanticObjectId = Field(default_factory=PydanticObjectId, description="Job posting ID")
+    job_identification: UUID = Field(
+       default_factory=uuid4,
+       description="Unique job identifier for ChromaDB"
+    )
+    employer_identification: UUID = Field(..., description="Employer's UUID identifier")
     job_title: str = Field(..., min_length=1, description="Job title")
     job_description: str = Field(..., min_length=1, description="Job description")
     posted_date: datetime = Field(..., description="Date job was posted")
@@ -132,7 +142,7 @@ class CandidateTracking(BaseModel):
         description="Previous application status"
     )
     current_status_date: datetime = Field(
-        default_factory=lambda: datetime.now(UTC),
+        default_factory=lambda: datetime.now(ZoneInfo("America/Denver")),
         description="Date of current status"
     )
     previous_status_date: datetime | None = Field(
@@ -156,7 +166,7 @@ class ApplicationReceived(BaseModel):
     applicant_id: str = Field(..., description="Applicant ID (foreign key to Seeker)")
     job_id: str = Field(..., description="Job ID (foreign key to job posting)")
     initial_daterec: datetime = Field(
-        default_factory=lambda: datetime.now(UTC),
+        default_factory=lambda: datetime.now(ZoneInfo("America/Denver")),
         description="Initial date received"
     )
     candidate_tracking: CandidateTracking = Field(
@@ -173,6 +183,9 @@ class Employer(Document):
     company information, contact details, job postings, and applications.
 
     Attributes:
+        employer_id: Unique identifier for the employer (MongoDB ObjectId)
+        employer_identification: Unique identifier for the employer (UUID, required)
+        temperature: Temperature value for AI model inference (0-1, default: 0.75)
         company_information: Company details and address (required)
         contact_first_name: Primary contact first name (required)
         contact_last_name: Primary contact last name (required)
@@ -185,6 +198,17 @@ class Employer(Document):
     Collection Settings:
         name: "employers" - MongoDB collection name
     """
+    employer_id: PydanticObjectId = Field(default_factory=PydanticObjectId, description="MongoDB employer ID")
+    employer_identification: UUID = Field(
+        default_factory=uuid4,
+        description="Unique employer identifier"
+    )
+    temperature: float = Field(
+        default=0.75,
+        ge=0.0,
+        le=1.0,
+        description="Temperature value for AI model inference (0-1)"
+    )
     company_information: CompanyInformation = Field(
         ...,
         description="Company information"
@@ -199,8 +223,8 @@ class Employer(Document):
         min_length=1,
         description="Contact last name"
     )
-    email: str | None = Field(
-        default=None,
+    email: Email = Field(
+        ...,
         description="Contact email address (unique)"
     )
     password_hash: str = Field(
@@ -209,11 +233,11 @@ class Employer(Document):
         description="Hashed password"
     )
     created_at: datetime = Field(
-        default_factory=lambda: datetime.now(UTC),
+        default_factory=lambda: datetime.now(ZoneInfo("America/Denver")),
         description="Account creation timestamp"
     )
     updated_at: datetime = Field(
-        default_factory=lambda: datetime.now(UTC),
+        default_factory=lambda: datetime.now(ZoneInfo("America/Denver")),
         description="Account update timestamp"
     )
     open_jobs: list[OpenJob] = Field(
@@ -237,13 +261,11 @@ class Employer(Document):
 
 # Example usage
 if __name__ == "__main__":
-    import sys
-
     from pydantic import ValidationError
-    sys.stdout.write("=== Employer Model Validation Tests ===\n\n")
+    logger.debug("=== Employer Model Validation Tests ===\n")
 
     # Test with valid employer data
-    sys.stdout.write("Test 1: Creating valid CompanyInformation sub-document...\n")
+    logger.debug("Test 1: Creating valid CompanyInformation sub-document...")
     try:
         company_info = CompanyInformation(
             company_name="Tech Innovations Inc.",
@@ -259,21 +281,21 @@ if __name__ == "__main__":
             ],
             benefits="Health insurance, 401k, Remote work options"
         )
-        sys.stdout.write("✓ Valid CompanyInformation created\n")
-        sys.stdout.write(f"  Company: {company_info.company_name}\n")
-        sys.stdout.write(f"  Address: {company_info.address.city}, {company_info.address.state}\n")
-        sys.stdout.write(f"  Industries: {len(company_info.industry)}\n")
-        sys.stdout.write("\n")
+        logger.debug("✓ Valid CompanyInformation created")
+        logger.debug(f"  Company: {company_info.company_name}")
+        logger.debug(f"  Address: {company_info.address.city}, {company_info.address.state}")
+        logger.debug(f"  Industries: {len(company_info.industry)}")
+        logger.debug("")
     except ValidationError as e:
-        sys.stdout.write(f"✗ Validation error: {e}\n\n")
+        logger.critical(f"✗ Validation error: {e}\n")
 
-    sys.stdout.write("Test 2: Creating valid OpenJob sub-document...\n")
+    logger.debug("Test 2: Creating valid OpenJob sub-document...")
     try:
         job = OpenJob(
-            job_id="job_001",
+            employer_identification=uuid4(),
             job_title="Senior Software Engineer",
             job_description="We are seeking an experienced software engineer...",
-            posted_date=datetime.now(UTC),
+            posted_date=datetime.now(ZoneInfo("America/Denver")),
             department="Engineering",
             hire_mgr_first="Jane",
             hire_mgr_last="Smith",
@@ -283,16 +305,16 @@ if __name__ == "__main__":
             edu_focus="Computer Science",
             key_skills=["Python", "FastAPI", "MongoDB", "Docker", "AWS"]
         )
-        sys.stdout.write("✓ Valid OpenJob created\n")
-        sys.stdout.write(f"  Title: {job.job_title}\n")
-        sys.stdout.write(f"  Department: {job.department}\n")
-        sys.stdout.write(f"  Pay Range: ${job.pay_range[0]:,} - ${job.pay_range[1]:,} {job.pay_unit}\n")
-        sys.stdout.write(f"  Skills Required: {len(job.key_skills)}\n")
-        sys.stdout.write("\n")
+        logger.debug("✓ Valid OpenJob created")
+        logger.debug(f"  Title: {job.job_title}")
+        logger.debug(f"  Department: {job.department}")
+        logger.debug(f"  Pay Range: ${job.pay_range[0]:,} - ${job.pay_range[1]:,} {job.pay_unit}")
+        logger.debug(f"  Skills Required: {len(job.key_skills)}")
+        logger.debug("")
     except ValidationError as e:
-        sys.stdout.write(f"✗ Validation error: {e}\n\n")
+        logger.critical(f"✗ Validation error: {e}\n")
 
-    sys.stdout.write("Test 3: Creating valid ApplicationReceived sub-document...\n")
+    logger.debug("Test 3: Creating valid ApplicationReceived sub-document...")
     try:
         app = ApplicationReceived(
             applicant_id="seeker_123",
@@ -302,26 +324,26 @@ if __name__ == "__main__":
                 previous_status="Received"
             )
         )
-        sys.stdout.write("✓ Valid ApplicationReceived created\n")
-        sys.stdout.write(f"  Applicant: {app.applicant_id}\n")
-        sys.stdout.write(f"  Job: {app.job_id}\n")
-        sys.stdout.write(f"  Status: {app.candidate_tracking.current_status}\n")
-        sys.stdout.write("\n")
+        logger.debug("✓ Valid ApplicationReceived created")
+        logger.debug(f"  Applicant: {app.applicant_id}")
+        logger.debug(f"  Job: {app.job_id}")
+        logger.debug(f"  Status: {app.candidate_tracking.current_status}")
+        logger.debug("")
     except ValidationError as e:
-        sys.stdout.write(f"✗ Validation error: {e}\n\n")
+        logger.critical(f"✗ Validation error: {e}\n")
 
-    sys.stdout.write("Test 4: Testing field validations...\n")
+    logger.debug("Test 4: Testing field validations...")
 
     # Test invalid GICS code
-    sys.stdout.write("  - Testing invalid GICS code...\n")
+    logger.debug("  - Testing invalid GICS code...")
     try:
         bad_industry = IndustryInfo(code="INVALID", description="Test")
-        sys.stdout.write("  ✗ Should have failed with invalid GICS code\n")
+        logger.debug("  ✗ Should have failed with invalid GICS code")
     except (ValidationError, ValueError):
-        sys.stdout.write("  ✓ Correctly rejected invalid GICS code\n")
+        logger.debug("  ✓ Correctly rejected invalid GICS code")
 
     # Test industry array length validation (must be exactly 2)
-    sys.stdout.write("  - Testing industry array length (must be 2)...\n")
+    logger.debug("  - Testing industry array length (must be 2)...")
     try:
         bad_company = CompanyInformation(
             company_name="Test Corp",
@@ -334,16 +356,16 @@ if __name__ == "__main__":
             industry=[IndustryInfo(code="10", description="Energy")],  # Only 1 element
             benefits="Test"
         )
-        sys.stdout.write("  ✗ Should have failed with wrong industry array length\n")
+        logger.debug("  ✗ Should have failed with wrong industry array length")
     except ValidationError:
-        sys.stdout.write("  ✓ Correctly rejected industry array with wrong length\n")
+        logger.debug("  ✓ Correctly rejected industry array with wrong length")
 
-    sys.stdout.write("\n=== All Tests Passed! ===\n")
-    sys.stdout.write("\nModel Summary:\n")
-    sys.stdout.write("✓ CompanyInformation sub-document with Address and Industry validation\n")
-    sys.stdout.write("✓ OpenJob sub-document with pay range and education requirements\n")
-    sys.stdout.write("✓ ApplicationReceived sub-document with CandidateTracking\n")
-    sys.stdout.write("✓ Employer document with all required fields\n")
-    sys.stdout.write("✓ Field validations (GICS codes, array lengths, literals)\n")
-    sys.stdout.write("✓ Status tracking for candidate applications\n")
+    logger.debug("\n=== All Tests Passed! ===")
+    logger.debug("\nModel Summary:")
+    logger.debug("✓ CompanyInformation sub-document with Address and Industry validation")
+    logger.debug("✓ OpenJob sub-document with pay range and education requirements")
+    logger.debug("✓ ApplicationReceived sub-document with CandidateTracking")
+    logger.debug("✓ Employer document with all required fields")
+    logger.debug("✓ Field validations (GICS codes, array lengths, literals)")
+    logger.debug("✓ Status tracking for candidate applications")
 

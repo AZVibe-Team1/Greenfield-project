@@ -7,8 +7,11 @@ It includes sub-documents for personal information and job applications.
 
 from datetime import datetime
 from typing import ClassVar, Literal
+from uuid import UUID, uuid4
+from zoneinfo import ZoneInfo
 
-from beanie import Document
+from beanie import Document, PydanticObjectId
+from loguru import logger
 from pydantic import BaseModel, Field
 
 from backend.utils.validators import Address, Email, USPhoneNumber
@@ -47,7 +50,7 @@ class Application(BaseModel):
     job_id: str = Field(..., description="Job posting ID (foreign key)")
     employer_id: str = Field(..., description="Employer ID (foreign key)")
     date_applied: datetime = Field(
-        default_factory=datetime.now,
+        default_factory=lambda: datetime.now(ZoneInfo("America/Denver")),
         description="Application submission date"
     )
     application_status: Literal["Submitted", "Interviewed", "Offered", "Rejected"] = Field(
@@ -64,6 +67,9 @@ class Seeker(Document):
     personal information, preferences, and application history.
 
     Attributes:
+        seeker_id: Unique identifier for the seeker (MongoDB ObjectId)
+        seeker_identification: Unique identifier for the seeker (UUID, required)
+        temperature: Temperature value for AI model inference (0-1, default: 0.75)
         information: Personal and contact information (required)
         password_hash: Hashed password for authentication (required)
         created_at: Account creation timestamp
@@ -78,6 +84,20 @@ class Seeker(Document):
     Collection Settings:
         name: "seekers" - MongoDB collection name
     """
+    seeker_id: PydanticObjectId = Field(
+        default_factory=PydanticObjectId,
+        description="MongoDB seeker ID"
+    )
+    seeker_identification: UUID = Field(
+        default_factory=uuid4,
+        description="Unique seeker identifier for ChromaDB"
+    )
+    temperature: float = Field(
+        default=0.75,
+        ge=0.0,
+        le=1.0,
+        description="Temperature value for AI model inference (0-1)"
+    )
     information: Information = Field(..., description="Personal information")
     password_hash: str = Field(
         ...,
@@ -90,7 +110,7 @@ class Seeker(Document):
         description="Account creation timestamp"
     )
     updated_at: datetime = Field(
-        default_factory=datetime.now,
+        default_factory=lambda: datetime.now(ZoneInfo("America/Denver")),
         description="Account updated timestamp"
     )
     resume: str | None = Field(
@@ -138,7 +158,7 @@ class Seeker(Document):
 if __name__ == "__main__":
     from pydantic import ValidationError
 
-    print("=== Seeker Model Validation Tests ===\n")
+    logger.debug("=== Seeker Model Validation Tests ===\n")
 
     # Test with valid seeker data
     try:
@@ -165,16 +185,16 @@ if __name__ == "__main__":
 
         # Note: In actual usage, this would be created with Seeker(**seeker_data)
         # For testing without DB connection, we just validate the structure
-        print("✓ Valid seeker data structure")
-        print(f"  Name: {seeker_data['information']['first_name']} {seeker_data['information']['last_name']}")
-        print(f"  Email: {seeker_data['information']['email']}")
-        print(f"  Education: {seeker_data['education_level']} in {seeker_data['edu_focus']}")
-        print(f"  Pay Range: ${seeker_data['pay_range'][0]:,} - ${seeker_data['pay_range'][1]:,} {seeker_data['pay_unit']}")
+        logger.debug("✓ Valid seeker data structure")
+        logger.debug(f"  Name: {seeker_data['information']['first_name']} {seeker_data['information']['last_name']}")
+        logger.debug(f"  Email: {seeker_data['information']['email']}")
+        logger.debug(f"  Education: {seeker_data['education_level']} in {seeker_data['edu_focus']}")
+        logger.debug(f"  Pay Range: ${seeker_data['pay_range'][0]:,} - ${seeker_data['pay_range'][1]:,} {seeker_data['pay_unit']}")
 
     except ValidationError as e:
-        print(f"✗ Validation error: {e}")
+        logger.critical(f"✗ Validation error: {e}")
 
-    print("\n=== Application Sub-document Test ===\n")
+    logger.debug("\n=== Application Sub-document Test ===\n")
 
     # Test Application sub-document
     try:
@@ -183,16 +203,16 @@ if __name__ == "__main__":
             employer_id="employer_67890",
             application_status="Submitted"
         )
-        print(f"✓ Valid application created")
-        print(f"  Job ID: {application.job_id}")
-        print(f"  Employer ID: {application.employer_id}")
-        print(f"  Status: {application.application_status}")
-        print(f"  Date Applied: {application.date_applied}")
+        logger.debug("✓ Valid application created")
+        logger.debug(f"  Job ID: {application.job_id}")
+        logger.debug(f"  Employer ID: {application.employer_id}")
+        logger.debug(f"  Status: {application.application_status}")
+        logger.debug(f"  Date Applied: {application.date_applied}")
 
     except ValidationError as e:
-        print(f"✗ Validation error: {e}")
+        logger.critical(f"✗ Validation error: {e}")
 
-    print("\n=== Information Sub-document Test ===\n")
+    logger.debug("\n=== Information Sub-document Test ===\n")
 
     # Test Information sub-document
     try:
@@ -208,11 +228,11 @@ if __name__ == "__main__":
                 zip_code="94102"
             )
         )
-        print(f"✓ Valid information created")
-        print(f"  Name: {info.first_name} {info.last_name}")
-        print(f"  Email: {info.email}")
-        print(f"  Phone: {info.phone}")
-        print(f"  Address: {info.address.street}, {info.address.city}, {info.address.state} {info.address.zip_code}")
+        logger.debug("✓ Valid information created")
+        logger.debug(f"  Name: {info.first_name} {info.last_name}")
+        logger.debug(f"  Email: {info.email}")
+        logger.debug(f"  Phone: {info.phone}")
+        logger.debug(f"  Address: {info.address.street}, {info.address.city}, {info.address.state} {info.address.zip_code}")
 
     except ValidationError as e:
-        print(f"✗ Validation error: {e}")
+        logger.critical(f"✗ Validation error: {e}")

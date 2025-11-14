@@ -36,18 +36,21 @@ class GICSInfo(BaseModel):
     sub_industry_name: str | None = Field(None, description="Sub-industry name")
     level: int = Field(..., ge=1, le=4, description="GICS level (1-4)")
 
-    @field_validator('code')
+    @field_validator("code")
     @classmethod
     def validate_gics_code(cls, v: str) -> str:
         """Validate that the GICS code is valid."""
         if len(v) not in [2, 4, 6, 8]:
-            raise ValueError("GICS code must be 2, 4, 6, or 8 digits")
+            msg = "GICS code must be 2, 4, 6, or 8 digits"
+            raise ValueError(msg)
         if not v.isdigit():
-            raise ValueError("GICS code must contain only digits")
+            msg = "GICS code must contain only digits"
+            raise ValueError(msg)
         try:
             GICS(v)
         except Exception as e:
-            raise ValueError(f"Invalid GICS code: {e}") from e
+            msg = f"Invalid GICS code: {e}"
+            raise ValueError(msg) from e
         return v
 
 
@@ -74,7 +77,8 @@ def parse_gics_code(code: str) -> GICSInfo:
     try:
         gics = GICS(code)
     except Exception as e:
-        raise ValueError(f"Invalid GICS code '{code}': {e}") from e
+        msg = f"Invalid GICS code '{code}': {e}"
+        raise ValueError(msg) from e
 
     # Determine the level based on code length
     level = len(code) // 2
@@ -162,7 +166,8 @@ def get_level_name(code: str, level: int) -> str:
     code_level = len(code) // 2
 
     if level > code_level:
-        raise ValueError(f"Code '{code}' is level {code_level}, cannot get level {level}")
+        msg = f"Code '{code}' is level {code_level}, cannot get level {level}"
+        raise ValueError(msg)
 
     return gics.level(level).name
 
@@ -203,15 +208,15 @@ def get_all_sectors() -> list[dict[str, str]]:
         {'code': '10', 'name': 'Energy'}
     """
     # GICS sectors (as of the latest standard)
-    sector_codes = ['10', '15', '20', '25', '30', '35', '40', '45', '50', '55', '60']
+    sector_codes = ["10", "15", "20", "25", "30", "35", "40", "45", "50", "55", "60"]
     sectors = []
 
     for code in sector_codes:
         try:
             gics = GICS(code)
             sectors.append({
-                'code': code,
-                'name': gics.sector.name
+                "code": code,
+                "name": gics.sector.name
             })
         except Exception:
             continue
@@ -242,74 +247,47 @@ def compare_gics_codes(code1: str, code2: str) -> dict[str, bool]:
     max_comparable_level = min(level1, level2)
 
     comparison = {
-        'same_sector': False,
-        'same_industry_group': False,
-        'same_industry': False,
-        'same_sub_industry': False,
+        "same_sector": False,
+        "same_industry_group": False,
+        "same_industry": False,
+        "same_sub_industry": False,
     }
 
     # Compare at each level up to the maximum comparable level
     if max_comparable_level >= 1:
-        comparison['same_sector'] = gics1.sector.code == gics2.sector.code
+        comparison["same_sector"] = gics1.sector.code == gics2.sector.code
 
     if max_comparable_level >= 2:
-        comparison['same_industry_group'] = gics1.industry_group.code == gics2.industry_group.code
+        comparison["same_industry_group"] = gics1.industry_group.code == gics2.industry_group.code
 
     if max_comparable_level >= 3:
-        comparison['same_industry'] = gics1.industry.code == gics2.industry.code
+        comparison["same_industry"] = gics1.industry.code == gics2.industry.code
 
     if max_comparable_level >= 4:
-        comparison['same_sub_industry'] = gics1.sub_industry.code == gics2.sub_industry.code
+        comparison["same_sub_industry"] = gics1.sub_industry.code == gics2.sub_industry.code
 
     return comparison
 
 
 # Example usage and tests
 if __name__ == "__main__":
-    print("=== GICS Helper Module Examples ===\n")
 
     # Example 1: Parse a sector-level GICS code
-    print("Example 1: Sector-level GICS code")
-    sector_gics = GICS('10')
-    print(f"  Code: 10")
-    print(f"  Sector: {sector_gics.sector.name}")
-    print()
+    sector_gics = GICS("10")
 
     # Example 2: Parse a full GICS code
-    print("Example 2: Full GICS code")
-    full_gics = GICS('10101010')
-    print(f"  Code: 10101010")
-    print(f"  Sector: {full_gics.sector.name}")
-    print(f"  Sub-Industry: {full_gics.sub_industry.name}")
-    print(f"  Level 4: {full_gics.level(4).name}")
-    print(f"  Level 3: {full_gics.level(3).name}")
-    print(f"  Sector Code: {full_gics.sector.code}")
-    print()
+    full_gics = GICS("10101010")
 
     # Example 3: Using helper functions
-    print("Example 3: Using helper functions")
-    info = parse_gics_code('10101010')
-    print(f"  Parsed info: {info.sector_name} - {info.sub_industry_name}")
-    print(f"  Level: {info.level}")
-    print()
+    info = parse_gics_code("10101010")
 
     # Example 4: Validation
-    print("Example 4: Validation")
-    print(f"  Is '10101010' valid? {is_valid_gics_code('10101010')}")
-    print(f"  Is '99999999' valid? {is_valid_gics_code('99999999')}")
-    print()
 
     # Example 5: Get all sectors
-    print("Example 5: All sectors")
     sectors = get_all_sectors()
-    for sector in sectors[:3]:  # Show first 3
-        print(f"  {sector['code']}: {sector['name']}")
-    print(f"  ... ({len(sectors)} total sectors)")
-    print()
+    for _sector in sectors[:3]:  # Show first 3
+        pass
 
     # Example 6: Compare codes
-    print("Example 6: Compare GICS codes")
-    comparison = compare_gics_codes('10', '10101010')
-    print(f"  Comparing '10' and '10101010':")
-    print(f"  Same sector: {comparison['same_sector']}")
+    comparison = compare_gics_codes("10", "10101010")
 
