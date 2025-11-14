@@ -12,10 +12,13 @@ from zoneinfo import ZoneInfo
 
 from beanie import PydanticObjectId
 
+from backend.db.chroma_crud_ops import update_collection, write_collection
 from backend.db.employer_db_ops import EmployerCRUD
-from backend.schemas.employer import (
-    Employer,
+from backend.db.settings import (
+    Employer_JobDescr_collection,
+    Employer_Skillswish_collection,
 )
+from backend.schemas.employer import Employer
 from backend.utils.gics_helper import is_valid_gics_code
 from backend.utils.validators import Email
 
@@ -79,11 +82,12 @@ class EmployerService:
                     raise ValueError(msg)
 
         # Generate unique EmployerID
-        employer_id = uuid4()
+        employer_identification = uuid4()
 
         # Build employer data structure
         employer_data = {
-            "employer_id": employer_id,
+            "employer_identification": employer_identification,
+            "temperature": 0.75,
             "company_information": {
                 "company_name": company_name,
                 "address": address,
@@ -191,12 +195,20 @@ class EmployerService:
             ...     key_skills=["Python", "FastAPI", "MongoDB"]
             ... )
         """
-        # Generate unique job ID
-        job_id = str(PydanticObjectId())
+        # Fetch employer to get employer_identification
+        employer = await EmployerCRUD.get_employer_by_id(employer_id)
+        if not employer:
+            return None
+
+        # Generate unique job ID and job identification
+        job_id = PydanticObjectId()
+        job_identification = uuid4()
 
         # Create job posting data
         job_data = {
             "job_id": job_id,
+            "job_identification": job_identification,
+            "employer_identification": employer.employer_identification,
             "job_title": job_title,
             "job_description": job_description,
             "posted_date": datetime.now(ZoneInfo("America/Denver")),
@@ -211,13 +223,48 @@ class EmployerService:
             "key_skills": key_skills if key_skills else []
         }
 
+        # Store job description in ChromaDB if not empty
+        if job_description:
+            metadata_descr = {
+                "Title": job_title,
+                "Post_Date": str(job_data["posted_date"]),
+                "Employer_UUID": str(employer.employer_identification)
+            }
+            write_collection(
+                Employer_JobDescr_collection,
+                "Employer_JobDescr_Collection",
+                str(job_identification),
+                job_description,
+                metadata_descr
+            )
+
+        # Store skills in ChromaDB if any skill data exists
+        if key_skills or education_level or edu_focus:
+            skills_list = []
+            if key_skills:
+                skills_list.extend(key_skills)
+            if education_level:
+                skills_list.append(f"Education: {education_level}")
+            if edu_focus:
+                skills_list.append(f"Focus: {edu_focus}")
+
+            skills = ", ".join(skills_list)
+            metadata_skill = {"Desired Skills": skills}
+            write_collection(
+                Employer_Skillswish_collection,
+                "Employer_Skillswish_Collection",
+                str(job_identification),
+                skills,
+                metadata_skill
+            )
+
         # Add job posting to employer
         return await EmployerCRUD.add_job_posting(employer_id, job_data)
 
     @staticmethod
     async def modify_job(
         employer_id: str | PydanticObjectId,
-        job_id: str,
+        job_id: str | PydanticObjectId,
         update_data: dict[str, Any]
     ) -> Employer | None:
         """
@@ -243,7 +290,62 @@ class EmployerService:
             ...     }
             ... )
         """
-        # Update job posting
+        # Fetch employer to get job details
+        employer = await EmployerCRUD.get_employer_by_id(employer_id)
+        if not employer:
+            return None
+
+        # Find the job to get its identification and current data
+        job = None
+        for open_job in employer.open_jobs:
+            if str(open_job.job_id) == str(job_id):
+                job = open_job
+                break
+
+        if not job:
+            return None
+
+        # Update ChromaDB if job description is being updated
+        job_description = update_data.get("job_description")
+        if job_description:
+            metadata_descr = {
+                "Title": update_data.get("job_title", job.job_title),
+                "Post_Date": str(update_data.get("posted_date", job.posted_date)),
+                "Employer_UUID": str(employer.employer_identification)
+            }
+            update_collection(
+                Employer_JobDescr_collection,
+                "Employer_JobDescr_Collection",
+                str(job.job_identification),
+                job_description,
+                metadata_descr
+            )
+
+        # Update ChromaDB skills if any skill fields are being updated
+        key_skills = update_data.get("key_skills", job.key_skills)
+        education_level = update_data.get("education_level", job.education_level)
+        edu_focus = update_data.get("edu_focus", job.edu_focus)
+
+        if key_skills or education_level or edu_focus:
+            skills_list = []
+            if key_skills:
+                skills_list.extend(key_skills if isinstance(key_skills, list) else [key_skills])
+            if education_level:
+                skills_list.append(f"Education: {education_level}")
+            if edu_focus:
+                skills_list.append(f"Focus: {edu_focus}")
+
+            skills = ", ".join(skills_list)
+            metadata_skill = {"Desired Skills": skills}
+            update_collection(
+                Employer_Skillswish_collection,
+                "Employer_Skillswish_Collection",
+                str(job.job_identification),
+                skills,
+                metadata_skill
+            )
+
+        # Update job posting in database
         return await EmployerCRUD.update_job_posting(
             employer_id,
             job_id,

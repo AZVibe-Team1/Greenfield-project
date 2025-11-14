@@ -10,7 +10,7 @@ from typing import ClassVar, Literal
 from uuid import UUID, uuid4
 from zoneinfo import ZoneInfo
 
-from beanie import Document
+from beanie import Document, PydanticObjectId
 from loguru import logger
 from pydantic import BaseModel, Field
 
@@ -68,7 +68,9 @@ class OpenJob(BaseModel):
     Open job posting sub-document.
 
     Attributes:
-        job_id: Unique identifier for the job (MongoDB ObjectId as string)
+        job_id: Unique identifier for the job (MongoDB ObjectId)
+        job_identification: Unique identifier for ChromaDB.  UUID value
+        employer_identification: Employer's UUID identifier (foreign key)
         job_title: Title of the position (required)
         job_description: Detailed job description (required)
         posted_date: Date when job was posted (required)
@@ -81,7 +83,12 @@ class OpenJob(BaseModel):
         edu_focus: Required field of study (required)
         key_skills: List of required skills (max 15)
     """
-    job_id: str = Field(..., description="Job posting ID")
+    job_id: PydanticObjectId = Field(default_factory=PydanticObjectId, description="Job posting ID")
+    job_identification: UUID = Field(
+       default_factory=uuid4,
+       description="Unique job identifier for ChromaDB"
+    )
+    employer_identification: UUID = Field(..., description="Employer's UUID identifier")
     job_title: str = Field(..., min_length=1, description="Job title")
     job_description: str = Field(..., min_length=1, description="Job description")
     posted_date: datetime = Field(..., description="Date job was posted")
@@ -176,7 +183,9 @@ class Employer(Document):
     company information, contact details, job postings, and applications.
 
     Attributes:
-        employer_id: Unique identifier for the employer (UUID, required)
+        employer_id: Unique identifier for the employer (MongoDB ObjectId)
+        employer_identification: Unique identifier for the employer (UUID, required)
+        temperature: Temperature value for AI model inference (0-1, default: 0.75)
         company_information: Company details and address (required)
         contact_first_name: Primary contact first name (required)
         contact_last_name: Primary contact last name (required)
@@ -189,9 +198,16 @@ class Employer(Document):
     Collection Settings:
         name: "employers" - MongoDB collection name
     """
-    employer_id: UUID = Field(
+    employer_id: PydanticObjectId = Field(default_factory=PydanticObjectId, description="MongoDB employer ID")
+    employer_identification: UUID = Field(
         default_factory=uuid4,
         description="Unique employer identifier"
+    )
+    temperature: float = Field(
+        default=0.75,
+        ge=0.0,
+        le=1.0,
+        description="Temperature value for AI model inference (0-1)"
     )
     company_information: CompanyInformation = Field(
         ...,
@@ -276,7 +292,7 @@ if __name__ == "__main__":
     logger.debug("Test 2: Creating valid OpenJob sub-document...")
     try:
         job = OpenJob(
-            job_id="job_001",
+            employer_identification=uuid4(),
             job_title="Senior Software Engineer",
             job_description="We are seeking an experienced software engineer...",
             posted_date=datetime.now(ZoneInfo("America/Denver")),

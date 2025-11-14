@@ -230,7 +230,7 @@ class EmployerCRUD:
     @staticmethod
     async def update_job_posting(
         employer_id: str | PydanticObjectId,
-        job_id: str,
+        job_id: str | PydanticObjectId,
         update_data: dict[str, Any]
     ) -> Employer | None:
         """
@@ -238,7 +238,7 @@ class EmployerCRUD:
 
         Args:
             employer_id: Employer's ObjectId
-            job_id: Job posting ID
+            job_id: Job posting ID (ObjectId or string)
             update_data: Dictionary containing fields to update
 
         Returns:
@@ -253,9 +253,12 @@ class EmployerCRUD:
             if not employer:
                 return None
 
+            # Convert job_id to string for comparison
+            job_id_str = str(job_id)
+
             # Find and update the specific job
             for job in employer.open_jobs:
-                if job.job_id == job_id:
+                if str(job.job_id) == job_id_str:
                     for key, value in update_data.items():
                         if hasattr(job, key):
                             setattr(job, key, value)
@@ -272,14 +275,14 @@ class EmployerCRUD:
     @staticmethod
     async def remove_job_posting(
         employer_id: str | PydanticObjectId,
-        job_id: str
+        job_id: str | PydanticObjectId
     ) -> Employer | None:
         """
         Remove a job posting from an employer's open jobs.
 
         Args:
             employer_id: Employer's ObjectId
-            job_id: Job posting ID to remove
+            job_id: Job posting ID to remove (ObjectId or string)
 
         Returns:
             Updated Employer document or None if update fails
@@ -292,8 +295,11 @@ class EmployerCRUD:
             if not employer:
                 return None
 
+            # Convert job_id to string for comparison
+            job_id_str = str(job_id)
+
             # Remove the job
-            employer.open_jobs = [job for job in employer.open_jobs if job.job_id != job_id]
+            employer.open_jobs = [job for job in employer.open_jobs if str(job.job_id) != job_id_str]
             await employer.save()
         except Exception as e:
             logger.critical(f"Error removing job posting: {e}")
