@@ -41,9 +41,9 @@ except Exception as e:
     logger.critical(f"Initialization failed: {e}")
     raise
 
-# Create collections, using the OpenAI embedder "text-embedding-3"
+# Get or create collections, using the OpenAI embedder "text-embedding-3"
 try:
-    Seeker_Resume_collection = client.create_collection(
+    Seeker_Resume_collection = client.get_or_create_collection(
     name="Seeker_Resume",
     embedding_function=OpenAIEmbeddingFunction(  # type: ignore[arg-type]
         model_name="text-embedding-3-small"
@@ -54,11 +54,11 @@ try:
     }
 )
 except Exception as e:
-    logger.critical(f"Error creating Seeker_Resume collection: {e}")
+    logger.critical(f"Error getting or creating Seeker_Resume collection: {e}")
     raise
 
 try:
-    Seeker_Skill_collection = client.create_collection(
+    Seeker_Skill_collection = client.get_or_create_collection(
     name="Seeker_Skills",
     embedding_function=OpenAIEmbeddingFunction(  # type: ignore[arg-type]
         model_name="text-embedding-3-small"
@@ -69,10 +69,10 @@ try:
     }
 )
 except Exception as e:
-    logger.critical(f"Error creating Seeker_Skills collection: {e}")
+    logger.critical(f"Error getting or creating Seeker_Skills collection: {e}")
     raise
 try:
-    Employer_JobDescr_collection = client.create_collection(
+    Employer_JobDescr_collection = client.get_or_create_collection(
     name="Employer_JobDescr",
     embedding_function=OpenAIEmbeddingFunction(  # type: ignore[arg-type]
         model_name="text-embedding-3-small"
@@ -83,10 +83,10 @@ try:
     }
 )
 except Exception as e:
-    logger.critical(f"Error creating Employer_JobDescr collection: {e}")
+    logger.critical(f"Error getting or creating Employer_JobDescr collection: {e}")
     raise
 try:
-    Employer_Skillswish_collection = client.create_collection(
+    Employer_Skillswish_collection = client.get_or_create_collection(
     name="Employer_Skillswish",
     embedding_function=OpenAIEmbeddingFunction(  # type: ignore[arg-type]
         model_name="text-embedding-3-small"
@@ -97,7 +97,7 @@ try:
     }
 )
 except Exception as e:
-    logger.critical(f"Error creating Employer_Skillswish collection: {e}")
+    logger.critical(f"Error getting or creating Employer_Skillswish collection: {e}")
     raise
 
 class MongoDBSettings:

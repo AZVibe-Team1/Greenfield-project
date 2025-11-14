@@ -111,6 +111,17 @@ async def get_my_profile(
 
         assert seeker is not None  # Type narrowing
 
+        # Convert applications to dict format for response
+        applications_list = [
+            {
+                "job_id": app.job_id,
+                "employer_id": app.employer_id,
+                "date_applied": app.date_applied.isoformat(),
+                "application_status": app.application_status
+            }
+            for app in seeker.applications
+        ]
+
         return SeekerProfileResponse(
             id=str(seeker.id),
             first_name=seeker.information.first_name,
@@ -129,7 +140,7 @@ async def get_my_profile(
             pay_unit=seeker.pay_unit,
             key_skills=seeker.key_skills,
             resume=seeker.resume,
-            applications=enriched_applications
+            applications=applications_list
         )
     except HTTPException:
         raise
@@ -359,7 +370,7 @@ async def delete_application(
         updated_seeker = await SeekerService.delete_application(
             seeker_id=user_id,
             job_id=job_id,
-            company_name=""  # Not needed for withdrawal
+            _company_name=""  # Not needed for withdrawal
         )
 
         if not updated_seeker:
