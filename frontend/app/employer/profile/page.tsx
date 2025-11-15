@@ -80,10 +80,16 @@ export default function EmployerProfilePage() {
       });
       
       console.log('Profile update response:', response);
+      console.log('Benefits sent to backend:', benefits);
       setMessage({ type: 'success', text: 'Profile updated successfully!' });
+      
+      // Wait a moment for database to commit
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       // Reload profile immediately to get updated data
       await loadProfile(true);
+      
+      console.log('After reload - benefits state is now:', benefits);
     } catch (error: any) {
       console.error('Failed to update profile:', error);
       console.error('Error details:', error.response?.data);
