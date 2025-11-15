@@ -8,6 +8,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
+from backend.ai.chains.matching_service import get_matching_service
 from backend.core.security import get_current_user_id, get_current_user_role
 from backend.db.seeker_db_ops import SeekerCRUD
 from backend.services.seeker_services import SeekerService
@@ -74,6 +75,47 @@ class JobSearchResponse(BaseModel):
     edu_focus: str
     key_skills: list[str]
     hiring_manager: str
+
+
+class ScoreBreakdown(BaseModel):
+    """Match score breakdown."""
+    skills_score: float
+    education_score: float
+    pay_score: float
+    experience_score: float
+    reasoning: str
+
+
+class JobRecommendationResponse(BaseModel):
+    """AI-powered job recommendation response."""
+    job_id: str
+    job_title: str
+    company_name: str
+    employer_id: str
+    match_score: float
+    score_breakdown: ScoreBreakdown
+    job_description: str
+    key_skills: list[str]
+    education_level: str
+    edu_focus: str
+    pay_range: list[int]
+    pay_unit: str
+    department: str
+    posted_date: str | None = None
+    hire_mgr_first: str
+    hire_mgr_last: str
+
+
+class AutoApplySettingsRequest(BaseModel):
+    """Auto-apply settings request."""
+    enabled: bool
+    threshold: float = 80.0  # Default 80%
+
+
+class AutoApplySettingsResponse(BaseModel):
+    """Auto-apply settings response."""
+    enabled: bool
+    threshold: float
 
 
 # Dependency to verify seeker role
@@ -492,5 +534,150 @@ async def get_job_details(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get job details: {e!s}"
+        ) from e
+
+
+@router.get("/recommendations", response_model=list[JobRecommendationResponse])
+async def get_job_recommendations(
+    user_id: str = Depends(get_current_user_id),
+    _role: str = Depends(verify_seeker_role),
+    n_results: int = 20,
+    min_score: float = 0.0
+):
+    """
+    Get AI-powered job recommendations for the current seeker.
+
+    This endpoint uses ChromaDB vector similarity and LangChain LLM scoring
+    to provide personalized job recommendations with match scores.
+
+    Args:
+        n_results: Maximum number of recommendations to return (default: 20)
+        min_score: Minimum match score threshold 0-100 (default: 0.0)
+
+    Returns:
+        List of job recommendations sorted by match score (descending)
+    """
+    try:
+        # Get matching service
+        matching_service = get_matching_service()
+
+        # Get recommendations
+        recommendations = await matching_service.match_seeker_to_jobs(
+            seeker_id=user_id,
+            n_results=n_results,
+            min_score=min_score
+        )
+
+        # Convert to response format
+        response = []
+        for rec in recommendations:
+            response.append(JobRecommendationResponse(
+                job_id=rec["job_id"],
+                job_title=rec["job_title"],
+                company_name=rec["company_name"],
+                employer_id=rec["employer_id"],
+                match_score=rec["match_score"],
+                score_breakdown=ScoreBreakdown(**rec["score_breakdown"]),
+                job_description=rec["job_description"],
+                key_skills=rec["key_skills"],
+                education_level=rec["education_level"],
+                edu_focus=rec["edu_focus"],
+                pay_range=rec["pay_range"],
+                pay_unit=rec["pay_unit"],
+                department=rec["department"],
+                posted_date=rec["posted_date"].isoformat() if rec.get("posted_date") else None,
+                hire_mgr_first=rec["hire_mgr_first"],
+                hire_mgr_last=rec["hire_mgr_last"]
+            ))
+
+        return response
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get recommendations: {e!s}"
+        ) from e
+
+
+@router.post("/auto-apply/settings", response_model=AutoApplySettingsResponse)
+async def set_auto_apply_settings(
+    request: AutoApplySettingsRequest,
+    user_id: str = Depends(get_current_user_id),
+    _role: str = Depends(verify_seeker_role)
+):
+    """
+    Set auto-apply settings for the current seeker.
+
+    Args:
+        request: Auto-apply settings (enabled, threshold)
+
+    Returns:
+        Updated auto-apply settings
+    """
+    try:
+        # Update seeker profile with auto-apply settings
+        # Note: We need to add these fields to the Seeker model
+        update_data = {
+            "auto_apply_enabled": request.enabled,
+            "auto_apply_threshold": request.threshold
+        }
+
+        updated_seeker = await SeekerService.update_seeker_profile(user_id, update_data)
+
+        if not updated_seeker:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to update auto-apply settings"
+            )
+
+        return AutoApplySettingsResponse(
+            enabled=request.enabled,
+            threshold=request.threshold
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to set auto-apply settings: {e!s}"
+        ) from e
+
+
+@router.get("/auto-apply/settings", response_model=AutoApplySettingsResponse)
+async def get_auto_apply_settings(
+    user_id: str = Depends(get_current_user_id),
+    _role: str = Depends(verify_seeker_role)
+):
+    """
+    Get auto-apply settings for the current seeker.
+
+    Returns:
+        Current auto-apply settings
+    """
+    try:
+        seeker = await SeekerCRUD.get_seeker_by_id(user_id)
+
+        if not seeker:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Seeker not found"
+            )
+
+        # Get auto-apply settings or return defaults
+        enabled = getattr(seeker, "auto_apply_enabled", False)
+        threshold = getattr(seeker, "auto_apply_threshold", 80.0)
+
+        return AutoApplySettingsResponse(
+            enabled=enabled,
+            threshold=threshold
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get auto-apply settings: {e!s}"
         ) from e
 

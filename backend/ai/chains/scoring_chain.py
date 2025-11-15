@@ -8,12 +8,12 @@ structured scores (0-100%) with detailed breakdowns.
 
 from typing import Any
 
-from langchain.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
+from langchain_core.prompts import ChatPromptTemplate
 from loguru import logger
 from pydantic import BaseModel, Field
 
-from backend.core.ai_config import AIConfig, get_llm_client
+from backend.core.ai_config import get_llm_client
 
 
 class MatchScoreBreakdown(BaseModel):

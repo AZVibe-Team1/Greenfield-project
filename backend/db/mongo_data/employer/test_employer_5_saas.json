@@ -1,0 +1,54 @@
+{
+  "company_information": {
+    "company_name": "DataFlow Systems",
+    "address": {
+      "street": "789 Howard Street",
+      "city": "San Francisco",
+      "state": "CA",
+      "zip_code": "94107"
+    },
+    "industry": [
+      {
+        "code": "45",
+        "description": "Information Technology"
+      },
+      {
+        "code": "4510",
+        "description": "Software & Services"
+      }
+    ],
+    "benefits": "Competitive salary, performance bonuses, equity, comprehensive health benefits, 401k with 5% match, flexible work hours, remote work options, professional development opportunities, modern tech stack"
+  },
+  "contact_first_name": "Robert",
+  "contact_last_name": "Johnson",
+  "email": "robert.johnson@dataflow-test.com",
+  "password_hash": "hashed_password_employer_305",
+  "employer_identification": "770e8400-e29b-41d4-a716-446655440205",
+  "open_jobs": [
+    {
+      "job_identification": "660e8400-e29b-41d4-a716-446655440105",
+      "employer_identification": "770e8400-e29b-41d4-a716-446655440205",
+      "job_title": "Full Stack Developer",
+      "job_description": "We're seeking a Full Stack Developer to help build our next-generation SaaS platform. This role is ideal for someone with a Computer Science background who wants to work across the entire stack.\n\nKey Responsibilities:\n- Design and develop full-stack web applications\n- Build RESTful APIs using Python/FastAPI or Node.js\n- Create responsive frontend interfaces with React\n- Work with PostgreSQL and MongoDB databases\n- Implement authentication and authorization\n- Write unit and integration tests\n- Deploy applications to AWS cloud infrastructure\n- Participate in architectural decisions\n- Troubleshoot and optimize application performance\n\nRequired Qualifications:\n- BS in Computer Science or equivalent experience\n- 1-3 years of professional development experience\n- Proficiency in JavaScript/TypeScript and Python\n- Experience with React and modern frontend frameworks\n- Knowledge of SQL and NoSQL databases\n- Understanding of RESTful API design\n- Familiarity with Git and Agile methodologies\n- Strong problem-solving and debugging skills",
+      "department": "Engineering",
+      "hire_mgr_first": "Lisa",
+      "hire_mgr_last": "Patel",
+      "posted_date": "2024-11-13T16:00:00-08:00",
+      "pay_range": [95000, 140000],
+      "pay_unit": "Yearly",
+      "education_level": "BS",
+      "edu_focus": "Computer Science",
+      "key_skills": [
+        "Python",
+        "JavaScript",
+        "React",
+        "FastAPI",
+        "PostgreSQL",
+        "MongoDB",
+        "AWS",
+        "Docker"
+      ]
+    }
+  ]
+}
+

@@ -4,7 +4,7 @@
  * API calls for job seeker operations
  */
 import apiClient from '@/lib/api';
-import { SeekerProfile, Job } from '@/types';
+import { SeekerProfile, Job, JobRecommendation, AutoApplySettings } from '@/types';
 
 export const seekerService = {
   /**
@@ -77,8 +77,24 @@ export const seekerService = {
   /**
    * Get AI-powered job recommendations
    */
-  getRecommendations: async (): Promise<any> => {
-    const response = await apiClient.get('/seekers/recommendations');
+  getRecommendations: async (params?: { n_results?: number; min_score?: number }): Promise<JobRecommendation[]> => {
+    const response = await apiClient.get<JobRecommendation[]>('/seekers/recommendations', { params });
+    return response.data;
+  },
+
+  /**
+   * Get auto-apply settings
+   */
+  getAutoApplySettings: async (): Promise<AutoApplySettings> => {
+    const response = await apiClient.get<AutoApplySettings>('/seekers/auto-apply/settings');
+    return response.data;
+  },
+
+  /**
+   * Update auto-apply settings
+   */
+  updateAutoApplySettings: async (settings: AutoApplySettings): Promise<AutoApplySettings> => {
+    const response = await apiClient.post<AutoApplySettings>('/seekers/auto-apply/settings', settings);
     return response.data;
   },
 };

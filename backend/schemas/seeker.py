@@ -145,6 +145,16 @@ class Seeker(Document):
         default_factory=list,
         description="Job applications made by the seeker"
     )
+    auto_apply_enabled: bool = Field(
+        default=False,
+        description="Whether auto-apply is enabled for this seeker"
+    )
+    auto_apply_threshold: float = Field(
+        default=80.0,
+        ge=0.0,
+        le=100.0,
+        description="Minimum match score threshold for auto-apply (0-100)"
+    )
 
     class Settings:
         name = "seekers"

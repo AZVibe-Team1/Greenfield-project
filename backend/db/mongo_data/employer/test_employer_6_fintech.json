@@ -1,0 +1,53 @@
+{
+  "company_information": {
+    "company_name": "FinTech Solutions Inc",
+    "address": {
+      "street": "321 California Street, 15th Floor",
+      "city": "San Francisco",
+      "state": "CA",
+      "zip_code": "94104"
+    },
+    "industry": [
+      {
+        "code": "40",
+        "description": "Financials"
+      },
+      {
+        "code": "4030",
+        "description": "Banks"
+      }
+    ],
+    "benefits": "Starting salary competitive, annual performance reviews, full health coverage, 401k with matching, flexible PTO, work from home options, latest development tools, continuous learning opportunities, collaborative environment"
+  },
+  "contact_first_name": "David",
+  "contact_last_name": "Kumar",
+  "email": "david.kumar@fintech-test.com",
+  "password_hash": "hashed_password_employer_306",
+  "employer_identification": "770e8400-e29b-41d4-a716-446655440206",
+  "open_jobs": [
+    {
+      "job_identification": "660e8400-e29b-41d4-a716-446655440106",
+      "employer_identification": "770e8400-e29b-41d4-a716-446655440206",
+      "job_title": "Python Developer - Backend Focus",
+      "job_description": "Are you a Python enthusiast with a Computer Science degree? Join our backend team and help build scalable, high-performance systems that power our platform used by thousands of customers.\n\nWhat You'll Build:\n- Design and implement RESTful APIs using FastAPI/Django\n- Develop microservices architecture\n- Optimize database queries and system performance\n- Build data processing pipelines\n- Implement caching strategies with Redis\n- Write comprehensive unit and integration tests\n- Create technical documentation\n- Monitor and troubleshoot production systems\n\nWhat We Need:\n- Bachelor's degree in Computer Science or related field\n- 0-2 years of Python development experience\n- Strong understanding of object-oriented programming\n- Experience with web frameworks (FastAPI, Django, or Flask)\n- Knowledge of SQL databases (PostgreSQL preferred)\n- Familiarity with API design principles\n- Understanding of data structures and algorithms\n- Git and version control proficiency",
+      "department": "Backend Engineering",
+      "hire_mgr_first": "Nina",
+      "hire_mgr_last": "Martinez",
+      "posted_date": "2024-11-15T09:30:00-08:00",
+      "pay_range": [85000, 120000],
+      "pay_unit": "Yearly",
+      "education_level": "BS",
+      "edu_focus": "Computer Science",
+      "key_skills": [
+        "Python",
+        "FastAPI",
+        "Django",
+        "PostgreSQL",
+        "Redis",
+        "REST APIs",
+        "Docker"
+      ]
+    }
+  ]
+}
+

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSeekerAuth } from '@/hooks/useAuth';
 import { seekerService } from '@/services/seeker-service';
-import { SeekerProfile } from '@/types';
+import { SeekerProfile, AutoApplySettings } from '@/types';
 import { 
   User, 
   Edit2, 
@@ -16,7 +16,10 @@ import {
   DollarSign,
   Tag,
   Save,
-  X
+  X,
+  Sparkles,
+  Settings,
+  Zap
 } from 'lucide-react';
 
 export default function SeekerProfilePage() {
@@ -30,6 +33,11 @@ export default function SeekerProfilePage() {
     edu_focus: '',
     key_skills: '',
   });
+  const [autoApplySettings, setAutoApplySettings] = useState<AutoApplySettings>({
+    enabled: false,
+    threshold: 80
+  });
+  const [savingAutoApply, setSavingAutoApply] = useState(false);
 
   // Load profile data once authentication is confirmed
   useEffect(() => {
@@ -47,6 +55,14 @@ export default function SeekerProfilePage() {
         edu_focus: data.edu_focus,
         key_skills: data.key_skills.join(', '),
       });
+      
+      // Load auto-apply settings
+      try {
+        const settings = await seekerService.getAutoApplySettings();
+        setAutoApplySettings(settings);
+      } catch (error) {
+        console.error('Failed to load auto-apply settings:', error);
+      }
     } catch (error) {
       console.error('Failed to load profile:', error);
     } finally {
@@ -66,6 +82,19 @@ export default function SeekerProfilePage() {
       await loadProfile();
     } catch (error) {
       console.error('Failed to update profile:', error);
+    }
+  };
+
+  const handleAutoApplyChange = async (newSettings: AutoApplySettings) => {
+    try {
+      setSavingAutoApply(true);
+      await seekerService.updateAutoApplySettings(newSettings);
+      setAutoApplySettings(newSettings);
+    } catch (error) {
+      console.error('Failed to update auto-apply settings:', error);
+      alert('Failed to update auto-apply settings. Please try again.');
+    } finally {
+      setSavingAutoApply(false);
     }
   };
 
@@ -324,6 +353,145 @@ export default function SeekerProfilePage() {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Auto-Apply Settings Section */}
+        {profile && !editing && (
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mt-6">
+            <div className="flex items-center gap-2 mb-6 pb-3 border-b border-purple-200">
+              <div className="p-2 bg-purple-100 rounded-lg">
+                <Sparkles className="h-5 w-5 text-purple-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900">AI Auto-Apply Settings</h3>
+            </div>
+
+            <div className="space-y-6">
+              <p className="text-gray-600">
+                Automatically apply to jobs that match your profile above a certain threshold. 
+                This feature uses AI to find the best opportunities for you.
+              </p>
+
+              {/* Enable/Disable Toggle */}
+              <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <Zap className="h-5 w-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900">Enable Auto-Apply</p>
+                    <p className="text-sm text-gray-600">
+                      Automatically apply to matching jobs
+                    </p>
+                  </div>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={autoApplySettings.enabled}
+                    onChange={(e) => handleAutoApplyChange({
+                      ...autoApplySettings,
+                      enabled: e.target.checked
+                    })}
+                    disabled={savingAutoApply}
+                    className="sr-only peer"
+                  />
+                  <div className="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-purple-600"></div>
+                </label>
+              </div>
+
+              {/* Threshold Slider */}
+              {autoApplySettings.enabled && (
+                <div className="space-y-3 p-4 bg-emerald-50 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-emerald-100 rounded-lg">
+                        <Settings className="h-5 w-5 text-emerald-600" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900">Match Threshold</p>
+                        <p className="text-sm text-gray-600">
+                          Minimum match score to auto-apply
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-emerald-600">
+                        {Math.round(autoApplySettings.threshold)}%
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    step="5"
+                    value={autoApplySettings.threshold}
+                    onChange={(e) => setAutoApplySettings({
+                      ...autoApplySettings,
+                      threshold: parseFloat(e.target.value)
+                    })}
+                    onMouseUp={() => handleAutoApplyChange(autoApplySettings)}
+                    onTouchEnd={() => handleAutoApplyChange(autoApplySettings)}
+                    disabled={savingAutoApply}
+                    className="w-full h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer slider"
+                  />
+                  
+                  <div className="flex justify-between text-xs text-gray-600">
+                    <span>0% - Any Match</span>
+                    <span>50% - Moderate</span>
+                    <span>100% - Perfect</span>
+                  </div>
+
+                  <div className="pt-3 border-t border-emerald-200">
+                    <p className="text-sm text-gray-700">
+                      <strong>Current setting:</strong> Auto-apply to jobs with {Math.round(autoApplySettings.threshold)}% or higher match score
+                    </p>
+                    {autoApplySettings.threshold >= 80 && (
+                      <p className="text-xs text-emerald-700 mt-1">
+                        ✓ Recommended: This threshold will focus on high-quality matches
+                      </p>
+                    )}
+                    {autoApplySettings.threshold < 60 && (
+                      <p className="text-xs text-yellow-700 mt-1">
+                        ⚠️ Warning: Low threshold may result in many applications
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {savingAutoApply && (
+                <div className="flex items-center justify-center gap-2 text-purple-600">
+                  <div className="w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+                  <span className="text-sm">Saving settings...</span>
+                </div>
+              )}
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <Sparkles className="h-5 w-5 text-blue-600 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-semibold text-blue-900 mb-1">How Auto-Apply Works</p>
+                    <ul className="text-sm text-blue-800 space-y-1">
+                      <li>• AI analyzes your profile and job postings</li>
+                      <li>• Calculates match scores based on skills, education, and salary</li>
+                      <li>• Automatically applies to jobs above your threshold</li>
+                      <li>• You can review applications in "My Applications"</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <Link
+                href="/seeker/recommendations"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium shadow-md hover:shadow-lg w-full justify-center"
+              >
+                <Sparkles className="h-5 w-5" />
+                View AI Recommendations
+              </Link>
+            </div>
           </div>
         )}
       </main>
