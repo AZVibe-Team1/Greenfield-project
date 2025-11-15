@@ -24,21 +24,38 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+      // Call authentication service to login
+      // This implements the login flow from frontend_auth.txt section 3
       const response = await authService.login(formData);
+      
+      // Store JWT token and user information in Zustand store
+      // Token is also saved to localStorage for persistence
       login(response.access_token, {
         id: response.user_id,
         email: response.email,
         role: response.role as 'seeker' | 'employer',
       });
 
-      // Redirect to appropriate dashboard
+      // Redirect to appropriate dashboard based on user role
+      // Implements role-based routing from frontend_auth.txt section 4
       if (response.role === 'seeker') {
         router.push('/seeker/dashboard');
       } else {
         router.push('/employer/dashboard');
       }
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Login failed. Please try again.');
+      // Handle login errors with user-friendly messages
+      // Implements error handling from frontend_auth.txt section 6
+      console.error('Login error:', err);
+      
+      const errorMessage = 
+        err.response?.status === 401 
+          ? 'Invalid email or password. Please check your credentials.'
+          : err.response?.status === 500
+          ? 'Server error. Please try again later.'
+          : err.response?.data?.detail || 'Login failed. Please try again.';
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -119,7 +136,7 @@ export default function LoginPage() {
                 required
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900 placeholder:text-gray-400"
                 placeholder="you@example.com"
               />
             </div>
@@ -135,7 +152,7 @@ export default function LoginPage() {
                 required
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-900 placeholder:text-gray-400"
                 placeholder="••••••••"
               />
             </div>

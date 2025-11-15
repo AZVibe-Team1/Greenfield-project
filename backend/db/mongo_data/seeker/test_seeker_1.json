@@ -1,0 +1,31 @@
+{
+  "information": {
+    "first_name": "Alice",
+    "last_name": "Johnson",
+    "email": "alice.johnson.test@example.com",
+    "phone": "+14155551001",
+    "address": {
+      "street": "742 Evergreen Terrace",
+      "city": "San Francisco",
+      "state": "CA",
+      "zip_code": "94102"
+    }
+  },
+  "password_hash": "hashed_password_test_123456",
+  "education_level": "MS",
+  "edu_focus": "Data Science",
+  "pay_range": [90000, 130000],
+  "pay_unit": "Yearly",
+  "key_skills": [
+    "Python",
+    "Machine Learning",
+    "TensorFlow",
+    "SQL",
+    "Data Analysis",
+    "Statistics",
+    "Pandas",
+    "Scikit-learn"
+  ],
+  "resume": "Alice Johnson - Data Scientist\n\nExperienced data scientist with strong background in machine learning and statistical analysis. Proven track record of delivering data-driven solutions.\n\nEXPERIENCE:\nData Scientist | Analytics Inc. | 2020-Present\n- Developed ML models improving customer retention by 30%\n- Built data pipelines processing large datasets\n- Collaborated with cross-functional teams\n\nEDUCATION:\nMS Data Science | Stanford University | 2020\nBS Mathematics | UC Berkeley | 2018"
+}
+

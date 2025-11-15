@@ -1,0 +1,23 @@
+{
+  "seeker_identification": "550e8400-e29b-41d4-a716-446655440001",
+  "education_level": "MS",
+  "edu_focus": "Computer Science",
+  "key_skills": [
+    "Python",
+    "FastAPI",
+    "Docker",
+    "Kubernetes",
+    "AWS",
+    "React",
+    "TypeScript",
+    "PostgreSQL",
+    "MongoDB",
+    "CI/CD",
+    "Microservices",
+    "Agile",
+    "Team Leadership",
+    "System Design",
+    "API Development"
+  ]
+}
+

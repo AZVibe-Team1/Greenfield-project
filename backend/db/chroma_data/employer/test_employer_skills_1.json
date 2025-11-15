@@ -1,0 +1,24 @@
+{
+  "job_identification": "660e8400-e29b-41d4-a716-446655440101",
+  "employer_identification": "770e8400-e29b-41d4-a716-446655440201",
+  "education_level": "BS",
+  "edu_focus": "Computer Science",
+  "key_skills": [
+    "Python",
+    "FastAPI",
+    "Microservices",
+    "Docker",
+    "Kubernetes",
+    "AWS",
+    "PostgreSQL",
+    "MongoDB",
+    "Redis",
+    "CI/CD",
+    "REST APIs",
+    "System Design",
+    "Agile",
+    "Git",
+    "Team Leadership"
+  ]
+}
+

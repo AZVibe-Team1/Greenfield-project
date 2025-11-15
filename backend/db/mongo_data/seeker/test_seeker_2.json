@@ -1,0 +1,32 @@
+{
+  "information": {
+    "first_name": "Robert",
+    "last_name": "Chen",
+    "email": "robert.chen.test@example.com",
+    "phone": "+16175552002",
+    "address": {
+      "street": "1234 Boylston Street",
+      "city": "Boston",
+      "state": "MA",
+      "zip_code": "02215"
+    }
+  },
+  "password_hash": "hashed_password_test_789012",
+  "education_level": "BS",
+  "edu_focus": "Software Engineering",
+  "pay_range": [100000, 150000],
+  "pay_unit": "Yearly",
+  "key_skills": [
+    "JavaScript",
+    "React",
+    "Node.js",
+    "TypeScript",
+    "AWS",
+    "Docker",
+    "GraphQL",
+    "MongoDB",
+    "Redis"
+  ],
+  "resume": "Robert Chen - Full Stack Developer\n\nFull stack developer with 6 years of experience building scalable web applications. Expert in JavaScript ecosystem and cloud technologies.\n\nEXPERIENCE:\nSenior Developer | WebTech Solutions | 2019-Present\n- Led frontend development using React and TypeScript\n- Built RESTful and GraphQL APIs\n- Deployed applications to AWS\n\nEDUCATION:\nBS Software Engineering | MIT | 2017"
+}
+

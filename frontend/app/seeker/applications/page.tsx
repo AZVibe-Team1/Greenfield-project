@@ -1,29 +1,23 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuthStore } from '@/store/auth-store';
+import { useSeekerAuth } from '@/hooks/useAuth';
 import { seekerService } from '@/services/seeker-service';
 import { FileText, Briefcase, Building2, Calendar, XCircle } from 'lucide-react';
 
 export default function ApplicationsPage() {
-  const router = useRouter();
-  const { isAuthenticated, checkAuth, logout } = useAuthStore();
+  // Use the custom authentication hook for seeker-specific protection
+  const { user, isLoading: authLoading, logout } = useSeekerAuth();
   const [applications, setApplications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Load applications once authentication is confirmed
   useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/login');
-      return;
+    if (!authLoading && user) {
+      loadApplications();
     }
-    loadApplications();
-  }, [isAuthenticated, router]);
+  }, [authLoading, user]);
 
   const loadApplications = async () => {
     try {
@@ -62,6 +56,12 @@ export default function ApplicationsPage() {
                 className="text-gray-700 hover:text-emerald-600 transition-colors font-medium"
               >
                 Dashboard
+              </Link>
+              <Link 
+                href="/seeker/recommendations" 
+                className="text-gray-700 hover:text-emerald-600 transition-colors font-medium"
+              >
+                AI Recommendations
               </Link>
               <Link 
                 href="/seeker/jobs" 
@@ -134,10 +134,10 @@ export default function ApplicationsPage() {
                       <Briefcase className="h-6 w-6 text-emerald-600" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-xl font-semibold text-gray-900 mb-1">Job ID: {app.job_id}</h3>
+                      <h3 className="text-xl font-semibold text-gray-900 mb-1">{app.job_title || 'Unknown Job'}</h3>
                       <div className="flex items-center gap-2 text-gray-600 mb-3">
                         <Building2 className="h-4 w-4" />
-                        <span>Employer ID: {app.employer_id}</span>
+                        <span>{app.company_name || 'Unknown Company'}</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm text-gray-500">
                         <Calendar className="h-4 w-4" />

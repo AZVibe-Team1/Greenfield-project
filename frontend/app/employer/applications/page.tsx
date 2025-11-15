@@ -1,29 +1,23 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuthStore } from '@/store/auth-store';
+import { useEmployerAuth } from '@/hooks/useAuth';
 import { employerService } from '@/services/employer-service';
 import { Briefcase, Users, Calendar, Clock, FileText, ChevronRight } from 'lucide-react';
 
 export default function EmployerApplicationsPage() {
-  const router = useRouter();
-  const { isAuthenticated, checkAuth, logout } = useAuthStore();
+  // Use the custom authentication hook for employer-specific protection
+  const { user, isLoading: authLoading, logout } = useEmployerAuth();
   const [applications, setApplications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Load applications once authentication is confirmed
   useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/login');
-      return;
+    if (!authLoading && user) {
+      loadApplications();
     }
-    loadApplications();
-  }, [isAuthenticated, router]);
+  }, [authLoading, user]);
 
   const loadApplications = async () => {
     try {

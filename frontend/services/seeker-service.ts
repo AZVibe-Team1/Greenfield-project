@@ -73,5 +73,13 @@ export const seekerService = {
     const response = await apiClient.get<Job>(`/seekers/jobs/${jobId}`);
     return response.data;
   },
+
+  /**
+   * Get AI-powered job recommendations
+   */
+  getRecommendations: async (): Promise<any> => {
+    const response = await apiClient.get('/seekers/recommendations');
+    return response.data;
+  },
 };
 

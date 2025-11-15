@@ -1,9 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuthStore } from '@/store/auth-store';
+import { useSeekerAuth } from '@/hooks/useAuth';
 import { seekerService } from '@/services/seeker-service';
 import { SeekerProfile } from '@/types';
 import { 
@@ -19,31 +18,24 @@ import {
   Eye,
   CheckCircle,
   Clock,
-  XCircle
+  XCircle,
+  Building2,
+  Sparkles
 } from 'lucide-react';
 
 export default function SeekerDashboard() {
-  const router = useRouter();
-  const { user, isAuthenticated, logout, checkAuth } = useAuthStore();
+  // Use the custom authentication hook for seeker-specific protection
+  // This implements the protected routes strategy from frontend_auth.txt
+  const { user, isLoading: authLoading, logout } = useSeekerAuth();
   const [profile, setProfile] = useState<SeekerProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Load profile data once authentication is confirmed
   useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/login');
-      return;
+    if (!authLoading && user) {
+      loadProfile();
     }
-    if (user?.role !== 'seeker') {
-      router.push('/employer/dashboard');
-      return;
-    }
-
-    loadProfile();
-  }, [isAuthenticated, user, router]);
+  }, [authLoading, user]);
 
   const loadProfile = async () => {
     try {
@@ -56,7 +48,8 @@ export default function SeekerDashboard() {
     }
   };
 
-  if (loading) {
+  // Show loading state while authentication is being verified
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white flex items-center justify-center">
         <div className="text-center">
@@ -96,14 +89,14 @@ export default function SeekerDashboard() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Banner */}
-        <div className="bg-gradient-to-r from-emerald-600 to-emerald-500 rounded-2xl shadow-xl p-8 mb-8 text-white">
-          <div className="flex items-center gap-3 mb-2">
-            <User className="h-8 w-8" />
-            <h1 className="text-3xl md:text-4xl font-bold">
+        <div className="bg-gradient-to-r from-emerald-600 to-emerald-500 rounded-xl shadow-lg p-4 mb-6 text-white">
+          <div className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            <h1 className="text-xl md:text-2xl font-bold">
               Welcome back, {profile?.first_name}!
             </h1>
           </div>
-          <p className="text-emerald-100 text-lg">
+          <p className="text-emerald-100 text-sm ml-7">
             Ready to find your next opportunity? Let's get started.
           </p>
         </div>
@@ -152,7 +145,19 @@ export default function SeekerDashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Link
+            href="/seeker/recommendations"
+            className="bg-gradient-to-br from-purple-50 to-emerald-50 rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all hover:-translate-y-1 group border-2 border-purple-100"
+          >
+            <div className="bg-gradient-to-br from-purple-100 to-emerald-100 w-14 h-14 rounded-xl flex items-center justify-center mb-4 group-hover:from-purple-600 group-hover:to-emerald-600 transition-all">
+              <Sparkles className="h-7 w-7 text-purple-600 group-hover:text-white transition-colors" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">AI Recommendations</h3>
+            <p className="text-gray-600">Personalized job matches</p>
+            <span className="inline-block mt-2 px-2 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">Coming Soon</span>
+          </Link>
+
           <Link
             href="/seeker/jobs"
             className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all hover:-translate-y-1 group"
@@ -265,7 +270,11 @@ export default function SeekerDashboard() {
                 <div key={index} className="border border-gray-200 rounded-xl p-4 hover:border-emerald-300 hover:bg-emerald-50 transition-all">
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <p className="font-bold text-gray-900 mb-1">Job ID: {app.job_id}</p>
+                      <p className="font-bold text-gray-900 mb-1 text-lg">{app.job_title || 'Unknown Job'}</p>
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <Building2 className="h-4 w-4 text-emerald-600" />
+                        <p className="text-sm text-emerald-600 font-medium">{app.company_name || 'Unknown Company'}</p>
+                      </div>
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <Clock className="h-4 w-4" />
                         <span>Applied: {new Date(app.date_applied).toLocaleDateString()}</span>

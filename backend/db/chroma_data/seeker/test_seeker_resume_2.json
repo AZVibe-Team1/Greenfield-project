@@ -1,0 +1,6 @@
+{
+  "seeker_identification": "550e8400-e29b-41d4-a716-446655440002",
+  "resume": "Michael Chen\nData Scientist\n\nPROFESSIONAL SUMMARY:\nData scientist with 5 years of experience in machine learning and statistical analysis. Specialized in developing predictive models and extracting actionable insights from complex datasets.\n\nEXPERIENCE:\nData Scientist | Analytics Pro Inc. | 2021-Present\n- Developed machine learning models improving customer retention by 25%\n- Built data pipelines processing 10TB+ daily using Apache Spark\n- Created interactive dashboards for executive decision-making\n- Technologies: Python, TensorFlow, PyTorch, SQL, Tableau\n\nData Analyst | Research Labs | 2019-2021\n- Analyzed large datasets to identify business trends and patterns\n- Automated reporting processes using Python scripts\n- Collaborated with stakeholders to define KPIs and metrics\n- Technologies: Python, Pandas, NumPy, R, Excel\n\nEDUCATION:\nM.S. Statistics | MIT | 2019\nB.A. Mathematics | UCLA | 2017\n\nSKILLS:\nProgramming: Python, R, SQL, Scala\nML/AI: TensorFlow, PyTorch, scikit-learn, Keras\nData Tools: Pandas, NumPy, Apache Spark, Hadoop\nVisualization: Tableau, Power BI, Matplotlib, Seaborn\nDatabases: PostgreSQL, MySQL, MongoDB, Snowflake",
+  "created_at": "2024-11-11T14:20:00-07:00"
+}
+

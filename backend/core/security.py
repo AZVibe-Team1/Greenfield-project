@@ -4,19 +4,16 @@ Security utilities for authentication and password handling.
 from datetime import datetime, timedelta
 from typing import Any
 
+import bcrypt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 
 
 # Configuration
 SECRET_KEY = "your-secret-key-change-in-production"  # Should be from env
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30 * 24  # 30 days
-
-# Password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # OAuth2 scheme for token authentication
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
@@ -34,7 +31,9 @@ def hash_password(password: str) -> str:
     """
     # Bcrypt has a 72-byte limit, truncate if necessary
     password_bytes = password.encode("utf-8")[:72]
-    return pwd_context.hash(password_bytes.decode("utf-8"))
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password_bytes, salt)
+    return hashed.decode("utf-8")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -48,7 +47,9 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     Returns:
         True if password matches, False otherwise
     """
-    return pwd_context.verify(plain_password, hashed_password)
+    password_bytes = plain_password.encode("utf-8")[:72]
+    hashed_bytes = hashed_password.encode("utf-8")
+    return bcrypt.checkpw(password_bytes, hashed_bytes)
 
 
 def create_access_token(data: dict[str, Any], expires_delta: timedelta | None = None) -> str:
