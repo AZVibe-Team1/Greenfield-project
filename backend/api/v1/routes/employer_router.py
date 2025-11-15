@@ -8,6 +8,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
+from backend.ai.chains.candidate_matching_service import get_candidate_matching_service
 from backend.core.security import get_current_user_id, get_current_user_role
 from backend.db.employer_db_ops import EmployerCRUD
 from backend.services.employer_services import EmployerService
@@ -83,6 +84,34 @@ class UpdateEmployerRequest(BaseModel):
     benefits: str | None = None
 
 
+class ScoreBreakdown(BaseModel):
+    """Match score breakdown."""
+    skills_score: float
+    education_score: float
+    pay_score: float
+    experience_score: float
+    reasoning: str
+
+
+class CandidateRecommendationResponse(BaseModel):
+    """AI-powered candidate recommendation response."""
+    seeker_id: str
+    first_name: str
+    last_name: str
+    email: str
+    match_score: float
+    score_breakdown: ScoreBreakdown
+    has_applied: bool
+    resume_preview: str
+    key_skills: list[str]
+    education_level: str
+    edu_focus: str
+    pay_range: list[int]
+    pay_unit: str
+    phone: str
+    address: dict[str, str]
+
+
 # Dependency to verify employer role
 async def verify_employer_role(role: str = Depends(get_current_user_role)) -> str:
     """Verify that the current user is an employer."""
@@ -136,7 +165,7 @@ async def get_my_profile(
             benefits=employer.company_information.benefits,
             open_jobs=[
                 {
-                    "job_id": job.job_id,
+                    "job_id": str(job.job_id),
                     "job_title": job.job_title,
                     "job_description": job.job_description,
                     "posted_date": job.posted_date.isoformat(),
@@ -264,7 +293,7 @@ async def create_job(
         new_job = updated_employer.open_jobs[-1]
 
         return JobResponse(
-            job_id=new_job.job_id,
+            job_id=str(new_job.job_id),
             job_title=new_job.job_title,
             job_description=new_job.job_description,
             posted_date=new_job.posted_date.isoformat(),
@@ -314,7 +343,7 @@ async def get_my_jobs(
 
         return [
             JobResponse(
-                job_id=job.job_id,
+                job_id=str(job.job_id),
                 job_title=job.job_title,
                 job_description=job.job_description,
                 posted_date=job.posted_date.isoformat(),
@@ -375,9 +404,9 @@ async def get_job(
         assert employer is not None  # Type narrowing
 
         for job in employer.open_jobs:
-            if job.job_id == job_id:
+            if str(job.job_id) == job_id:
                 return JobResponse(
-                    job_id=job.job_id,
+                    job_id=str(job.job_id),
                     job_title=job.job_title,
                     job_description=job.job_description,
                     posted_date=job.posted_date.isoformat(),
@@ -571,4 +600,68 @@ async def get_applications(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get applications: {e!s}"
         ) from e
+
+
+@router.get("/jobs/{job_id}/candidates", response_model=list[CandidateRecommendationResponse])
+async def get_candidate_recommendations(
+    job_id: str,
+    user_id: str = Depends(get_current_user_id),
+    _role: str = Depends(verify_employer_role),
+    n_results: int = 20,
+    min_score: float = 0.0
+):
+    """
+    Get AI-powered candidate recommendations for a specific job.
+
+    This endpoint uses ChromaDB vector similarity and LangChain LLM scoring
+    to provide personalized candidate recommendations with match scores.
+
+    Args:
+        job_id: Job posting ID
+        n_results: Maximum number of recommendations to return (default: 20)
+        min_score: Minimum match score threshold 0-100 (default: 0.0)
+
+    Returns:
+        List of candidate recommendations sorted by match score (descending)
+    """
+    try:
+        # Get candidate matching service
+        matching_service = get_candidate_matching_service()
+
+        # Get recommendations
+        recommendations = await matching_service.match_job_to_candidates(
+            job_id=job_id,
+            employer_id=user_id,
+            n_results=n_results,
+            min_score=min_score
+        )
+
+        # Convert to response format
+        response = []
+        for rec in recommendations:
+            response.append(CandidateRecommendationResponse(
+                seeker_id=rec["seeker_id"],
+                first_name=rec["first_name"],
+                last_name=rec["last_name"],
+                email=rec["email"],
+                match_score=rec["match_score"],
+                score_breakdown=ScoreBreakdown(**rec["score_breakdown"]),
+                has_applied=rec["has_applied"],
+                resume_preview=rec["resume_preview"],
+                key_skills=rec["key_skills"],
+                education_level=rec["education_level"],
+                edu_focus=rec["edu_focus"],
+                pay_range=rec["pay_range"],
+                pay_unit=rec["pay_unit"],
+                phone=rec["phone"],
+                address=rec["address"]
+            ))
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get candidate recommendations: {e!s}"
+        ) from e
+    else:
+        return response
 

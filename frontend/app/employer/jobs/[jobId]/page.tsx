@@ -29,7 +29,6 @@ export default function JobDetailPage() {
   const { isAuthenticated, checkAuth, logout } = useAuthStore();
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -180,13 +179,13 @@ export default function JobDetailPage() {
 
           {/* Action Buttons */}
           <div className="flex items-center gap-3 pt-6 border-t border-gray-200">
-            <button
-              onClick={() => setIsEditing(!isEditing)}
+            <Link
+              href={`/employer/jobs/${jobId}/edit`}
               className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
             >
               <Edit2 className="h-4 w-4" />
               Edit Job
-            </button>
+            </Link>
             <button
               onClick={handleDelete}
               className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
