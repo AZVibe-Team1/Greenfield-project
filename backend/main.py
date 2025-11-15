@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from loguru import logger
 
 from backend.api.v1.routes import auth_router, employer_router, seeker_router
 from backend.db.settings import (
@@ -17,24 +18,18 @@ from backend.db.settings import (
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(_app: FastAPI):
     """
     Application lifespan manager.
     Handles startup and shutdown events for MongoDB connection.
     """
     # Startup: Connect to MongoDB
-    try:
-        await connect_to_mongodb()
-        print("✅ Application startup complete")
-    except Exception as e:
-        print(f"❌ Failed to start application: {e}")
-        raise
+    await connect_to_mongodb()
 
     yield
 
     # Shutdown: Close MongoDB connection
     await close_mongodb_connection()
-    print("👋 Application shutdown complete")
 
 
 # Create FastAPI application instance
@@ -67,6 +62,7 @@ app.include_router(employer_router.router, prefix="/api/v1")
 @app.get("/")
 async def root():
     """Root endpoint - health check"""
+    logger.debug("Job Portal API is running and is ok")
     return {
         "message": "Job Portal API is running",
         "status": "ok",
