@@ -14,7 +14,7 @@
  In the Update_seeker_profile function, add a call to update_collection with:
   a) create a Json variable called metadata that looks like:
  metadata_descr=[{"Post_Date": created_at}]
- b) call update_collection passing in following variables: Seeker_Resume_Collection,"Seeker_Resume_Collection", Seeker_Identification,resume, metadata_resume
+ b) call update_collection passing in following variables: Seeker_Resume/  _Collection,"Seeker_Resume_Collection", Seeker_Identification,resume, metadata_resume
  then do 
  c) create a variable called Skills that concatenates key_skills, education_level and edu_focus
  d) create a variable called metadata_skill=[{"Desired Skills", Skills]

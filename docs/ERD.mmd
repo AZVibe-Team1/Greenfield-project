@@ -1,0 +1,121 @@
+erDiagram
+    %% MongoDB Collections
+    SEEKERS ||--o{ APPLICATIONS : "makes"
+    EMPLOYERS ||--o{ OPEN_JOBS : "posts"
+    EMPLOYERS ||--o{ APPLICATIONS_RECEIVED : "receives"
+    OPEN_JOBS ||--o{ APPLICATIONS : "receives"
+    OPEN_JOBS ||--o{ APPLICATIONS_RECEIVED : "for"
+    
+    %% ChromaDB Collections (Vector Databases)
+    SEEKER_RESUME_COLLECTION }o--|| SEEKERS : "embedded-resume"
+    SEEKER_SKILLS_COLLECTION }o--|| SEEKERS : "embedded-skills"
+    EMPLOYER_JOBDESCR_COLLECTION }o--|| OPEN_JOBS : "embedded-description"
+    EMPLOYER_SKILLSWISH_COLLECTION }o--|| OPEN_JOBS : "embedded-skills"
+
+    %% MongoDB: SEEKERS Collection
+    SEEKERS {
+        PydanticObjectId seeker_id PK "MongoDB ObjectId"
+        UUID seeker_identification UK "UUID for ChromaDB"
+        float temperature "AI model temp 0-1"
+        string first_name "Information.first_name"
+        string last_name "Information.last_name"
+        Email email "Information.email"
+        USPhoneNumber phone "Information.phone"
+        Address address "Information.address"
+        string password_hash "Hashed password"
+        datetime updated_at "MST timezone"
+        string resume "Resume text content"
+        int[] pay_range "Min-Max salary"
+        enum pay_unit "Hourly-Monthly-Yearly"
+        enum education_level "BA-BS-MA-MS-MBA-PhD"
+        string edu_focus "Field of study"
+        string[] key_skills "Max 15 skills"
+    }
+
+    %% MongoDB: EMPLOYERS Collection
+    EMPLOYERS {
+        PydanticObjectId employer_id PK "MongoDB ObjectId"
+        UUID employer_identification UK "UUID for ChromaDB"
+        float temperature "AI model temp 0-1"
+        string company_name "CompanyInformation.company_name"
+        Address address "CompanyInformation.address"
+        IndustryInfo[] industry "2 GICS codes required"
+        string benefits "CompanyInformation.benefits"
+        string contact_first_name "Primary contact"
+        string contact_last_name "Primary contact"
+        Email email "Auth email unique"
+        string password_hash "Hashed password"
+        datetime created_at "MST timezone"
+        datetime updated_at "MST timezone"
+    }
+
+    %% MongoDB: OPEN_JOBS Subdocument
+    OPEN_JOBS {
+        PydanticObjectId job_id PK "MongoDB ObjectId"
+        UUID job_identification UK "UUID for ChromaDB"
+        UUID employer_identification FK "Links to Employer"
+        string job_title "Position title"
+        string job_description "Full description"
+        datetime posted_date "MST timezone"
+        string department "Department name"
+        string hire_mgr_first "Hiring manager"
+        string hire_mgr_last "Hiring manager"
+        enum current_status "Posted-Withdrawn-Pending-Canceled"
+        int[] pay_range "Min-Max salary"
+        enum pay_unit "Hourly-Monthly-Yearly"
+        enum education_level "BA-BS-MA-MS-MBA-PhD"
+        string edu_focus "Required field"
+        string[] key_skills "Max 15 skills"
+    }
+
+    %% MongoDB: APPLICATIONS Subdocument (from Seeker side)
+    APPLICATIONS {
+        string job_id FK "References OpenJob"
+        string employer_id FK "References Employer"
+        datetime date_applied "MST timezone"
+        enum application_status "Submitted-Interviewed-Offered-Rejected"
+    }
+
+    %% MongoDB: APPLICATIONS_RECEIVED Subdocument (from Employer side)
+    APPLICATIONS_RECEIVED {
+        string applicant_id FK "References Seeker"
+        string job_id FK "References OpenJob"
+        datetime initial_daterec "MST timezone"
+        enum current_status "Received-Interviewed-Offered-Rejected-Canceled"
+        enum previous_status "Status history"
+        datetime current_status_date "MST timezone"
+        datetime previous_status_date "MST timezone"
+    }
+
+    %% ChromaDB: SEEKER_RESUME_COLLECTION
+    SEEKER_RESUME_COLLECTION {
+        string id PK "seeker_identification UUID"
+        float[] embedding "OpenAI text-embedding-3-small"
+        string document "Resume text content"
+        json metadata "seeker_id first_name last_name email"
+    }
+
+    %% ChromaDB: SEEKER_SKILLS_COLLECTION
+    SEEKER_SKILLS_COLLECTION {
+        string id PK "seeker_identification UUID"
+        float[] embedding "OpenAI text-embedding-3-small"
+        string document "Comma-separated skills"
+        json metadata "seeker_id education_level edu_focus pay_range"
+    }
+
+    %% ChromaDB: EMPLOYER_JOBDESCR_COLLECTION
+    EMPLOYER_JOBDESCR_COLLECTION {
+        string id PK "job_identification UUID"
+        float[] embedding "OpenAI text-embedding-3-small"
+        string document "Job description text"
+        json metadata "job_id employer_identification job_title department"
+    }
+
+    %% ChromaDB: EMPLOYER_SKILLSWISH_COLLECTION
+    EMPLOYER_SKILLSWISH_COLLECTION {
+        string id PK "job_identification UUID"
+        float[] embedding "OpenAI text-embedding-3-small"
+        string document "Comma-separated skills"
+        json metadata "job_id education_level edu_focus pay_range"
+    }
+

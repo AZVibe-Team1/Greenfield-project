@@ -82,7 +82,7 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
 [lint.isort]
 # Configure import sorting (isort compatibility)
-known-first-party = ["test_project"]
+known-first-party = ["backend", "api", "db"]
 section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
 combine-as-imports = true
 force-wrap-aliases = true
