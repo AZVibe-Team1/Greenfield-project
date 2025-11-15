@@ -24,6 +24,9 @@ from backend.schemas.seeker import Seeker
 # Load environment variables from .env file
 load_dotenv()
 
+# Get OpenAI API key for ChromaDB embedding function
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
 # Configure loguru logging
 logger.remove(0)
 logger.add("Logs/Debug_log.log", level="DEBUG", format="{time} {level} {message}", rotation="50MB")
@@ -46,7 +49,8 @@ try:
     Seeker_Resume_collection = client.get_or_create_collection(
     name="Seeker_Resume",
     embedding_function=OpenAIEmbeddingFunction(  # type: ignore[arg-type]
-        model_name="text-embedding-3-small"
+        model_name="text-embedding-3-small",
+        api_key=OPENAI_API_KEY
     ),
     metadata={
         "description": "Contains Resume of Seeker",
@@ -61,7 +65,8 @@ try:
     Seeker_Skill_collection = client.get_or_create_collection(
     name="Seeker_Skills",
     embedding_function=OpenAIEmbeddingFunction(  # type: ignore[arg-type]
-        model_name="text-embedding-3-small"
+        model_name="text-embedding-3-small",
+        api_key=OPENAI_API_KEY
     ),
         metadata={
         "description": "Contains Skills of Seeker",
@@ -75,7 +80,8 @@ try:
     Employer_JobDescr_collection = client.get_or_create_collection(
     name="Employer_JobDescr",
     embedding_function=OpenAIEmbeddingFunction(  # type: ignore[arg-type]
-        model_name="text-embedding-3-small"
+        model_name="text-embedding-3-small",
+        api_key=OPENAI_API_KEY
     ),
         metadata={
         "description": "Contains Job Description of Employer",
@@ -89,7 +95,8 @@ try:
     Employer_Skillswish_collection = client.get_or_create_collection(
     name="Employer_Skillswish",
     embedding_function=OpenAIEmbeddingFunction(  # type: ignore[arg-type]
-        model_name="text-embedding-3-small"
+        model_name="text-embedding-3-small",
+        api_key=OPENAI_API_KEY
     ),
     metadata={
         "description": "Contains Desired skills of Employer",
