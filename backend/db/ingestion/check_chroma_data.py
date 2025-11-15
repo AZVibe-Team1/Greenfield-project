@@ -40,30 +40,6 @@ except Exception as e:
     print(f"   ❌ Error: {e}")
 
 print("\n" + "=" * 60)
-print("Test Seeker Check")
-print("=" * 60)
-
-test_seeker_id = "550e8400-e29b-41d4-a716-446655440999"
-print(f"\n🔍 Looking for test seeker: {test_seeker_id}")
-
-try:
-    result = Seeker_Resume_collection.get(
-        ids=[test_seeker_id],
-        include=["embeddings", "metadatas"]
-    )
-    
-    if result['ids']:
-        print(f"   ✅ Found test seeker!")
-        print(f"   Has embedding: {result['embeddings'][0] is not None if result.get('embeddings') else False}")
-        if result.get('metadatas'):
-            print(f"   Metadata: {result['metadatas'][0]}")
-    else:
-        print(f"   ❌ Test seeker NOT found in ChromaDB")
-        print(f"   This is why recommendations aren't showing!")
-except Exception as e:
-    print(f"   ❌ Error: {e}")
-
-print("\n" + "=" * 60)
 print("Recommendation")
 print("=" * 60)
 
