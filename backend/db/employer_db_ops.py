@@ -177,10 +177,30 @@ class EmployerCRUD:
 
             # Update fields
             for key, value in update_data.items():
-                if hasattr(employer, key):
+                # Handle nested fields (e.g., "company_information.benefits")
+                if "." in key:
+                    parts = key.split(".", 1)
+                    parent_attr = parts[0]
+                    nested_attr = parts[1]
+                    
+                    if hasattr(employer, parent_attr):
+                        parent_obj = getattr(employer, parent_attr)
+                        if hasattr(parent_obj, nested_attr):
+                            setattr(parent_obj, nested_attr, value)
+                            logger.info(f"Updated nested field {key} to: {value}")
+                        else:
+                            logger.warning(f"Nested attribute not found: {key}")
+                    else:
+                        logger.warning(f"Parent attribute not found: {parent_attr}")
+                # Handle top-level fields
+                elif hasattr(employer, key):
                     setattr(employer, key, value)
+                    logger.info(f"Updated field {key}")
+                else:
+                    logger.warning(f"Attribute not found: {key}")
 
             await employer.save()
+            logger.info(f"Employer {employer_id} updated successfully")
         except Exception as e:
             logger.critical(f"Error updating employer: {e}")
             return None
