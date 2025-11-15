@@ -3,7 +3,7 @@
  * 
  * API calls for employer operations
  */
-import apiClient from '@/lib/api';
+import apiClient from '@/lib/api-client';
 import { EmployerProfile, Job, CreateJobRequest } from '@/types';
 
 export const employerService = {
