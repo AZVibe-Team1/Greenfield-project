@@ -142,7 +142,7 @@ export default function EmployerDashboard() {
             </h1>
           </div>
           <p className="text-blue-100 text-lg">
-            Manage your job postings and find the perfect candidates.
+            Building your team at {profile?.company_name} - Hire smarter with AI-powered insights.
           </p>
         </div>
 
