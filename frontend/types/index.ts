@@ -178,3 +178,26 @@ export interface AutoApplySettings {
   threshold: number;
 }
 
+export interface CandidateRecommendation {
+  seeker_id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  match_score: number;
+  score_breakdown: ScoreBreakdown;
+  has_applied: boolean;
+  resume_preview: string;
+  key_skills: string[];
+  education_level: string;
+  edu_focus: string;
+  pay_range: number[];
+  pay_unit: string;
+  phone: string;
+  address: {
+    street: string;
+    city: string;
+    state: string;
+    zip_code: string;
+  };
+}
+

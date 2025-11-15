@@ -4,7 +4,7 @@
  * API calls for employer operations
  */
 import apiClient from '@/lib/api-client';
-import { EmployerProfile, Job, CreateJobRequest } from '@/types';
+import { EmployerProfile, Job, CreateJobRequest, CandidateRecommendation } from '@/types';
 
 export const employerService = {
   /**
@@ -68,6 +68,26 @@ export const employerService = {
    */
   getApplications: async (): Promise<any> => {
     const response = await apiClient.get('/employers/applications');
+    return response.data;
+  },
+
+  /**
+   * Get AI-powered candidate recommendations for a job
+   */
+  getCandidateRecommendations: async (
+    jobId: string, 
+    nResults: number = 20, 
+    minScore: number = 0.0
+  ): Promise<CandidateRecommendation[]> => {
+    const response = await apiClient.get<CandidateRecommendation[]>(
+      `/employers/jobs/${jobId}/candidates`,
+      {
+        params: {
+          n_results: nResults,
+          min_score: minScore
+        }
+      }
+    );
     return response.data;
   },
 };

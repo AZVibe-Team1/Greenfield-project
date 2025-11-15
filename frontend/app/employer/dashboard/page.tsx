@@ -25,6 +25,8 @@ export default function EmployerDashboard() {
   const { user, isLoading: authLoading, logout } = useEmployerAuth();
   const [profile, setProfile] = useState<EmployerProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [avgMatchScore, setAvgMatchScore] = useState<number>(0);
+  const [loadingMatchScore, setLoadingMatchScore] = useState(false);
 
   // Load profile data once authentication is confirmed
   useEffect(() => {
@@ -37,10 +39,48 @@ export default function EmployerDashboard() {
     try {
       const data = await employerService.getProfile();
       setProfile(data);
+      // Load AI match scores after profile loads
+      if (data.open_jobs.length > 0) {
+        loadMatchScores(data.open_jobs);
+      }
     } catch (error) {
       console.error('Failed to load profile:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadMatchScores = async (jobs: any[]) => {
+    setLoadingMatchScore(true);
+    try {
+      // Fetch top candidates for each job (limit to 5 to speed up)
+      const scoresPromises = jobs.slice(0, 5).map(job => 
+        employerService.getCandidateRecommendations(job.job_id, 5, 0)
+          .catch(() => []) // Return empty array if fails
+      );
+      
+      const allCandidates = await Promise.all(scoresPromises);
+      
+      // Calculate average of top match scores across all jobs
+      let totalScore = 0;
+      let jobsWithCandidates = 0;
+      
+      allCandidates.forEach(candidates => {
+        if (candidates.length > 0) {
+          // Get the best match score for this job
+          const topScore = candidates[0].match_score;
+          totalScore += topScore;
+          jobsWithCandidates++;
+        }
+      });
+      
+      const avgScore = jobsWithCandidates > 0 ? totalScore / jobsWithCandidates : 0;
+      setAvgMatchScore(Math.round(avgScore));
+    } catch (error) {
+      console.error('Failed to load match scores:', error);
+      setAvgMatchScore(0);
+    } finally {
+      setLoadingMatchScore(false);
     }
   };
 
@@ -153,20 +193,50 @@ export default function EmployerDashboard() {
           {/* Match Rate */}
           <Link
             href="/employer/jobs"
-            className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all hover:-translate-y-1 cursor-pointer"
+            className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all hover:-translate-y-1 cursor-pointer relative overflow-hidden"
           >
+            {loadingMatchScore && (
+              <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-10">
+                <div className="w-6 h-6 border-3 border-amber-600 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            )}
             <div className="flex items-center justify-between mb-4">
-              <div className="bg-amber-100 p-3 rounded-lg">
+              <div className="bg-gradient-to-br from-amber-100 to-amber-200 p-3 rounded-lg">
                 <Target className="h-8 w-8 text-amber-600" />
               </div>
               <span className="text-3xl font-bold text-gray-900">
-                {(profile?.open_jobs?.length || 0) > 0 ? Math.floor((profile?.apps_received?.length || 0) / (profile?.open_jobs?.length || 1) * 10) : 0}%
+                {avgMatchScore}%
               </span>
             </div>
-            <h3 className="text-gray-600 font-medium">Match Rate</h3>
-            <p className="text-sm text-gray-500 mt-1">AI matching score</p>
+            <h3 className="text-gray-600 font-medium">AI Match Rate</h3>
+            <p className="text-sm text-gray-500 mt-1">Average best match score</p>
           </Link>
         </div>
+
+        {/* AI Feature Banner */}
+        {profile && profile.open_jobs.length > 0 && (
+          <div className="bg-gradient-to-r from-purple-600 to-purple-500 rounded-2xl shadow-xl p-6 mb-8 text-white">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="bg-white/20 p-3 rounded-xl">
+                  <Target className="h-8 w-8 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold mb-1">🎯 AI-Powered Candidate Matching Available</h3>
+                  <p className="text-purple-100">
+                    View AI-matched candidates with detailed scoring for each of your job postings
+                  </p>
+                </div>
+              </div>
+              <Link
+                href="/employer/jobs"
+                className="px-6 py-3 bg-white text-purple-600 rounded-lg font-semibold hover:bg-purple-50 transition-colors whitespace-nowrap"
+              >
+                Explore Now →
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* Quick Actions */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
@@ -276,7 +346,7 @@ export default function EmployerDashboard() {
                         </span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3">
                       <span className={`px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 ${
                         job.current_status === 'Posted' ? 'bg-green-100 text-green-800' :
                         'bg-gray-100 text-gray-800'
@@ -285,10 +355,16 @@ export default function EmployerDashboard() {
                         {job.current_status}
                       </span>
                       <Link
+                        href={`/employer/jobs/${job.job_id}/candidates`}
+                        className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors"
+                      >
+                        AI Candidates →
+                      </Link>
+                      <Link
                         href={`/employer/jobs/${job.job_id}`}
                         className="text-blue-600 hover:text-blue-700 font-medium text-sm hover:underline"
                       >
-                        View →
+                        Edit →
                       </Link>
                     </div>
                   </div>
