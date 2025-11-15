@@ -39,18 +39,25 @@ export default function EmployerProfilePage() {
     }
   }, [authLoading, user]);
 
-  const loadProfile = async () => {
+  const loadProfile = async (skipLoadingState = false) => {
+    if (!skipLoadingState) {
+      setLoading(true);
+    }
     try {
       const data = await employerService.getProfile();
+      console.log('Loaded profile data:', data);
       setProfile(data);
       setContactFirstName(data.contact_first_name);
       setContactLastName(data.contact_last_name);
       setBenefits(data.benefits || '');
+      console.log('Set benefits to:', data.benefits);
     } catch (error) {
       console.error('Failed to load profile:', error);
       setMessage({ type: 'error', text: 'Failed to load profile' });
     } finally {
-      setLoading(false);
+      if (!skipLoadingState) {
+        setLoading(false);
+      }
     }
   };
 
@@ -75,10 +82,8 @@ export default function EmployerProfilePage() {
       console.log('Profile update response:', response);
       setMessage({ type: 'success', text: 'Profile updated successfully!' });
       
-      // Reload profile to get updated data
-      setTimeout(() => {
-        loadProfile();
-      }, 1000);
+      // Reload profile immediately to get updated data
+      await loadProfile(true);
     } catch (error: any) {
       console.error('Failed to update profile:', error);
       console.error('Error details:', error.response?.data);
