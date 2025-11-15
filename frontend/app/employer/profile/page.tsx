@@ -60,21 +60,30 @@ export default function EmployerProfilePage() {
     setMessage(null);
 
     try {
-      await employerService.updateProfile({
+      console.log('Submitting profile update:', {
+        contact_first_name: contactFirstName,
+        contact_last_name: contactLastName,
+        benefits: benefits
+      });
+
+      const response = await employerService.updateProfile({
         contact_first_name: contactFirstName,
         contact_last_name: contactLastName,
         benefits: benefits
       });
       
+      console.log('Profile update response:', response);
       setMessage({ type: 'success', text: 'Profile updated successfully!' });
       
       // Reload profile to get updated data
       setTimeout(() => {
         loadProfile();
       }, 1000);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to update profile:', error);
-      setMessage({ type: 'error', text: 'Failed to update profile. Please try again.' });
+      console.error('Error details:', error.response?.data);
+      const errorMessage = error.response?.data?.detail || 'Failed to update profile. Please try again.';
+      setMessage({ type: 'error', text: errorMessage });
     } finally {
       setSaving(false);
     }
