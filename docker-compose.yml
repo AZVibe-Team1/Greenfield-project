@@ -26,6 +26,7 @@ services:
       - ./pyproject.toml:/app/pyproject.toml
       - ./uv.lock:/app/uv.lock
       - ./chroma_db:/app/chroma_db
+      - ./backend/Logs:/app/Logs
     # Restart policy: restart container if it stops unexpectedly
     restart: unless-stopped
     # Health check to ensure service is running
