@@ -40,7 +40,7 @@ class MatchingService:
         """
         try:
             seeker_data = self.vector_store.get_seeker_by_id(seeker_id)
-            if seeker_data and seeker_data.get("embedding"):
+            if seeker_data and "embedding" in seeker_data and seeker_data["embedding"] is not None:
                 return seeker_data["embedding"]
             logger.warning(f"Seeker embedding not found for ID: {seeker_id}")
             return None
@@ -213,7 +213,7 @@ class MatchingService:
                 return []
             
             seeker_embedding = await self.get_seeker_embedding(str(seeker_identification))
-            if not seeker_embedding:
+            if seeker_embedding is None or len(seeker_embedding) == 0:
                 logger.warning(f"[RECOMMENDATIONS] No embedding found for seeker_identification: {seeker_identification}")
                 return []
             
@@ -234,7 +234,7 @@ class MatchingService:
                 n_results=n_results * 2  # Get more to filter later
             )
 
-            if not job_matches:
+            if not job_matches or len(job_matches) == 0:
                 logger.info(f"No similar jobs found for seeker: {seeker_id}")
                 return []
 

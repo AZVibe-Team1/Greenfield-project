@@ -45,7 +45,7 @@ RUN uv sync
 
 # Copy the rest of the backend application code
 # This is done after dependency installation to leverage Docker cache
-COPY backend/ ./backend/
+# COPY backend/ ./backend/
 
 # Expose port 8000 - default FastAPI/Uvicorn port
 # This port will be mapped to host machine in docker-compose.yml

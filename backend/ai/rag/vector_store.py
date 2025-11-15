@@ -44,15 +44,15 @@ class VectorStore:
                 include=["embeddings", "metadatas", "documents"]
             )
             
-            if not result or not result["ids"]:
+            if result is None or "ids" not in result or len(result["ids"]) == 0:
                 logger.warning(f"Seeker not found in ChromaDB: {seeker_id}")
                 return None
             
             return {
                 "id": result["ids"][0],
-                "embedding": result["embeddings"][0] if result.get("embeddings") else None,
-                "metadata": result["metadatas"][0] if result.get("metadatas") else {},
-                "document": result["documents"][0] if result.get("documents") else None
+                "embedding": result["embeddings"][0] if "embeddings" in result and result["embeddings"] is not None and len(result["embeddings"]) > 0 else None,
+                "metadata": result["metadatas"][0] if "metadatas" in result and result["metadatas"] is not None and len(result["metadatas"]) > 0 else {},
+                "document": result["documents"][0] if "documents" in result and result["documents"] is not None and len(result["documents"]) > 0 else None
             }
         
         except Exception as e:
@@ -75,15 +75,15 @@ class VectorStore:
                 include=["embeddings", "metadatas", "documents"]
             )
             
-            if not result or not result["ids"]:
+            if result is None or "ids" not in result or len(result["ids"]) == 0:
                 logger.warning(f"Job not found in ChromaDB: {job_id}")
                 return None
             
             return {
                 "id": result["ids"][0],
-                "embedding": result["embeddings"][0] if result.get("embeddings") else None,
-                "metadata": result["metadatas"][0] if result.get("metadatas") else {},
-                "document": result["documents"][0] if result.get("documents") else None
+                "embedding": result["embeddings"][0] if "embeddings" in result and result["embeddings"] is not None and len(result["embeddings"]) > 0 else None,
+                "metadata": result["metadatas"][0] if "metadatas" in result and result["metadatas"] is not None and len(result["metadatas"]) > 0 else {},
+                "document": result["documents"][0] if "documents" in result and result["documents"] is not None and len(result["documents"]) > 0 else None
             }
         
         except Exception as e:
