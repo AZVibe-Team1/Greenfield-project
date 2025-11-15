@@ -16,7 +16,9 @@ import {
   TrendingUp,
   Clock,
   CheckCircle,
-  Target
+  Target,
+  User,
+  Edit
 } from 'lucide-react';
 
 export default function EmployerDashboard() {
@@ -110,6 +112,13 @@ export default function EmployerDashboard() {
               <span className="text-gray-700 font-medium hidden sm:block">
                 {profile?.company_name}
               </span>
+              <Link
+                href="/employer/profile"
+                className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors"
+              >
+                <User className="h-5 w-5" />
+                <span className="hidden sm:inline">Profile</span>
+              </Link>
               <button
                 onClick={logout}
                 className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors"
@@ -277,10 +286,19 @@ export default function EmployerDashboard() {
         {/* Company Summary */}
         {profile && (
           <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
-            <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-              <Building2 className="h-6 w-6 text-blue-600" />
-              Company Information
-            </h3>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <Building2 className="h-6 w-6 text-blue-600" />
+                Company Information
+              </h3>
+              <Link
+                href="/employer/profile"
+                className="inline-flex items-center gap-2 px-4 py-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors font-medium"
+              >
+                <Edit className="h-4 w-4" />
+                Edit Profile
+              </Link>
+            </div>
             <div className="grid md:grid-cols-2 gap-6">
               <div className="flex items-start gap-3">
                 <div className="bg-blue-100 p-2 rounded-lg">
