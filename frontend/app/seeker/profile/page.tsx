@@ -19,7 +19,10 @@ import {
   X,
   Sparkles,
   Settings,
-  Zap
+  Zap,
+  FileText,
+  Upload,
+  CheckCircle
 } from 'lucide-react';
 
 export default function SeekerProfilePage() {
@@ -41,6 +44,11 @@ export default function SeekerProfilePage() {
     threshold: 80
   });
   const [savingAutoApply, setSavingAutoApply] = useState(false);
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [resumeText, setResumeText] = useState('');
+  const [uploadingResume, setUploadingResume] = useState(false);
+  const [resumeUploadSuccess, setResumeUploadSuccess] = useState(false);
+  const [resumeUploadError, setResumeUploadError] = useState('');
 
   // Load profile data once authentication is confirmed
   useEffect(() => {
@@ -103,6 +111,60 @@ export default function SeekerProfilePage() {
       alert('Failed to update auto-apply settings. Please try again.');
     } finally {
       setSavingAutoApply(false);
+    }
+  };
+
+  const handleResumeUpload = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setResumeUploadError('');
+    setResumeUploadSuccess(false);
+
+    if (!resumeFile && !resumeText.trim()) {
+      setResumeUploadError('Please select a file or enter resume text');
+      return;
+    }
+
+    try {
+      setUploadingResume(true);
+      await seekerService.uploadResume(resumeFile || undefined, resumeText.trim() || undefined);
+      setResumeUploadSuccess(true);
+      setResumeFile(null);
+      setResumeText('');
+      
+      // Reload profile to get updated resume
+      await loadProfile();
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => setResumeUploadSuccess(false), 3000);
+    } catch (error: any) {
+      console.error('Failed to upload resume:', error);
+      setResumeUploadError(error.response?.data?.detail || 'Failed to upload resume. Please try again.');
+    } finally {
+      setUploadingResume(false);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      const allowedTypes = ['.pdf', '.docx', '.txt'];
+      const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+      
+      if (!allowedTypes.includes(fileExtension)) {
+        setResumeUploadError('Invalid file type. Please upload a PDF, DOCX, or TXT file.');
+        return;
+      }
+      
+      // Validate file size (10MB max)
+      const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+      if (file.size > maxSize) {
+        setResumeUploadError('File size exceeds 10MB. Please upload a smaller file.');
+        return;
+      }
+      
+      setResumeFile(file);
+      setResumeUploadError('');
     }
   };
 
@@ -402,8 +464,164 @@ export default function SeekerProfilePage() {
                     </div>
                   </div>
                 </div>
+
+                {/* Resume Section */}
+                <div>
+                  <div className="flex items-center gap-2 mb-6 pb-3 border-b border-gray-200">
+                    <FileText className="h-5 w-5 text-emerald-600" />
+                    <h3 className="text-xl font-semibold text-gray-900">Resume</h3>
+                  </div>
+                  {profile.resume ? (
+                    <div className="flex items-start gap-3 mb-4">
+                      <div className="p-2 bg-emerald-50 rounded-lg">
+                        <FileText className="h-5 w-5 text-emerald-600" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm text-gray-600 mb-1">Resume Status</p>
+                        <p className="font-semibold text-gray-900">Resume uploaded</p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {profile.resume.length > 100 
+                            ? `${profile.resume.substring(0, 100)}...` 
+                            : profile.resume}
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-start gap-3 mb-4">
+                      <div className="p-2 bg-gray-50 rounded-lg">
+                        <FileText className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600 mb-1">Resume Status</p>
+                        <p className="font-semibold text-gray-500">No resume uploaded</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Resume Upload Section */}
+        {profile && !editing && (
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mt-6">
+            <div className="flex items-center gap-2 mb-6 pb-3 border-b border-emerald-200">
+              <div className="p-2 bg-emerald-100 rounded-lg">
+                <Upload className="h-5 w-5 text-emerald-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900">Upload Resume</h3>
+            </div>
+
+            <form onSubmit={handleResumeUpload} className="space-y-6">
+              <div className="space-y-4">
+                {/* File Upload */}
+                <div>
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                    <FileText className="h-4 w-4 text-emerald-600" />
+                    Upload Resume File
+                  </label>
+                  <div className="flex items-center gap-4">
+                    <label className="flex-1 cursor-pointer">
+                      <input
+                        type="file"
+                        accept=".pdf,.docx,.txt"
+                        onChange={handleFileChange}
+                        className="hidden"
+                        disabled={uploadingResume}
+                      />
+                      <div className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-emerald-500 transition-colors text-center">
+                        {resumeFile ? (
+                          <div className="flex items-center justify-center gap-2 text-emerald-600">
+                            <FileText className="h-5 w-5" />
+                            <span className="font-medium">{resumeFile.name}</span>
+                            <span className="text-xs text-gray-500">
+                              ({(resumeFile.size / 1024).toFixed(2)} KB)
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="text-gray-600">
+                            <Upload className="h-6 w-6 mx-auto mb-2 text-gray-400" />
+                            <p className="text-sm">Click to select a file</p>
+                            <p className="text-xs text-gray-500 mt-1">PDF, DOCX, or TXT (max 10MB)</p>
+                          </div>
+                        )}
+                      </div>
+                    </label>
+                    {resumeFile && (
+                      <button
+                        type="button"
+                        onClick={() => setResumeFile(null)}
+                        className="px-4 py-2 text-sm text-red-600 hover:text-red-700 transition-colors"
+                        disabled={uploadingResume}
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Or Divider */}
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-white text-gray-500">OR</span>
+                  </div>
+                </div>
+
+                {/* Text Input */}
+                <div>
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                    <FileText className="h-4 w-4 text-emerald-600" />
+                    Paste Resume Text
+                  </label>
+                  <textarea
+                    value={resumeText}
+                    onChange={(e) => setResumeText(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    rows={6}
+                    placeholder="Paste your resume content here..."
+                    disabled={uploadingResume}
+                  />
+                </div>
+              </div>
+
+              {/* Error Message */}
+              {resumeUploadError && (
+                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-800">{resumeUploadError}</p>
+                </div>
+              )}
+
+              {/* Success Message */}
+              {resumeUploadSuccess && (
+                <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5 text-emerald-600" />
+                  <p className="text-sm text-emerald-800">Resume uploaded successfully!</p>
+                </div>
+              )}
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={uploadingResume || (!resumeFile && !resumeText.trim())}
+                className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium shadow-md hover:shadow-lg disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
+                {uploadingResume ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-5 w-5" />
+                    Upload Resume
+                  </>
+                )}
+              </button>
+            </form>
           </div>
         )}
 

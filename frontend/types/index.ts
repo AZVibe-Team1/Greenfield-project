@@ -40,6 +40,7 @@ export interface SeekerRegisterRequest {
   pay_range?: number[];
   pay_unit?: string;
   key_skills?: string[];
+  resume?: string;
 }
 
 export interface EmployerRegisterRequest {

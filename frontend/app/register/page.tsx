@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { authService } from '@/services/auth-service';
-import { Briefcase, User, Building2, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Briefcase, User, Building2, ArrowLeft, CheckCircle, FileText, Upload, X } from 'lucide-react';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -30,6 +30,9 @@ export default function RegisterPage() {
   const [educationLevel, setEducationLevel] = useState('BS');
   const [eduFocus, setEduFocus] = useState('');
   const [skills, setSkills] = useState('');
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [resumeText, setResumeText] = useState('');
+  const [resumeError, setResumeError] = useState('');
 
   // Employer fields
   const [companyName, setCompanyName] = useState('');
@@ -48,6 +51,38 @@ export default function RegisterPage() {
     }
   }, [searchParams]);
 
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setResumeError('');
+      
+      // Validate file type
+      const allowedTypes = ['.txt'];
+      const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+      
+      if (!allowedTypes.includes(fileExtension)) {
+        setResumeError('For registration, only TXT files are supported. PDF and DOCX files can be uploaded after registration.');
+        return;
+      }
+      
+      // Validate file size (10MB max)
+      const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+      if (file.size > maxSize) {
+        setResumeError('File size exceeds 10MB. Please upload a smaller file.');
+        return;
+      }
+      
+      // Read file content as text
+      try {
+        const text = await file.text();
+        setResumeText(text);
+        setResumeFile(file);
+      } catch (error) {
+        setResumeError('Failed to read file. Please try again.');
+      }
+    }
+  };
+
   const handleSeekerRegister = async () => {
     if (password !== confirmPassword) {
       setError('Passwords do not match');
@@ -56,8 +91,15 @@ export default function RegisterPage() {
 
     setLoading(true);
     setError('');
+    setResumeError('');
 
     try {
+      // Prepare resume content (from file or text)
+      let resumeContent: string | undefined = undefined;
+      if (resumeText.trim()) {
+        resumeContent = resumeText.trim();
+      }
+
       await authService.registerSeeker({
         first_name: firstName,
         last_name: lastName,
@@ -71,6 +113,7 @@ export default function RegisterPage() {
         education_level: educationLevel,
         edu_focus: eduFocus,
         key_skills: skills ? skills.split(',').map((s) => s.trim()) : [],
+        resume: resumeContent,
       });
 
       router.push('/login');
@@ -418,6 +461,98 @@ export default function RegisterPage() {
                       placeholder="Python, JavaScript, React"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
                     />
+                  </div>
+
+                  {/* Resume Upload Section */}
+                  <div className="space-y-3">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <FileText className="h-4 w-4 inline mr-1 text-blue-600" />
+                      Resume (Optional)
+                    </label>
+                    
+                    {/* File Upload */}
+                    <div>
+                      <label className="block text-xs text-gray-600 mb-2">Upload TXT File</label>
+                      <div className="flex items-center gap-4">
+                        <label className="flex-1 cursor-pointer">
+                          <input
+                            type="file"
+                            accept=".txt"
+                            onChange={handleFileChange}
+                            className="hidden"
+                            disabled={loading}
+                          />
+                          <div className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 transition-colors text-center">
+                            {resumeFile ? (
+                              <div className="flex items-center justify-center gap-2 text-blue-600">
+                                <FileText className="h-5 w-5" />
+                                <span className="font-medium text-sm">{resumeFile.name}</span>
+                                <span className="text-xs text-gray-500">
+                                  ({(resumeFile.size / 1024).toFixed(2)} KB)
+                                </span>
+                              </div>
+                            ) : (
+                              <div className="text-gray-600">
+                                <Upload className="h-5 w-5 mx-auto mb-1 text-gray-400" />
+                                <p className="text-xs">Click to select TXT file</p>
+                                <p className="text-xs text-gray-500 mt-1">PDF/DOCX can be uploaded after registration</p>
+                              </div>
+                            )}
+                          </div>
+                        </label>
+                        {resumeFile && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setResumeFile(null);
+                              setResumeText('');
+                            }}
+                            className="px-3 py-2 text-sm text-red-600 hover:text-red-700 transition-colors"
+                            disabled={loading}
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Or Divider */}
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-gray-300"></div>
+                      </div>
+                      <div className="relative flex justify-center text-xs">
+                        <span className="px-2 bg-white text-gray-500">OR</span>
+                      </div>
+                    </div>
+
+                    {/* Text Input */}
+                    <div>
+                      <label className="block text-xs text-gray-600 mb-2">Paste Resume Text</label>
+                      <textarea
+                        value={resumeText}
+                        onChange={(e) => {
+                          setResumeText(e.target.value);
+                          setResumeFile(null);
+                          setResumeError('');
+                        }}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 text-sm"
+                        rows={4}
+                        placeholder="Paste your resume content here..."
+                        disabled={loading}
+                      />
+                    </div>
+
+                    {/* Error Message */}
+                    {resumeError && (
+                      <div className="p-2 bg-red-50 border border-red-200 rounded text-xs text-red-800">
+                        {resumeError}
+                      </div>
+                    )}
+
+                    <p className="text-xs text-gray-500">
+                      Note: You can upload PDF or DOCX files after registration from your profile page.
+                    </p>
                   </div>
                 </>
               ) : (

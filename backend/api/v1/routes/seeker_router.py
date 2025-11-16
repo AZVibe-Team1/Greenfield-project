@@ -5,9 +5,11 @@ Handles job seeker profile management, job search, and applications.
 """
 import asyncio
 import json
+import tempfile
+from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from loguru import logger
@@ -15,7 +17,12 @@ from loguru import logger
 from backend.ai.chains.matching_service import get_matching_service
 from backend.core.security import get_current_user_id, get_current_user_role
 from backend.db.seeker_db_ops import SeekerCRUD
-from backend.services.seeker_services import SeekerService
+from backend.services.seeker_services import (
+    DOCXExtractionError,
+    FileValidationError,
+    PDFExtractionError,
+    SeekerService,
+)
 
 
 router = APIRouter(prefix="/seekers", tags=["Job Seekers"])
@@ -51,11 +58,6 @@ class UpdateSeekerRequest(BaseModel):
     pay_range: list[int] | None = None
     pay_unit: str | None = None
     key_skills: list[str] | None = None
-
-
-class UploadResumeRequest(BaseModel):
-    """Upload resume request."""
-    resume_content: str
 
 
 class ApplyForJobRequest(BaseModel):
@@ -265,43 +267,143 @@ async def update_my_profile(
 
 @router.post("/resume")
 async def upload_resume(
-    request: UploadResumeRequest,
+    file: UploadFile | None = File(None),
+    resume_text: str | None = Form(None),
     user_id: str = Depends(get_current_user_id),
     _role: str = Depends(verify_seeker_role)
 ):
     """
     Upload or update resume.
 
+    Accepts either a file upload (PDF, DOCX, TXT) or direct text content.
+    Both MongoDB and ChromaDB are automatically updated.
+
     Args:
-        request: Resume content
+        file: Resume file (PDF, DOCX, or TXT) - optional
+        resume_text: Direct text content - optional (at least one required)
 
     Returns:
         Success message
+
+    Raises:
+        HTTPException: If upload fails or validation errors occur
     """
+    def raise_missing_input() -> None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Either file or resume_text must be provided"
+        )
+
     def raise_upload_failed() -> None:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to upload resume"
         )
 
-    try:
-        updated_seeker = await SeekerService.upload_resume(
-            seeker_id=user_id,
-            resume_content=request.resume_content
+    def raise_invalid_file_type() -> None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid file type. Only PDF, DOCX, and TXT files are supported"
         )
+
+    def raise_file_too_large() -> None:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail="File size exceeds maximum allowed size (10MB)"
+        )
+
+    def raise_parse_error(error_msg: str) -> None:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Failed to parse file: {error_msg}"
+        )
+
+    temp_file_path: Path | None = None
+
+    try:
+        # Validate that at least one input is provided
+        if not file and not resume_text:
+            raise_missing_input()
+
+        # Handle file upload
+        if file:
+            # Validate file
+            try:
+                # Get file size (need to read content first to get size)
+                file_content = await file.read()
+                file_size = len(file_content)
+                
+                # Validate file
+                SeekerService.validate_resume_file(
+                    filename=file.filename or "unknown",
+                    file_size=file_size
+                )
+            except FileValidationError as e:
+                if "exceeds" in str(e).lower():
+                    raise_file_too_large()
+                else:
+                    raise_invalid_file_type()
+            except Exception as e:
+                logger.error(f"File validation error: {e}")
+                raise_invalid_file_type()
+
+            # Create temporary file
+            suffix = Path(file.filename or "resume").suffix.lower()
+            with tempfile.NamedTemporaryFile(
+                delete=False,
+                suffix=suffix,
+                prefix="resume_upload_"
+            ) as temp_file:
+                temp_file_path = Path(temp_file.name)
+                # Write file content to temp file
+                temp_file.write(file_content)
+
+            try:
+                # Upload resume using file path
+                updated_seeker = await SeekerService.upload_resume(
+                    seeker_id=user_id,
+                    file_path=temp_file_path
+                )
+            except (PDFExtractionError, DOCXExtractionError) as e:
+                raise_parse_error(str(e))
+            except ValueError as e:
+                # Handle unsupported file type or other value errors
+                raise_invalid_file_type()
+            finally:
+                # Clean up temporary file
+                if temp_file_path and temp_file_path.exists():
+                    try:
+                        temp_file_path.unlink()
+                    except Exception as cleanup_error:
+                        logger.warning(f"Failed to delete temp file: {cleanup_error}")
+
+        else:
+            # Handle text-only upload
+            updated_seeker = await SeekerService.upload_resume(
+                seeker_id=user_id,
+                resume_content=resume_text
+            )
 
         if not updated_seeker:
             raise_upload_failed()
-        else:
-            return {"message": "Resume uploaded successfully"}
+
+        return {"message": "Resume uploaded successfully"}
 
     except HTTPException:
         raise
     except Exception as e:
+        logger.error(f"Unexpected error uploading resume: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to upload resume: {e!s}"
         ) from e
+    finally:
+        # Ensure temp file is cleaned up even if an error occurs
+        if temp_file_path and temp_file_path.exists():
+            try:
+                temp_file_path.unlink()
+            except Exception:
+                pass  # Ignore cleanup errors in finally block
 
 
 @router.post("/applications")

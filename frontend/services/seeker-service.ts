@@ -25,9 +25,22 @@ export const seekerService = {
 
   /**
    * Upload resume
+   * Supports both file upload and text content
    */
-  uploadResume: async (resumeContent: string): Promise<any> => {
-    const response = await apiClient.post('/seekers/resume', { resume_content: resumeContent });
+  uploadResume: async (file?: File, resumeText?: string): Promise<any> => {
+    const formData = new FormData();
+    
+    if (file) {
+      formData.append('file', file);
+    }
+    
+    if (resumeText) {
+      formData.append('resume_text', resumeText);
+    }
+    
+    // Axios will automatically set Content-Type to multipart/form-data with boundary
+    // when FormData is used, so we don't need to set it manually
+    const response = await apiClient.post('/seekers/resume', formData);
     return response.data;
   },
 

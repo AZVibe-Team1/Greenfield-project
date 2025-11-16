@@ -5,6 +5,7 @@ Handles user registration and login for both job seekers and employers.
 Implements JWT-based authentication with token validation endpoints.
 """
 from fastapi import APIRouter, HTTPException, status, Depends
+from loguru import logger
 from pydantic import BaseModel, EmailStr, Field
 
 from backend.core.security import (
@@ -57,6 +58,7 @@ class SeekerRegisterRequest(BaseModel):
     pay_range: list[int] | None = None
     pay_unit: str = "Yearly"
     key_skills: list[str] | None = None
+    resume: str | None = Field(None, description="Optional resume text content")
 
 
 class EmployerRegisterRequest(BaseModel):
@@ -218,7 +220,8 @@ async def register_seeker(request: SeekerRegisterRequest):
             edu_focus=request.edu_focus,
             pay_range=request.pay_range,
             pay_unit=request.pay_unit,
-            key_skills=request.key_skills
+            key_skills=request.key_skills,
+            resume=request.resume
         )
 
         if not seeker:
@@ -235,6 +238,9 @@ async def register_seeker(request: SeekerRegisterRequest):
     except HTTPException:
         raise
     except Exception as e:
+        import traceback
+        logger.error(f"Registration failed for {request.email}: {e!s}")
+        logger.error(f"Traceback: {traceback.format_exc()}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Registration failed: {e!s}"
