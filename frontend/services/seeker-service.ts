@@ -4,7 +4,7 @@
  * API calls for job seeker operations
  */
 import apiClient from '@/lib/api';
-import { SeekerProfile, Job } from '@/types';
+import { SeekerProfile, Job, JobRecommendation, AutoApplySettings } from '@/types';
 
 export const seekerService = {
   /**
@@ -25,9 +25,22 @@ export const seekerService = {
 
   /**
    * Upload resume
+   * Supports both file upload and text content
    */
-  uploadResume: async (resumeContent: string): Promise<any> => {
-    const response = await apiClient.post('/seekers/resume', { resume_content: resumeContent });
+  uploadResume: async (file?: File, resumeText?: string): Promise<any> => {
+    const formData = new FormData();
+    
+    if (file) {
+      formData.append('file', file);
+    }
+    
+    if (resumeText) {
+      formData.append('resume_text', resumeText);
+    }
+    
+    // Axios will automatically set Content-Type to multipart/form-data with boundary
+    // when FormData is used, so we don't need to set it manually
+    const response = await apiClient.post('/seekers/resume', formData);
     return response.data;
   },
 
@@ -77,8 +90,24 @@ export const seekerService = {
   /**
    * Get AI-powered job recommendations
    */
-  getRecommendations: async (): Promise<any> => {
-    const response = await apiClient.get('/seekers/recommendations');
+  getRecommendations: async (params?: { n_results?: number; min_score?: number }): Promise<JobRecommendation[]> => {
+    const response = await apiClient.get<JobRecommendation[]>('/seekers/recommendations', { params });
+    return response.data;
+  },
+
+  /**
+   * Get auto-apply settings
+   */
+  getAutoApplySettings: async (): Promise<AutoApplySettings> => {
+    const response = await apiClient.get<AutoApplySettings>('/seekers/auto-apply/settings');
+    return response.data;
+  },
+
+  /**
+   * Update auto-apply settings
+   */
+  updateAutoApplySettings: async (settings: AutoApplySettings): Promise<AutoApplySettings> => {
+    const response = await apiClient.post<AutoApplySettings>('/seekers/auto-apply/settings', settings);
     return response.data;
   },
 };

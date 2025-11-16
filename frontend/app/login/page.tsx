@@ -47,13 +47,26 @@ export default function LoginPage() {
       // Handle login errors with user-friendly messages
       // Implements error handling from frontend_auth.txt section 6
       console.error('Login error:', err);
+      console.error('Error response:', err.response);
+      console.error('Error message:', err.message);
       
-      const errorMessage = 
-        err.response?.status === 401 
-          ? 'Invalid email or password. Please check your credentials.'
-          : err.response?.status === 500
-          ? 'Server error. Please try again later.'
-          : err.response?.data?.detail || 'Login failed. Please try again.';
+      let errorMessage = 'Login failed. Please try again.';
+      
+      if (err.response) {
+        // Server responded with error
+        errorMessage = 
+          err.response?.status === 401 
+            ? 'Invalid email or password. Please check your credentials.'
+            : err.response?.status === 500
+            ? 'Server error. Please try again later.'
+            : err.response?.data?.detail || `Server error (${err.response?.status})`;
+      } else if (err.request) {
+        // Request was made but no response received
+        errorMessage = 'Cannot connect to server. Please check if the backend is running on http://localhost:8000';
+      } else {
+        // Something else happened
+        errorMessage = err.message || 'Login failed. Please try again.';
+      }
       
       setError(errorMessage);
     } finally {

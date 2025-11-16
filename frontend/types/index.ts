@@ -40,6 +40,7 @@ export interface SeekerRegisterRequest {
   pay_range?: number[];
   pay_unit?: string;
   key_skills?: string[];
+  resume?: string;
 }
 
 export interface EmployerRegisterRequest {
@@ -144,5 +145,60 @@ export interface CreateJobRequest {
   education_level: string;
   edu_focus: string;
   key_skills?: string[];
+}
+
+export interface ScoreBreakdown {
+  skills_score: number;
+  education_score: number;
+  pay_score: number;
+  experience_score: number;
+  reasoning: string;
+}
+
+export interface JobRecommendation {
+  job_id: string;
+  job_title: string;
+  company_name: string;
+  employer_id: string;
+  match_score: number;
+  score_breakdown: ScoreBreakdown;
+  job_description: string;
+  key_skills: string[];
+  education_level: string;
+  edu_focus: string;
+  pay_range: number[];
+  pay_unit: string;
+  department: string;
+  posted_date: string | null;
+  hire_mgr_first: string;
+  hire_mgr_last: string;
+}
+
+export interface AutoApplySettings {
+  enabled: boolean;
+  threshold: number;
+}
+
+export interface CandidateRecommendation {
+  seeker_id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  match_score: number;
+  score_breakdown: ScoreBreakdown;
+  has_applied: boolean;
+  resume_preview: string;
+  key_skills: string[];
+  education_level: string;
+  edu_focus: string;
+  pay_range: number[];
+  pay_unit: string;
+  phone: string;
+  address: {
+    street: string;
+    city: string;
+    state: string;
+    zip_code: string;
+  };
 }
 

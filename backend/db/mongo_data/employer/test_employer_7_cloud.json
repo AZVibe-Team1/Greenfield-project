@@ -1,0 +1,53 @@
+{
+  "company_information": {
+    "company_name": "CloudNative Technologies",
+    "address": {
+      "street": "555 Montgomery Street",
+      "city": "San Francisco",
+      "state": "CA",
+      "zip_code": "94111"
+    },
+    "industry": [
+      {
+        "code": "45",
+        "description": "Information Technology"
+      },
+      {
+        "code": "4520",
+        "description": "Technology Hardware & Equipment"
+      }
+    ],
+    "benefits": "Competitive salary, comprehensive health insurance, 401k with company match, generous vacation time, training and certification budget, mentorship program, flexible hybrid work, modern tools and technology"
+  },
+  "contact_first_name": "Thomas",
+  "contact_last_name": "Anderson",
+  "email": "thomas.anderson@cloudnative-test.com",
+  "password_hash": "hashed_password_employer_307",
+  "employer_identification": "770e8400-e29b-41d4-a716-446655440207",
+  "open_jobs": [
+    {
+      "job_identification": "660e8400-e29b-41d4-a716-446655440107",
+      "employer_identification": "770e8400-e29b-41d4-a716-446655440207",
+      "job_title": "Junior DevOps Engineer",
+      "job_description": "Looking for a Junior DevOps Engineer with a Computer Science background to help automate and streamline our infrastructure. Great opportunity to learn cloud technologies and modern DevOps practices!\n\nResponsibilities:\n- Assist in managing AWS cloud infrastructure\n- Help build and maintain CI/CD pipelines\n- Monitor system performance and reliability\n- Automate deployment processes\n- Troubleshoot infrastructure issues\n- Write infrastructure as code using Terraform\n- Collaborate with development teams\n- Participate in on-call rotation (with senior support)\n- Document processes and procedures\n\nRequirements:\n- BS in Computer Science or related technical field\n- Basic understanding of Linux/Unix systems\n- Familiarity with scripting (Python, Bash, or similar)\n- Interest in cloud technologies and automation\n- Basic networking knowledge\n- Problem-solving mindset\n- Good communication skills\n- Eagerness to learn new technologies",
+      "department": "Infrastructure",
+      "hire_mgr_first": "Rachel",
+      "hire_mgr_last": "Green",
+      "posted_date": "2024-11-14T11:00:00-08:00",
+      "pay_range": [75000, 105000],
+      "pay_unit": "Yearly",
+      "education_level": "BS",
+      "edu_focus": "Computer Science",
+      "key_skills": [
+        "Linux",
+        "Python",
+        "Bash",
+        "AWS",
+        "Docker",
+        "CI/CD",
+        "Terraform"
+      ]
+    }
+  ]
+}
+

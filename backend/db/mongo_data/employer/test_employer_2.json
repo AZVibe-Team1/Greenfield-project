@@ -23,13 +23,17 @@
   "contact_last_name": "Anderson",
   "email": "michael.anderson@cloudscale-test.com",
   "password_hash": "hashed_password_employer_456",
+  "employer_identification": "770e8400-e29b-41d4-a716-446655440202",
   "open_jobs": [
     {
+      "job_identification": "660e8400-e29b-41d4-a716-446655440010",
+      "employer_identification": "770e8400-e29b-41d4-a716-446655440202",
       "job_title": "DevOps Engineer",
       "job_description": "We are looking for an experienced DevOps Engineer to help us build and maintain our cloud infrastructure. You'll work with containerization, orchestration, and automation tools.\n\nResponsibilities:\n- Manage and scale Kubernetes clusters\n- Implement CI/CD pipelines\n- Monitor system performance and reliability\n- Automate infrastructure provisioning\n- Ensure security best practices\n\nRequirements:\n- 4+ years of DevOps experience\n- Strong knowledge of Kubernetes and Docker\n- Experience with cloud platforms (AWS, GCP, or Azure)\n- Proficiency in scripting (Python, Bash)\n- Understanding of networking and security",
       "department": "Infrastructure",
       "hire_mgr_first": "Jessica",
       "hire_mgr_last": "Lee",
+      "posted_date": "2024-11-12T11:00:00-08:00",
       "pay_range": [120000, 170000],
       "pay_unit": "Yearly",
       "education_level": "BS",

@@ -40,7 +40,7 @@ class MatchingService:
         """
         try:
             seeker_data = self.vector_store.get_seeker_by_id(seeker_id)
-            if seeker_data and seeker_data.get("embedding"):
+            if seeker_data and "embedding" in seeker_data and seeker_data["embedding"] is not None:
                 return seeker_data["embedding"]
             logger.warning(f"Seeker embedding not found for ID: {seeker_id}")
             return None
@@ -92,12 +92,12 @@ class MatchingService:
             logger.error(f"Error searching similar jobs: {e}")
             return []
 
-    async def fetch_job_details(self, job_id: str) -> dict[str, Any] | None:
+    async def fetch_job_details(self, job_identification: str) -> dict[str, Any] | None:
         """
-        Fetch full job details from MongoDB.
+        Fetch full job details from MongoDB using job_identification UUID.
 
         Args:
-            job_id: Job's MongoDB ObjectId as string
+            job_identification: Job's UUID from ChromaDB
 
         Returns:
             Dictionary with job details or None if not found
@@ -108,12 +108,12 @@ class MatchingService:
 
             for employer in employers:
                 for job in employer.open_jobs:
-                    if str(job.job_id) == job_id:
+                    if str(job.job_identification) == job_identification:
                         return {
-                            "job_id": str(job.job_id),
+                            "job_id": str(job.job_identification),
                             "job_title": job.job_title,
                             "job_description": job.job_description,
-                            "employer_id": str(employer.employer_id),
+                            "employer_id": str(employer.employer_identification),
                             "company_name": employer.company_information.company_name,
                             "key_skills": job.key_skills,
                             "education_level": job.education_level,
@@ -127,7 +127,7 @@ class MatchingService:
                             "hire_mgr_last": job.hire_mgr_last
                         }
 
-            logger.warning(f"Job not found: {job_id}")
+            logger.warning(f"Job not found: {job_identification}")
             return None
         except Exception as e:
             logger.error(f"Error fetching job details: {e}")
@@ -168,12 +168,13 @@ class MatchingService:
         Match a seeker to jobs with percentage scores.
 
         Process:
-        1. Get seeker embedding from ChromaDB
-        2. Query ChromaDB for similar jobs
-        3. For each job, fetch full details from MongoDB
-        4. Use LangChain to analyze match factors and calculate score
-        5. Filter to only active jobs (current_status == "Posted")
-        6. Sort by match score (descending)
+        1. Get seeker details from MongoDB
+        2. Get seeker embedding from ChromaDB using seeker_identification
+        3. Query ChromaDB for similar jobs
+        4. For each job, fetch full details from MongoDB
+        5. Use LangChain to analyze match factors and calculate score
+        6. Filter to only active jobs (current_status == "Posted")
+        7. Sort by match score (descending)
 
         Args:
             seeker_id: Seeker's MongoDB ObjectId as string
@@ -193,17 +194,30 @@ class MatchingService:
                 - ... other job fields
         """
         try:
-            # 1. Get seeker embedding from ChromaDB
-            seeker_embedding = await self.get_seeker_embedding(seeker_id)
-            if not seeker_embedding:
-                logger.warning(f"No embedding found for seeker: {seeker_id}")
-                return []
-
-            # 2. Get seeker full details from MongoDB
+            logger.info(f"[RECOMMENDATIONS] Starting match for seeker_id: {seeker_id}")
+            
+            # 1. Get seeker full details from MongoDB
             seeker = await SeekerCRUD.get_seeker_by_id(seeker_id)
             if not seeker:
-                logger.warning(f"Seeker not found: {seeker_id}")
+                logger.warning(f"[RECOMMENDATIONS] Seeker not found in MongoDB: {seeker_id}")
                 return []
+            
+            logger.info(f"[RECOMMENDATIONS] Found seeker in MongoDB: {seeker.information.email}")
+            
+            # 2. Get seeker embedding from ChromaDB using seeker_identification
+            seeker_identification = seeker.seeker_identification
+            logger.info(f"[RECOMMENDATIONS] Seeker identification UUID: {seeker_identification}")
+            
+            if not seeker_identification:
+                logger.warning(f"[RECOMMENDATIONS] Seeker has no seeker_identification: {seeker_id}")
+                return []
+            
+            seeker_embedding = await self.get_seeker_embedding(str(seeker_identification))
+            if seeker_embedding is None or len(seeker_embedding) == 0:
+                logger.warning(f"[RECOMMENDATIONS] No embedding found for seeker_identification: {seeker_identification}")
+                return []
+            
+            logger.info(f"[RECOMMENDATIONS] Found seeker embedding in ChromaDB")
 
             seeker_data = {
                 "key_skills": seeker.key_skills,
@@ -220,7 +234,7 @@ class MatchingService:
                 n_results=n_results * 2  # Get more to filter later
             )
 
-            if not job_matches:
+            if not job_matches or len(job_matches) == 0:
                 logger.info(f"No similar jobs found for seeker: {seeker_id}")
                 return []
 

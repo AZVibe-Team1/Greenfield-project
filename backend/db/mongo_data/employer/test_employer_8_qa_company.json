@@ -1,0 +1,53 @@
+{
+  "company_information": {
+    "company_name": "QualityFirst Software",
+    "address": {
+      "street": "888 Brannan Street, Suite 200",
+      "city": "San Francisco",
+      "state": "CA",
+      "zip_code": "94103"
+    },
+    "industry": [
+      {
+        "code": "45",
+        "description": "Information Technology"
+      },
+      {
+        "code": "4510",
+        "description": "Software & Services"
+      }
+    ],
+    "benefits": "Health, dental, vision insurance, 401k retirement plan, paid time off and holidays, professional development and training, career growth opportunities, hybrid work model, collaborative team environment, modern testing tools"
+  },
+  "contact_first_name": "Amanda",
+  "contact_last_name": "Zhang",
+  "email": "amanda.zhang@qualityfirst-test.com",
+  "password_hash": "hashed_password_employer_308",
+  "employer_identification": "770e8400-e29b-41d4-a716-446655440208",
+  "open_jobs": [
+    {
+      "job_identification": "660e8400-e29b-41d4-a716-446655440108",
+      "employer_identification": "770e8400-e29b-41d4-a716-446655440208",
+      "job_title": "Software QA Engineer - Automation",
+      "job_description": "Join our Quality Assurance team as a Software QA Engineer focusing on test automation. Perfect for Computer Science graduates who love ensuring software quality and learning automation frameworks.\n\nKey Duties:\n- Develop and maintain automated test suites\n- Design and execute test cases for web applications\n- Perform API testing using Postman or similar tools\n- Write automated tests using Python and Selenium\n- Conduct manual testing when needed\n- Report and track bugs in Jira\n- Collaborate with developers to resolve issues\n- Participate in sprint planning and retrospectives\n- Improve QA processes and best practices\n\nQualifications:\n- Bachelor's degree in Computer Science or related field\n- Strong analytical and problem-solving skills\n- Basic programming knowledge (Python preferred)\n- Understanding of software testing concepts\n- Attention to detail and quality-focused mindset\n- Good written and verbal communication\n- Ability to work in an Agile environment\n- Self-motivated and eager to learn",
+      "department": "Quality Assurance",
+      "hire_mgr_first": "Kevin",
+      "hire_mgr_last": "Brown",
+      "posted_date": "2024-11-15T10:15:00-08:00",
+      "pay_range": [70000, 100000],
+      "pay_unit": "Yearly",
+      "education_level": "BS",
+      "edu_focus": "Computer Science",
+      "key_skills": [
+        "Python",
+        "Selenium",
+        "API Testing",
+        "Postman",
+        "Jira",
+        "Test Automation",
+        "SQL"
+      ]
+    }
+  ]
+}
+
