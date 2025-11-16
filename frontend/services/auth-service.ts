@@ -4,7 +4,7 @@
  * API calls for authentication (login, register, token validation)
  * Implements JWT-based authentication following best practices from frontend_auth.txt
  */
-import apiClient from '@/lib/api-client';
+import apiClient from '@/lib/api';
 import {
   LoginRequest,
   LoginResponse,
