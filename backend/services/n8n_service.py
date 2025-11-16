@@ -6,6 +6,7 @@ for sending email notifications, particularly for interview scheduling.
 """
 
 import os
+from datetime import datetime
 from typing import Any
 
 import httpx
@@ -97,17 +98,47 @@ class N8nService:
             True if workflow was triggered successfully, False otherwise
         """
         try:
+            # Format interview date for display
+            interview_date_str = ""
+            date_val = interview_details.get("interview_date")
+            if date_val:
+                if isinstance(date_val, str):
+                    # If it's already a string (ISO format), parse and format it
+                    try:
+                        # Handle ISO format strings with or without timezone
+                        date_to_parse = date_val
+                        if date_val.endswith('Z'):
+                            date_to_parse = date_val.replace('Z', '+00:00')
+                        dt = datetime.fromisoformat(date_to_parse)
+                        interview_date_str = dt.strftime("%B %d, %Y")
+                    except (ValueError, AttributeError):
+                        # If parsing fails, try to extract just the date part
+                        try:
+                            interview_date_str = date_val.split('T')[0]
+                        except:
+                            interview_date_str = str(date_val)
+                elif isinstance(date_val, datetime):
+                    # If it's a datetime object, format it directly
+                    interview_date_str = date_val.strftime("%B %d, %Y")
+                else:
+                    interview_date_str = str(date_val)
+            
+            # Ensure notes is a string (not None)
+            notes = interview_details.get("notes") or ""
+            if notes is None:
+                notes = ""
+            
             # Prepare payload for n8n webhook
             payload = {
                 "seeker_email": seeker_email,
                 "job_title": job_title,
                 "employer_name": employer_name,
                 "employer_email": employer_email,
-                "interview_date": str(interview_details.get("interview_date", "")),
+                "interview_date": interview_date_str,
                 "interview_time": interview_details.get("interview_time", ""),
                 "interview_type": interview_details.get("interview_type", ""),
                 "location_or_link": interview_details.get("location_or_link", ""),
-                "notes": interview_details.get("notes", "")
+                "notes": notes
             }
             
             # Prepare headers

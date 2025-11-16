@@ -821,6 +821,7 @@ async def schedule_interview(
             )
 
         # Update application status to "Interviewed"
+        # First, try to update existing application
         updated_employer = await EmployerCRUD.update_application_status(
             employer_id=user_id,
             applicant_id=seeker_id,
@@ -828,13 +829,42 @@ async def schedule_interview(
             new_status="Interviewed"
         )
 
+        # If no application exists (e.g., candidate from AI recommendations who hasn't applied),
+        # create a new application record with status "Interviewed"
         if not updated_employer:
-            # Log warning but don't fail the request since email was sent
-            from loguru import logger
-            logger.warning(
-                f"Failed to update application status for seeker {seeker_id} "
-                f"and job {job_id}, but email notification was sent"
+            from backend.schemas.employer import CandidateTracking
+            from datetime import datetime
+            from zoneinfo import ZoneInfo
+            
+            logger.info(
+                f"Application not found for seeker {seeker_id} and job {job_id}. "
+                f"Creating new application record with status 'Interviewed'."
             )
+            
+            # Create new application with "Interviewed" status
+            application_data = {
+                "applicant_id": seeker_id,
+                "job_id": job_id,
+                "initial_daterec": datetime.now(ZoneInfo("America/Denver")),
+                "candidate_tracking": CandidateTracking(
+                    current_status="Interviewed",
+                    previous_status=None,
+                    current_status_date=datetime.now(ZoneInfo("America/Denver")),
+                    previous_status_date=None
+                )
+            }
+            
+            updated_employer = await EmployerCRUD.add_application_received(
+                employer_id=user_id,
+                application_data=application_data
+            )
+            
+            if not updated_employer:
+                # Log warning but don't fail the request since email was sent
+                logger.warning(
+                    f"Failed to create application record for seeker {seeker_id} "
+                    f"and job {job_id}, but email notification was sent"
+                )
 
         return {
             "message": "Interview scheduled successfully and email notification sent",

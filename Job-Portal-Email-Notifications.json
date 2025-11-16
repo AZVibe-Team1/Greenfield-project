@@ -1,0 +1,78 @@
+{
+  "name": "Job-Portal-Email-Notifications",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/interview-schedule",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        144,
+        128
+      ],
+      "id": "3d8f44f3-eed6-4b52-b5ea-f5511c273e47",
+      "name": "Webhook1",
+      "webhookId": "2c89f362-6438-46d6-9791-7fa747a9cbfb"
+    },
+    {
+      "parameters": {
+        "fromEmail": "=workatlastest@gmail.com",
+        "toEmail": "={{ $json.body.seeker_email }}",
+        "subject": "=Interview Scheduled: {{ $json.body.job_title }}",
+        "html": "=Dear Candidate,<br><br>You have been scheduled for an interview for the position: <strong>{{ $json.body.job_title }}</strong><br><br><strong>Interview Details:</strong><br>- Date: {{ $json.body.interview_date }}<br>- Time: {{ $json.body.interview_time }}<br>- Type: {{ $json.body.interview_type }}<br>- Location/Link: {{ $json.body.location_or_link }}{{ $json.body.notes && $json.body.notes !== '' ? '<br>- Notes: ' + $json.body.notes : '' }}<br><br>Company: {{ $json.body.employer_name }}<br><br>We look forward to speaking with you!",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        352,
+        128
+      ],
+      "id": "07a17312-7e45-4c7c-8ec2-0a9af2550f9f",
+      "name": "Send email1",
+      "webhookId": "287ff2fa-9444-4b2e-ba0e-f32d47225541",
+      "credentials": {
+        "smtp": {
+          "id": "NHooG9rmY2uD4BzI",
+          "name": "SMTP account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Send email1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4082ab82-029c-46fe-849a-7237aaf3e62d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c89dc0d076bc0a9d3b4389dadf77426309415fa8b0d1a699a912ebb40e12e265"
+  },
+  "id": "OEUZEyAzgrLbIGBC",
+  "tags": [
+    {
+      "updatedAt": "2025-11-16T20:13:37.341Z",
+      "createdAt": "2025-11-16T20:13:37.341Z",
+      "id": "fdhucfmd2HLKc4qL",
+      "name": "workatlas"
+    }
+  ]
+}
