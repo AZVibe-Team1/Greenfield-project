@@ -3,10 +3,14 @@ Job Seeker API routes.
 
 Handles job seeker profile management, job search, and applications.
 """
+import asyncio
+import json
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
+from loguru import logger
 
 from backend.ai.chains.matching_service import get_matching_service
 from backend.core.security import get_current_user_id, get_current_user_role
@@ -597,6 +601,159 @@ async def get_job_recommendations(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get recommendations: {e!s}"
         ) from e
+
+
+@router.get("/recommendations/stream")
+async def get_job_recommendations_stream(
+    user_id: str = Depends(get_current_user_id),
+    _role: str = Depends(verify_seeker_role),
+    n_results: int = 10,
+    min_score: float = 0.0
+):
+    """
+    Stream AI-powered job recommendations as they are calculated.
+    
+    This endpoint uses Server-Sent Events (SSE) to stream recommendations
+    as each match score is calculated, providing immediate feedback to users.
+    
+    Args:
+        n_results: Maximum number of recommendations to return (default: 10)
+        min_score: Minimum match score threshold 0-100 (default: 0.0)
+    
+    Returns:
+        Streaming response with job recommendations in SSE format
+    """
+    async def generate_recommendations():
+        try:
+            # Get matching service
+            matching_service = get_matching_service()
+            
+            # Get seeker details and embeddings
+            logger.info(f"[STREAM] Starting match for seeker_id: {user_id}")
+            
+            # Get seeker from MongoDB
+            from bson import ObjectId
+            seeker = await SeekerCRUD.get_seeker_by_id(ObjectId(user_id))
+            if not seeker:
+                error_data = json.dumps({"error": "Seeker not found"})
+                yield f"data: {error_data}\n\n"
+                return
+            
+            logger.info(f"[STREAM] Found seeker: {seeker.information.email}")
+            seeker_identification = str(seeker.seeker_identification)
+            logger.info(f"[STREAM] Seeker UUID: {seeker_identification}")
+            
+            # Get seeker embedding from ChromaDB
+            seeker_embedding = await matching_service.get_seeker_embedding(seeker_identification)
+            if seeker_embedding is None or len(seeker_embedding) == 0:
+                error_data = json.dumps({"error": "Seeker embedding not found in ChromaDB"})
+                yield f"data: {error_data}\n\n"
+                return
+            
+            logger.info("[STREAM] Found seeker embedding in ChromaDB")
+            
+            # Query ChromaDB for similar jobs
+            similar_jobs = await matching_service.search_similar_jobs(
+                query_embedding=seeker_embedding,
+                n_results=n_results * 3  # Get more to filter
+            )
+            
+            logger.info(f"[STREAM] Found {len(similar_jobs)} similar jobs")
+            
+            # Prepare seeker data for scoring
+            seeker_data = {
+                "first_name": seeker.information.first_name,
+                "last_name": seeker.information.last_name,
+                "email": seeker.information.email,
+                "education_level": seeker.education_level,
+                "edu_focus": seeker.edu_focus,
+                "key_skills": seeker.key_skills,
+                "pay_range": seeker.pay_range,
+                "pay_unit": seeker.pay_unit,
+                "resume": seeker.resume or "No resume available"
+            }
+            
+            # Process each job and stream results
+            count = 0
+            for job_match in similar_jobs:
+                job_id = job_match["job_id"]
+                if count >= n_results:
+                    break
+                    
+                try:
+                    # Fetch job details from MongoDB
+                    job_details = await matching_service.fetch_job_details(job_id)
+                    if not job_details:
+                        logger.warning(f"[STREAM] Job not found: {job_id}")
+                        continue
+                    
+                    # Calculate match score
+                    logger.debug(f"[STREAM] Calculating score for job: {job_details['job_title']}")
+                    score_breakdown = await matching_service.scoring_chain.calculate_match_score(
+                        seeker_data=seeker_data,
+                        job_data=job_details
+                    )
+                    
+                    match_score = score_breakdown.overall_score
+                    logger.debug(f"[STREAM] Match score calculated: {match_score}%")
+                    
+                    # Filter by min_score
+                    if match_score < min_score:
+                        continue
+                    
+                    # Prepare recommendation
+                    recommendation = {
+                        "job_id": job_details["job_id"],
+                        "job_title": job_details["job_title"],
+                        "company_name": job_details["company_name"],
+                        "employer_id": job_details["employer_id"],
+                        "match_score": match_score,
+                        "score_breakdown": {
+                            "skills_score": score_breakdown.skills_score,
+                            "education_score": score_breakdown.education_score,
+                            "pay_score": score_breakdown.pay_score,
+                            "experience_score": score_breakdown.experience_score,
+                            "reasoning": score_breakdown.reasoning
+                        },
+                        "job_description": job_details["job_description"],
+                        "key_skills": job_details["key_skills"],
+                        "education_level": job_details["education_level"],
+                        "edu_focus": job_details["edu_focus"],
+                        "pay_range": job_details["pay_range"],
+                        "pay_unit": job_details["pay_unit"],
+                        "department": job_details["department"],
+                        "posted_date": job_details["posted_date"].isoformat() if job_details.get("posted_date") else None,
+                        "hire_mgr_first": job_details["hire_mgr_first"],
+                        "hire_mgr_last": job_details["hire_mgr_last"]
+                    }
+                    
+                    # Stream this recommendation
+                    data = json.dumps(recommendation)
+                    yield f"data: {data}\n\n"
+                    count += 1
+                    
+                except Exception as e:
+                    logger.error(f"[STREAM] Error processing job {job_id}: {e}")
+                    continue
+            
+            # Send completion signal
+            yield f"data: {json.dumps({'done': True, 'total': count})}\n\n"
+            logger.info(f"[STREAM] Completed streaming {count} recommendations")
+            
+        except Exception as e:
+            logger.error(f"[STREAM] Error in streaming: {e}")
+            error_data = json.dumps({"error": str(e)})
+            yield f"data: {error_data}\n\n"
+    
+    return StreamingResponse(
+        generate_recommendations(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no"  # Disable nginx buffering
+        }
+    )
 
 
 @router.post("/auto-apply/settings", response_model=AutoApplySettingsResponse)

@@ -28,23 +28,106 @@ export default function RecommendationsPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedJob, setSelectedJob] = useState<JobRecommendation | null>(null);
   const [applying, setApplying] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [streamComplete, setStreamComplete] = useState(false);
+  const jobsPerPage = 10;
 
   useEffect(() => {
     if (!authLoading && user) {
-      loadRecommendations();
+      loadRecommendationsStream();
     }
   }, [authLoading, user]);
 
-  const loadRecommendations = async () => {
+  const loadRecommendationsStream = async () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await seekerService.getRecommendations();
-      setRecommendations(data);
+      setRecommendations([]);
+      setStreamComplete(false);
+      setCurrentPage(1);
+
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      // Get backend URL and handle Docker internal hostname
+      const getBackendUrl = () => {
+        const envUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+        // Replace 'backend:' with 'localhost:' for browser requests
+        if (envUrl.includes('backend:')) {
+          return envUrl.replace('backend:', 'localhost:');
+        }
+        return envUrl;
+      };
+
+      const backendUrl = getBackendUrl();
+
+      // Create a custom fetch with headers for Server-Sent Events
+      const fetchEventSource = async () => {
+        const response = await fetch(
+          `${backendUrl}/api/v1/seekers/recommendations/stream?n_results=50`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Accept': 'text/event-stream',
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
+
+        if (!reader) {
+          throw new Error('No response body');
+        }
+
+        setLoading(false);
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value);
+          const lines = chunk.split('\n');
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = line.slice(6);
+              try {
+                const parsed = JSON.parse(data);
+                
+                if (parsed.error) {
+                  setError(parsed.error);
+                  setLoading(false);
+                  return;
+                }
+                
+                if (parsed.done) {
+                  setStreamComplete(true);
+                  setLoading(false);
+                  return;
+                }
+                
+                // Add recommendation as it arrives
+                setRecommendations(prev => [...prev, parsed]);
+              } catch (e) {
+                console.error('Failed to parse SSE data:', e);
+              }
+            }
+          }
+        }
+      };
+
+      await fetchEventSource();
+
     } catch (error: any) {
       console.error('Failed to load recommendations:', error);
-      setError(error.response?.data?.detail || 'Failed to load recommendations. Please try again later.');
-    } finally {
+      setError(error.message || 'Failed to load recommendations. Please try again later.');
       setLoading(false);
     }
   };
@@ -136,7 +219,7 @@ export default function RecommendationsPage() {
               </div>
             </div>
             <button
-              onClick={loadRecommendations}
+              onClick={loadRecommendationsStream}
               disabled={loading}
               className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium disabled:opacity-50"
             >
@@ -146,12 +229,13 @@ export default function RecommendationsPage() {
           </div>
         </div>
 
-        {loading ? (
+        {loading && recommendations.length === 0 ? (
           <div className="text-center py-16">
             <div className="inline-flex items-center justify-center w-16 h-16 mb-4 bg-emerald-100 rounded-full">
               <div className="w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
             </div>
             <p className="text-xl text-gray-600">Analyzing your profile and finding matches...</p>
+            <p className="text-sm text-gray-500 mt-2">New jobs will appear as they're analyzed</p>
           </div>
         ) : error ? (
           <div className="bg-red-50 border-2 border-red-200 rounded-xl p-6">
@@ -163,7 +247,7 @@ export default function RecommendationsPage() {
                 <h3 className="text-lg font-bold text-red-900 mb-2">Error Loading Recommendations</h3>
                 <p className="text-red-800 mb-3">{error}</p>
                 <button
-                  onClick={loadRecommendations}
+                  onClick={loadRecommendationsStream}
                   className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
                 >
                   Try Again
@@ -228,9 +312,23 @@ export default function RecommendationsPage() {
               </div>
             </div>
 
+            {/* Loading indicator while streaming */}
+            {loading && recommendations.length > 0 && (
+              <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4 mb-4">
+                <div className="flex items-center gap-3">
+                  <Loader2 className="h-5 w-5 text-blue-600 animate-spin" />
+                  <p className="text-blue-900 font-medium">
+                    Analyzing more jobs... Found {recommendations.length} so far
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Recommendations List */}
             <div className="space-y-4">
-              {recommendations.map((job) => (
+              {recommendations
+                .slice((currentPage - 1) * jobsPerPage, currentPage * jobsPerPage)
+                .map((job) => (
                 <div
                   key={job.job_id}
                   className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all p-6 border-2 border-gray-100 hover:border-emerald-200"
@@ -351,6 +449,72 @@ export default function RecommendationsPage() {
                 </div>
               ))}
             </div>
+
+            {/* Pagination Controls */}
+            {recommendations.length > jobsPerPage && (
+              <div className="mt-8 flex items-center justify-between border-t border-gray-200 pt-6">
+                <div className="text-sm text-gray-700">
+                  Showing <span className="font-medium">{(currentPage - 1) * jobsPerPage + 1}</span> to{' '}
+                  <span className="font-medium">
+                    {Math.min(currentPage * jobsPerPage, recommendations.length)}
+                  </span>{' '}
+                  of <span className="font-medium">{recommendations.length}</span> matches
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-white border-2 border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ChevronRight className="h-4 w-4 rotate-180" />
+                    Previous
+                  </button>
+                  <div className="flex items-center gap-1">
+                    {Array.from(
+                      { length: Math.ceil(recommendations.length / jobsPerPage) },
+                      (_, i) => i + 1
+                    )
+                      .filter(page => {
+                        const totalPages = Math.ceil(recommendations.length / jobsPerPage);
+                        return (
+                          page === 1 ||
+                          page === totalPages ||
+                          (page >= currentPage - 1 && page <= currentPage + 1)
+                        );
+                      })
+                      .map((page, idx, arr) => (
+                        <div key={page} className="flex items-center">
+                          {idx > 0 && arr[idx - 1] !== page - 1 && (
+                            <span className="px-2 text-gray-400">...</span>
+                          )}
+                          <button
+                            onClick={() => setCurrentPage(page)}
+                            className={`min-w-[40px] h-10 rounded-lg font-medium transition-colors ${
+                              currentPage === page
+                                ? 'bg-emerald-600 text-white'
+                                : 'bg-white border-2 border-gray-200 text-gray-700 hover:bg-gray-50'
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        </div>
+                      ))}
+                  </div>
+                  <button
+                    onClick={() =>
+                      setCurrentPage(p =>
+                        Math.min(Math.ceil(recommendations.length / jobsPerPage), p + 1)
+                      )
+                    }
+                    disabled={currentPage === Math.ceil(recommendations.length / jobsPerPage)}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-white border-2 border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Next
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
