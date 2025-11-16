@@ -98,45 +98,6 @@ services:
       retries: 3
       start_period: 40s
 
-  # MongoDB Service - Database
-  # NOTE: Currently commented out - uncomment when ready to add database
-  # This service runs MongoDB 6.x database server
-  # mongodb:
-  #   image: mongo:6
-  #   container_name: jobportal-mongodb
-  #   # Port mapping: host:container
-  #   # Access MongoDB at mongodb://localhost:27017
-  #   ports:
-  #     - "27017:27017"
-  #   env_file:
-  #     - .env
-  #   # Environment variables for MongoDB
-  #   environment:
-  #     MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-admin}
-  #     MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-password}
-  #     MONGO_INITDB_DATABASE: ${MONGO_DATABASE:-jobportal}
-  #   # Volume for persistent data storage
-  #   # MongoDB data will persist across container restarts
-  #   volumes:
-  #     - mongodb_data:/data/db
-  #     - mongodb_config:/data/configdb
-  #   restart: unless-stopped
-  #   networks:
-  #     - jobportal-network
-  #   healthcheck:
-  #     test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
-
-# Named volumes for data persistence
-# These volumes persist data even when containers are removed
-# volumes:
-  # MongoDB data volume
-  # mongodb_data:
-  # MongoDB config volume
-  # mongodb_config:
-
 # Network for inter-service communication
 # All services can communicate using service names as hostnames
 networks:
