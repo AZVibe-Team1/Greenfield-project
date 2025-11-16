@@ -21,6 +21,8 @@ import {
   Loader2
 } from 'lucide-react';
 
+const CACHE_KEY = 'ai_job_recommendations';
+
 export default function RecommendationsPage() {
   const { user, isLoading: authLoading, logout } = useSeekerAuth();
   const [recommendations, setRecommendations] = useState<JobRecommendation[]>([]);
@@ -32,9 +34,32 @@ export default function RecommendationsPage() {
   const [streamComplete, setStreamComplete] = useState(false);
   const jobsPerPage = 10;
 
+  // Load from cache on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const cachedData = sessionStorage.getItem(CACHE_KEY);
+      if (cachedData) {
+        try {
+          const parsed = JSON.parse(cachedData);
+          setRecommendations(parsed.recommendations || []);
+          setStreamComplete(parsed.streamComplete || false);
+          setLoading(false);
+          setError(null);
+        } catch (e) {
+          console.error('Failed to parse cached recommendations:', e);
+          sessionStorage.removeItem(CACHE_KEY);
+        }
+      }
+    }
+  }, []);
+
   useEffect(() => {
     if (!authLoading && user) {
-      loadRecommendationsStream();
+      // Only load from API if we don't have cached data
+      const cachedData = sessionStorage.getItem(CACHE_KEY);
+      if (!cachedData) {
+        loadRecommendationsStream();
+      }
     }
   }, [authLoading, user]);
 
@@ -53,8 +78,13 @@ export default function RecommendationsPage() {
     return uniqueJobs.sort((a, b) => b.match_score - a.match_score);
   }, [recommendations]);
 
-  const loadRecommendationsStream = async () => {
+  const loadRecommendationsStream = async (forceRefresh: boolean = false) => {
     try {
+      // Clear cache if forcing refresh
+      if (forceRefresh && typeof window !== 'undefined') {
+        sessionStorage.removeItem(CACHE_KEY);
+      }
+
       setLoading(true);
       setError(null);
       setRecommendations([]);
@@ -125,11 +155,34 @@ export default function RecommendationsPage() {
                 if (parsed.done) {
                   setStreamComplete(true);
                   setLoading(false);
+                  // Cache the final recommendations when stream is complete
+                  if (typeof window !== 'undefined') {
+                    setRecommendations(prev => {
+                      const finalRecommendations = prev;
+                      sessionStorage.setItem(CACHE_KEY, JSON.stringify({
+                        recommendations: finalRecommendations,
+                        streamComplete: true,
+                        timestamp: Date.now()
+                      }));
+                      return finalRecommendations;
+                    });
+                  }
                   return;
                 }
                 
                 // Add recommendation as it arrives
-                setRecommendations(prev => [...prev, parsed]);
+                setRecommendations(prev => {
+                  const updated = [...prev, parsed];
+                  // Cache the updated recommendations
+                  if (typeof window !== 'undefined') {
+                    sessionStorage.setItem(CACHE_KEY, JSON.stringify({
+                      recommendations: updated,
+                      streamComplete: false,
+                      timestamp: Date.now()
+                    }));
+                  }
+                  return updated;
+                });
               } catch (e) {
                 console.error('Failed to parse SSE data:', e);
               }
@@ -234,7 +287,7 @@ export default function RecommendationsPage() {
               </div>
             </div>
             <button
-              onClick={loadRecommendationsStream}
+              onClick={() => loadRecommendationsStream(true)}
               disabled={loading}
               className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium disabled:opacity-50"
             >
@@ -262,7 +315,7 @@ export default function RecommendationsPage() {
                 <h3 className="text-lg font-bold text-red-900 mb-2">Error Loading Recommendations</h3>
                 <p className="text-red-800 mb-3">{error}</p>
                 <button
-                  onClick={loadRecommendationsStream}
+                  onClick={() => loadRecommendationsStream(true)}
                   className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
                 >
                   Try Again
