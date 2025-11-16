@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useSeekerAuth } from '@/hooks/useAuth';
 import { seekerService } from '@/services/seeker-service';
@@ -37,6 +37,21 @@ export default function RecommendationsPage() {
       loadRecommendationsStream();
     }
   }, [authLoading, user]);
+
+  // Create sorted and deduplicated recommendations array
+  const sortedRecommendations = useMemo(() => {
+    // Remove duplicates by job_id
+    const uniqueJobs = recommendations.reduce((acc, current) => {
+      const isDuplicate = acc.find(item => item.job_id === current.job_id);
+      if (!isDuplicate) {
+        acc.push(current);
+      }
+      return acc;
+    }, [] as JobRecommendation[]);
+    
+    // Sort by match score descending
+    return uniqueJobs.sort((a, b) => b.match_score - a.match_score);
+  }, [recommendations]);
 
   const loadRecommendationsStream = async () => {
     try {
@@ -282,7 +297,7 @@ export default function RecommendationsPage() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Total Matches</p>
-                    <p className="text-2xl font-bold text-gray-900">{recommendations.length}</p>
+                    <p className="text-2xl font-bold text-gray-900">{sortedRecommendations.length}</p>
                   </div>
                 </div>
               </div>
@@ -293,7 +308,7 @@ export default function RecommendationsPage() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Best Match</p>
-                    <p className="text-2xl font-bold text-gray-900">{Math.round(recommendations[0]?.match_score || 0)}%</p>
+                    <p className="text-2xl font-bold text-gray-900">{Math.round(sortedRecommendations[0]?.match_score || 0)}%</p>
                   </div>
                 </div>
               </div>
@@ -305,7 +320,7 @@ export default function RecommendationsPage() {
                   <div>
                     <p className="text-sm text-gray-600">Excellent Matches</p>
                     <p className="text-2xl font-bold text-gray-900">
-                      {recommendations.filter(r => r.match_score >= 86).length}
+                      {sortedRecommendations.filter(r => r.match_score >= 86).length}
                     </p>
                   </div>
                 </div>
@@ -326,7 +341,7 @@ export default function RecommendationsPage() {
 
             {/* Recommendations List */}
             <div className="space-y-4">
-              {recommendations
+              {sortedRecommendations
                 .slice((currentPage - 1) * jobsPerPage, currentPage * jobsPerPage)
                 .map((job) => (
                 <div
@@ -451,14 +466,14 @@ export default function RecommendationsPage() {
             </div>
 
             {/* Pagination Controls */}
-            {recommendations.length > jobsPerPage && (
+            {sortedRecommendations.length > jobsPerPage && (
               <div className="mt-8 flex items-center justify-between border-t border-gray-200 pt-6">
                 <div className="text-sm text-gray-700">
                   Showing <span className="font-medium">{(currentPage - 1) * jobsPerPage + 1}</span> to{' '}
                   <span className="font-medium">
-                    {Math.min(currentPage * jobsPerPage, recommendations.length)}
+                    {Math.min(currentPage * jobsPerPage, sortedRecommendations.length)}
                   </span>{' '}
-                  of <span className="font-medium">{recommendations.length}</span> matches
+                  of <span className="font-medium">{sortedRecommendations.length}</span> matches
                 </div>
                 <div className="flex gap-2">
                   <button
@@ -471,11 +486,11 @@ export default function RecommendationsPage() {
                   </button>
                   <div className="flex items-center gap-1">
                     {Array.from(
-                      { length: Math.ceil(recommendations.length / jobsPerPage) },
+                      { length: Math.ceil(sortedRecommendations.length / jobsPerPage) },
                       (_, i) => i + 1
                     )
                       .filter(page => {
-                        const totalPages = Math.ceil(recommendations.length / jobsPerPage);
+                        const totalPages = Math.ceil(sortedRecommendations.length / jobsPerPage);
                         return (
                           page === 1 ||
                           page === totalPages ||
@@ -503,10 +518,10 @@ export default function RecommendationsPage() {
                   <button
                     onClick={() =>
                       setCurrentPage(p =>
-                        Math.min(Math.ceil(recommendations.length / jobsPerPage), p + 1)
+                        Math.min(Math.ceil(sortedRecommendations.length / jobsPerPage), p + 1)
                       )
                     }
-                    disabled={currentPage === Math.ceil(recommendations.length / jobsPerPage)}
+                    disabled={currentPage === Math.ceil(sortedRecommendations.length / jobsPerPage)}
                     className="inline-flex items-center gap-2 px-4 py-2 bg-white border-2 border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Next

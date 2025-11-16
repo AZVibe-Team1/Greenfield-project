@@ -32,6 +32,9 @@ export default function SeekerProfilePage() {
     phone: '',
     edu_focus: '',
     key_skills: '',
+    pay_range_min: 0,
+    pay_range_max: 0,
+    pay_unit: 'Yearly',
   });
   const [autoApplySettings, setAutoApplySettings] = useState<AutoApplySettings>({
     enabled: false,
@@ -54,6 +57,9 @@ export default function SeekerProfilePage() {
         phone: data.phone,
         edu_focus: data.edu_focus,
         key_skills: data.key_skills.join(', '),
+        pay_range_min: data.pay_range[0],
+        pay_range_max: data.pay_range[1],
+        pay_unit: data.pay_unit,
       });
       
       // Load auto-apply settings
@@ -77,6 +83,8 @@ export default function SeekerProfilePage() {
         phone: formData.phone,
         edu_focus: formData.edu_focus,
         key_skills: formData.key_skills.split(',').map(s => s.trim()).filter(s => s),
+        pay_range: [formData.pay_range_min, formData.pay_range_max],
+        pay_unit: formData.pay_unit,
       });
       setEditing(false);
       await loadProfile();
@@ -216,6 +224,49 @@ export default function SeekerProfilePage() {
                       rows={3}
                       placeholder="e.g., Python, JavaScript, React"
                     />
+                  </div>
+
+                  <div>
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                      <DollarSign className="h-4 w-4 text-emerald-600" />
+                      Desired Salary Range
+                    </label>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-xs text-gray-600 mb-1 block">Minimum</label>
+                        <input
+                          type="number"
+                          value={formData.pay_range_min}
+                          onChange={(e) => setFormData({ ...formData, pay_range_min: parseInt(e.target.value) || 0 })}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                          placeholder="50000"
+                          min="0"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-600 mb-1 block">Maximum</label>
+                        <input
+                          type="number"
+                          value={formData.pay_range_max}
+                          onChange={(e) => setFormData({ ...formData, pay_range_max: parseInt(e.target.value) || 0 })}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                          placeholder="80000"
+                          min="0"
+                        />
+                      </div>
+                    </div>
+                    <div className="mt-2">
+                      <label className="text-xs text-gray-600 mb-1 block">Pay Unit</label>
+                      <select
+                        value={formData.pay_unit}
+                        onChange={(e) => setFormData({ ...formData, pay_unit: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      >
+                        <option value="Hourly">Hourly</option>
+                        <option value="Monthly">Monthly</option>
+                        <option value="Yearly">Yearly</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
 
