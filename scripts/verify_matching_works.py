@@ -4,14 +4,14 @@ Quick verification script to test that AI-powered matching is working.
 Run this to verify the fixes are in place and working correctly.
 
 Usage:
-    uv run python verify_matching_works.py
+    uv run python scripts/verify_matching_works.py
 """
 import asyncio
 import sys
 from pathlib import Path
 
 # Add project root to path
-sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from backend.db.settings import connect_to_mongodb, close_mongodb_connection
 from backend.db.employer_db_ops import EmployerCRUD
