@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 
-from backend.api.v1.routes import auth_router, employer_router, seeker_router
+from backend.api.v1.routes import auth_router, employer_router, interview_router, seeker_router
 from backend.db.settings import (
     close_mongodb_connection,
     connect_to_mongodb,
@@ -57,6 +57,7 @@ app.add_middleware(
 app.include_router(auth_router.router, prefix="/api/v1")
 app.include_router(seeker_router.router, prefix="/api/v1")
 app.include_router(employer_router.router, prefix="/api/v1")
+app.include_router(interview_router.router, prefix="/api/v1")
 
 
 @app.get("/")

@@ -18,6 +18,7 @@ from loguru import logger
 from motor.motor_asyncio import AsyncIOMotorClient
 
 from backend.schemas.employer import Employer
+from backend.schemas.interview import Interview
 from backend.schemas.seeker import Seeker
 
 
@@ -118,6 +119,7 @@ class MongoDBSettings:
         MONGO_DB_NAME: Database name
         MONGO_SEEKER_NAME: Seeker collection name
         MONGO_EMPLOYER_NAME: Employer collection name
+        N8N_WEBHOOK_URL: n8n webhook URL for interview notifications
     """
 
     def __init__(self):
@@ -128,6 +130,7 @@ class MongoDBSettings:
         self.MONGO_DB_NAME = os.getenv("MONGO_DB_NAME", "job-portal").strip("'\"")
         self.MONGO_SEEKER_NAME = os.getenv("MONGO_SEEKER_NAME", "seeker").strip("'\"")
         self.MONGO_EMPLOYER_NAME = os.getenv("MONGO_EMPLOYER_NAME", "employer").strip("'\"")
+        self.N8N_WEBHOOK_URL = os.getenv("N8N_WEBHOOK_URL")
 
         # Validate required environment variables
         self._validate_settings()
@@ -252,7 +255,7 @@ async def connect_to_mongodb() -> AsyncIOMotorClient:
         # Initialize Beanie with document models
         await init_beanie(
             database=database,  # type: ignore[arg-type]
-            document_models=[Seeker, Employer]
+            document_models=[Seeker, Employer, Interview]
         )
 
         # Verify connection by pinging the server
