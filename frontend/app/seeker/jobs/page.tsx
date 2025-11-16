@@ -84,7 +84,7 @@ export default function JobSearchPage() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <Link href="/seeker/dashboard" className="text-2xl font-bold text-emerald-600 hover:text-emerald-700 transition-colors">
-              Job Portal
+              WorkAtlas
             </Link>
             <nav className="flex items-center gap-6">
               <Link 

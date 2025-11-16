@@ -185,7 +185,7 @@ export default function SeekerProfilePage() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <Link href="/seeker/dashboard" className="text-2xl font-bold text-emerald-600 hover:text-emerald-700 transition-colors">
-              Job Portal
+              WorkAtlas
             </Link>
             <nav className="flex items-center gap-6">
               <Link 
@@ -255,7 +255,7 @@ export default function SeekerProfilePage() {
                       type="tel"
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-gray-900"
                       placeholder="(555) 123-4567"
                     />
                   </div>
@@ -269,7 +269,7 @@ export default function SeekerProfilePage() {
                       type="text"
                       value={formData.edu_focus}
                       onChange={(e) => setFormData({ ...formData, edu_focus: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-gray-900"
                       placeholder="e.g., Computer Science"
                     />
                   </div>
@@ -282,7 +282,7 @@ export default function SeekerProfilePage() {
                     <textarea
                       value={formData.key_skills}
                       onChange={(e) => setFormData({ ...formData, key_skills: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-gray-900"
                       rows={3}
                       placeholder="e.g., Python, JavaScript, React"
                     />
@@ -300,7 +300,7 @@ export default function SeekerProfilePage() {
                           type="number"
                           value={formData.pay_range_min}
                           onChange={(e) => setFormData({ ...formData, pay_range_min: parseInt(e.target.value) || 0 })}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-gray-900"
                           placeholder="50000"
                           min="0"
                         />
@@ -311,7 +311,7 @@ export default function SeekerProfilePage() {
                           type="number"
                           value={formData.pay_range_max}
                           onChange={(e) => setFormData({ ...formData, pay_range_max: parseInt(e.target.value) || 0 })}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-gray-900"
                           placeholder="80000"
                           min="0"
                         />
@@ -322,7 +322,7 @@ export default function SeekerProfilePage() {
                       <select
                         value={formData.pay_unit}
                         onChange={(e) => setFormData({ ...formData, pay_unit: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-gray-900"
                       >
                         <option value="Hourly">Hourly</option>
                         <option value="Monthly">Monthly</option>
@@ -580,7 +580,7 @@ export default function SeekerProfilePage() {
                   <textarea
                     value={resumeText}
                     onChange={(e) => setResumeText(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-gray-900"
                     rows={6}
                     placeholder="Paste your resume content here..."
                     disabled={uploadingResume}

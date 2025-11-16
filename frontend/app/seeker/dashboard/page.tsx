@@ -68,7 +68,7 @@ export default function SeekerDashboard() {
           <div className="flex justify-between items-center h-16">
             <Link href="/" className="flex items-center">
               <Briefcase className="h-8 w-8 text-emerald-600" />
-              <span className="ml-2 text-2xl font-bold text-gray-900">JobPortal</span>
+              <span className="ml-2 text-2xl font-bold text-gray-900">WorkAtlas</span>
             </Link>
             <div className="flex items-center gap-6">
               <span className="text-gray-700 font-medium hidden sm:block">

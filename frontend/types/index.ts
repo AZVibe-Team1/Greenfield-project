@@ -1,5 +1,5 @@
 /**
- * TypeScript type definitions for Job Portal
+ * TypeScript type definitions for WorkAtlas
  */
 
 export interface User {

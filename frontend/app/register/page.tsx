@@ -174,7 +174,7 @@ export default function RegisterPage() {
       <div className="max-w-7xl mx-auto px-4 mb-8">
         <Link href="/" className="flex items-center text-gray-900 hover:text-blue-600 transition">
           <Briefcase className="h-8 w-8 text-blue-600 mr-2" />
-          <span className="text-2xl font-bold">JobPortal</span>
+          <span className="text-2xl font-bold">WorkAtlas</span>
         </Link>
       </div>
 
@@ -182,7 +182,7 @@ export default function RegisterPage() {
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-gray-900">Create Account</h1>
-            <p className="text-gray-600 mt-2 text-lg">Join JobPortal today</p>
+            <p className="text-gray-600 mt-2 text-lg">Join WorkAtlas today</p>
           </div>
 
           {error && (
@@ -329,7 +329,7 @@ export default function RegisterPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 text-gray-900"
                 />
               </div>
 
@@ -342,7 +342,7 @@ export default function RegisterPage() {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="+12025550123"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 text-gray-900"
                   />
                 </div>
               )}
@@ -356,7 +356,7 @@ export default function RegisterPage() {
                     minLength={6}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 text-gray-900"
                   />
                 </div>
                 <div>
@@ -367,7 +367,7 @@ export default function RegisterPage() {
                     minLength={6}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 text-gray-900"
                   />
                 </div>
               </div>
@@ -380,7 +380,7 @@ export default function RegisterPage() {
                   required
                   value={street}
                   onChange={(e) => setStreet(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 text-gray-900"
                 />
               </div>
 
@@ -392,7 +392,7 @@ export default function RegisterPage() {
                     required
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 text-gray-900"
                   />
                 </div>
                 <div>
@@ -404,7 +404,7 @@ export default function RegisterPage() {
                     value={state}
                     onChange={(e) => setState(e.target.value.toUpperCase())}
                     placeholder="CA"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 text-gray-900"
                   />
                 </div>
                 <div>
@@ -415,7 +415,7 @@ export default function RegisterPage() {
                     value={zipCode}
                     onChange={(e) => setZipCode(e.target.value)}
                     placeholder="12345"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 text-gray-900"
                   />
                 </div>
               </div>
@@ -459,7 +459,7 @@ export default function RegisterPage() {
                       value={skills}
                       onChange={(e) => setSkills(e.target.value)}
                       placeholder="Python, JavaScript, React"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 text-gray-900"
                     />
                   </div>
 
@@ -536,7 +536,7 @@ export default function RegisterPage() {
                           setResumeFile(null);
                           setResumeError('');
                         }}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 text-sm"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 text-sm text-gray-900"
                         rows={4}
                         placeholder="Paste your resume content here..."
                         disabled={loading}
@@ -563,7 +563,7 @@ export default function RegisterPage() {
                     onChange={(e) => setBenefits(e.target.value)}
                     placeholder="Health insurance, 401k, Remote work..."
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 text-gray-900"
                   />
                 </div>
               )}

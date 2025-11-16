@@ -1,4 +1,4 @@
-# Frontend Dockerfile for Job Portal (Next.js 14)
+# Frontend Dockerfile for WorkAtlas (Next.js 14)
 # This Dockerfile sets up a Node.js environment for Next.js application
 
 # Use Node.js 20 LTS as base image for better compatibility
