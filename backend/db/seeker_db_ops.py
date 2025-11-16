@@ -113,6 +113,47 @@ class SeekerCRUD:
             return None
 
     @staticmethod
+    async def get_seeker_by_uuid(uuid_str: str) -> Seeker | None:
+        """
+        Retrieve a seeker by their UUID.
+
+        Args:
+            uuid_str: Seeker's UUID as string
+
+        Returns:
+            Seeker document or None if not found
+
+        Example:
+            >>> seeker = await get_seeker_by_uuid("550e8400-e29b-41d4-a716-446655440000")
+        """
+        try:
+            from uuid import UUID
+            from bson.binary import Binary, UuidRepresentation
+            from backend.db.settings import get_mongodb_client
+            
+            uuid_obj = UUID(uuid_str)
+            # Convert UUID to BSON Binary with UUID subtype
+            uuid_binary = Binary.from_uuid(uuid_obj, uuid_representation=UuidRepresentation.STANDARD)
+            
+            # Use raw motor client to query
+            client = get_mongodb_client()
+            if not client:
+                logger.error("MongoDB client not available")
+                return None
+            
+            db = client['job-portal']
+            collection = db['seekers']
+            doc = await collection.find_one({"seeker_identification": uuid_binary})
+            
+            if doc:
+                # Convert to Seeker model
+                return Seeker.model_validate(doc)
+            return None
+        except Exception as e:
+            logger.critical(f"Error retrieving seeker by UUID: {e}")
+            return None
+
+    @staticmethod
     async def get_all_seekers(skip: int = 0, limit: int = 100) -> list[Seeker]:
         """
         Retrieve all seekers with pagination.

@@ -14,7 +14,9 @@ import {
   DollarSign, 
   GraduationCap,
   CheckCircle,
-  XCircle
+  XCircle,
+  Users,
+  Sparkles
 } from 'lucide-react';
 
 export default function EmployerJobsPage() {
@@ -73,6 +75,12 @@ export default function EmployerJobsPage() {
                 className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
               >
                 Applications
+              </Link>
+              <Link 
+                href="/employer/profile" 
+                className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
+              >
+                Profile
               </Link>
               <button 
                 onClick={logout} 
@@ -191,6 +199,13 @@ export default function EmployerJobsPage() {
                 </div>
 
                 <div className="flex items-center gap-3 pt-4 border-t border-gray-200">
+                  <Link
+                    href={`/employer/jobs/${job.job_id}/candidates`}
+                    className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-purple-600 to-purple-500 text-white rounded-lg hover:from-purple-700 hover:to-purple-600 transition-all font-medium shadow-md hover:shadow-lg"
+                  >
+                    <Sparkles className="h-4 w-4" />
+                    View AI Candidates
+                  </Link>
                   <Link
                     href={`/employer/jobs/${job.job_id}`}
                     className="inline-flex items-center gap-2 px-4 py-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors font-medium"

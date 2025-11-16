@@ -16,7 +16,9 @@ import {
   TrendingUp,
   Clock,
   CheckCircle,
-  Target
+  Target,
+  User,
+  Edit
 } from 'lucide-react';
 
 export default function EmployerDashboard() {
@@ -70,6 +72,13 @@ export default function EmployerDashboard() {
               <span className="text-gray-700 font-medium hidden sm:block">
                 {profile?.company_name}
               </span>
+              <Link
+                href="/employer/profile"
+                className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors"
+              >
+                <User className="h-5 w-5" />
+                <span className="hidden sm:inline">Profile</span>
+              </Link>
               <button
                 onClick={logout}
                 className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors"
@@ -93,7 +102,7 @@ export default function EmployerDashboard() {
             </h1>
           </div>
           <p className="text-blue-100 text-lg">
-            Manage your job postings and find the perfect candidates.
+            Building your team at {profile?.company_name} - Hire smarter with AI-powered insights.
           </p>
         </div>
 
@@ -150,23 +159,57 @@ export default function EmployerDashboard() {
             <p className="text-sm text-gray-500 mt-1">Unique candidates</p>
           </Link>
 
-          {/* Match Rate */}
+          {/* AI Matching Feature */}
           <Link
             href="/employer/jobs"
-            className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all hover:-translate-y-1 cursor-pointer"
+            className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all hover:-translate-y-1 cursor-pointer relative overflow-hidden border-2 border-purple-200"
           >
-            <div className="flex items-center justify-between mb-4">
-              <div className="bg-amber-100 p-3 rounded-lg">
-                <Target className="h-8 w-8 text-amber-600" />
+            <div className="flex flex-col h-full">
+              <div className="flex items-center justify-between mb-4">
+                <div className="bg-gradient-to-br from-purple-500 to-purple-600 p-3 rounded-lg shadow-md">
+                  <Target className="h-8 w-8 text-white" />
+                </div>
               </div>
-              <span className="text-3xl font-bold text-gray-900">
-                {(profile?.open_jobs?.length || 0) > 0 ? Math.floor((profile?.apps_received?.length || 0) / (profile?.open_jobs?.length || 1) * 10) : 0}%
-              </span>
+              <h3 className="text-gray-900 font-bold text-lg mb-2">AI Candidate Matching</h3>
+              <p className="text-sm text-purple-700 mb-4 flex-grow">
+                Smart AI recommendations for your job postings
+              </p>
+              <div className="flex items-center justify-between">
+                <span className="text-purple-600 font-semibold text-sm">View Matches</span>
+                <div className="bg-purple-500 text-white rounded-full p-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </div>
             </div>
-            <h3 className="text-gray-600 font-medium">Match Rate</h3>
-            <p className="text-sm text-gray-500 mt-1">AI matching score</p>
           </Link>
         </div>
+
+        {/* AI Feature Banner */}
+        {profile && profile.open_jobs.length > 0 && (
+          <div className="bg-gradient-to-r from-purple-600 to-purple-500 rounded-2xl shadow-xl p-6 mb-8 text-white">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="bg-white/20 p-3 rounded-xl">
+                  <Target className="h-8 w-8 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold mb-1">🎯 AI-Powered Candidate Matching Available</h3>
+                  <p className="text-purple-100">
+                    View AI-matched candidates with detailed scoring for each of your job postings
+                  </p>
+                </div>
+              </div>
+              <Link
+                href="/employer/jobs"
+                className="px-6 py-3 bg-white text-purple-600 rounded-lg font-semibold hover:bg-purple-50 transition-colors whitespace-nowrap"
+              >
+                Explore Now →
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* Quick Actions */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
@@ -207,10 +250,19 @@ export default function EmployerDashboard() {
         {/* Company Summary */}
         {profile && (
           <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
-            <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-              <Building2 className="h-6 w-6 text-blue-600" />
-              Company Information
-            </h3>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <Building2 className="h-6 w-6 text-blue-600" />
+                Company Information
+              </h3>
+              <Link
+                href="/employer/profile"
+                className="inline-flex items-center gap-2 px-4 py-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors font-medium"
+              >
+                <Edit className="h-4 w-4" />
+                Edit Profile
+              </Link>
+            </div>
             <div className="grid md:grid-cols-2 gap-6">
               <div className="flex items-start gap-3">
                 <div className="bg-blue-100 p-2 rounded-lg">
@@ -276,7 +328,7 @@ export default function EmployerDashboard() {
                         </span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3">
                       <span className={`px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 ${
                         job.current_status === 'Posted' ? 'bg-green-100 text-green-800' :
                         'bg-gray-100 text-gray-800'
@@ -285,10 +337,16 @@ export default function EmployerDashboard() {
                         {job.current_status}
                       </span>
                       <Link
+                        href={`/employer/jobs/${job.job_id}/candidates`}
+                        className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors"
+                      >
+                        AI Candidates →
+                      </Link>
+                      <Link
                         href={`/employer/jobs/${job.job_id}`}
                         className="text-blue-600 hover:text-blue-700 font-medium text-sm hover:underline"
                       >
-                        View →
+                        Edit →
                       </Link>
                     </div>
                   </div>

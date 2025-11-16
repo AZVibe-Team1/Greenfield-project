@@ -52,6 +52,12 @@ export default function EmployerApplicationsPage() {
               >
                 My Jobs
               </Link>
+              <Link 
+                href="/employer/profile" 
+                className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
+              >
+                Profile
+              </Link>
               <button 
                 onClick={logout} 
                 className="text-gray-700 hover:text-red-600 transition-colors font-medium"

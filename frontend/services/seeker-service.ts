@@ -3,7 +3,7 @@
  * 
  * API calls for job seeker operations
  */
-import apiClient from '@/lib/api';
+import apiClient from '@/lib/api-client';
 import { SeekerProfile, Job, JobRecommendation, AutoApplySettings } from '@/types';
 
 export const seekerService = {
