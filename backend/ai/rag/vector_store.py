@@ -75,13 +75,20 @@ class VectorStore:
                 include=["embeddings", "metadatas", "documents"]
             )
             
-            if not result or not result["ids"]:
+            if not result or not result.get("ids"):
                 logger.warning(f"Job not found in ChromaDB: {job_id}")
                 return None
             
+            # Extract embedding safely (ChromaDB returns numpy arrays)
+            embedding = None
+            if "embeddings" in result and result["embeddings"] is not None:
+                embeddings_list = result["embeddings"]
+                if len(embeddings_list) > 0 and embeddings_list[0] is not None:
+                    embedding = embeddings_list[0]
+            
             return {
                 "id": result["ids"][0],
-                "embedding": result["embeddings"][0] if result.get("embeddings") else None,
+                "embedding": embedding,
                 "metadata": result["metadatas"][0] if result.get("metadatas") else {},
                 "document": result["documents"][0] if result.get("documents") else None
             }

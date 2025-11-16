@@ -42,8 +42,11 @@ class CandidateMatchingService:
         """
         try:
             job_data = self.vector_store.get_job_by_id(job_id)
-            if job_data and job_data.get("embedding"):
-                return job_data["embedding"]
+            if job_data and job_data.get("embedding") is not None:
+                embedding = job_data["embedding"]
+                # Check if embedding has data (ChromaDB returns numpy arrays or lists)
+                if hasattr(embedding, '__len__') and len(embedding) > 0:
+                    return embedding
             logger.warning(f"Job embedding not found for ID: {job_id}")
             return None
         except Exception as e:
@@ -94,19 +97,20 @@ class CandidateMatchingService:
             logger.error(f"Error searching similar seekers: {e}")
             return []
 
-    async def fetch_seeker_details(self, seeker_id: str) -> dict[str, Any] | None:
+    async def fetch_seeker_details(self, seeker_uuid: str) -> dict[str, Any] | None:
         """
         Fetch full seeker details from MongoDB.
 
         Args:
-            seeker_id: Seeker's MongoDB ObjectId as string
+            seeker_uuid: Seeker's UUID as string (from ChromaDB)
 
         Returns:
             Dictionary with seeker details or None if not found
         """
         try:
-            seeker = await SeekerCRUD.get_seeker_by_id(seeker_id)
+            seeker = await SeekerCRUD.get_seeker_by_uuid(seeker_uuid)
             if not seeker:
+                logger.warning(f"Seeker not found in MongoDB for UUID: {seeker_uuid}")
                 return None
 
             return {
@@ -201,13 +205,7 @@ class CandidateMatchingService:
                 - ... other seeker fields
         """
         try:
-            # 1. Get job embedding from ChromaDB
-            job_embedding = await self.get_job_embedding(job_id)
-            if not job_embedding:
-                logger.warning(f"No embedding found for job: {job_id}")
-                return []
-
-            # 2. Get job full details from MongoDB
+            # 1. Get job full details from MongoDB first to get the UUID
             employer = await EmployerCRUD.get_employer_by_id(employer_id)
             if not employer:
                 logger.warning(f"Employer not found: {employer_id}")
@@ -221,6 +219,14 @@ class CandidateMatchingService:
 
             if not job:
                 logger.warning(f"Job not found: {job_id}")
+                return []
+
+            # 2. Get job embedding from ChromaDB using the job's UUID
+            job_uuid = str(job.job_identification)
+            logger.info(f"Looking up job in ChromaDB with UUID: {job_uuid}")
+            job_embedding = await self.get_job_embedding(job_uuid)
+            if job_embedding is None or (hasattr(job_embedding, '__len__') and len(job_embedding) == 0):
+                logger.warning(f"No embedding found for job UUID: {job_uuid}")
                 return []
 
             job_data = {
