@@ -47,7 +47,8 @@ export default function CandidateRecommendationsPage() {
       setLoading(true);
       const [jobData, candidatesData] = await Promise.all([
         employerService.getJob(jobId),
-        employerService.getCandidateRecommendations(jobId, 50, 0)
+        // Reduced from 50 to 15 for faster loading (45s instead of 150s)
+        employerService.getCandidateRecommendations(jobId, 15, 0)
       ]);
       setJob(jobData);
       setCandidates(candidatesData);

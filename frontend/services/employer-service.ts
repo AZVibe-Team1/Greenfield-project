@@ -73,6 +73,7 @@ export const employerService = {
 
   /**
    * Get AI-powered candidate recommendations for a job
+   * Note: This endpoint uses LLM processing and may take 10-30 seconds
    */
   getCandidateRecommendations: async (
     jobId: string, 
@@ -85,7 +86,9 @@ export const employerService = {
         params: {
           n_results: nResults,
           min_score: minScore
-        }
+        },
+        // Set a longer timeout for AI processing (60 seconds)
+        timeout: 60000
       }
     );
     return response.data;

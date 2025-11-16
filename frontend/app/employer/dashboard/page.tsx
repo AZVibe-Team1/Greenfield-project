@@ -27,8 +27,6 @@ export default function EmployerDashboard() {
   const { user, isLoading: authLoading, logout } = useEmployerAuth();
   const [profile, setProfile] = useState<EmployerProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [avgMatchScore, setAvgMatchScore] = useState<number>(0);
-  const [loadingMatchScore, setLoadingMatchScore] = useState(false);
 
   // Load profile data once authentication is confirmed
   useEffect(() => {
@@ -41,48 +39,10 @@ export default function EmployerDashboard() {
     try {
       const data = await employerService.getProfile();
       setProfile(data);
-      // Load AI match scores after profile loads
-      if (data.open_jobs.length > 0) {
-        loadMatchScores(data.open_jobs);
-      }
     } catch (error) {
       console.error('Failed to load profile:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const loadMatchScores = async (jobs: any[]) => {
-    setLoadingMatchScore(true);
-    try {
-      // Fetch top candidates for each job (limit to 5 to speed up)
-      const scoresPromises = jobs.slice(0, 5).map(job => 
-        employerService.getCandidateRecommendations(job.job_id, 5, 0)
-          .catch(() => []) // Return empty array if fails
-      );
-      
-      const allCandidates = await Promise.all(scoresPromises);
-      
-      // Calculate average of top match scores across all jobs
-      let totalScore = 0;
-      let jobsWithCandidates = 0;
-      
-      allCandidates.forEach(candidates => {
-        if (candidates.length > 0) {
-          // Get the best match score for this job
-          const topScore = candidates[0].match_score;
-          totalScore += topScore;
-          jobsWithCandidates++;
-        }
-      });
-      
-      const avgScore = jobsWithCandidates > 0 ? totalScore / jobsWithCandidates : 0;
-      setAvgMatchScore(Math.round(avgScore));
-    } catch (error) {
-      console.error('Failed to load match scores:', error);
-      setAvgMatchScore(0);
-    } finally {
-      setLoadingMatchScore(false);
     }
   };
 
@@ -199,26 +159,30 @@ export default function EmployerDashboard() {
             <p className="text-sm text-gray-500 mt-1">Unique candidates</p>
           </Link>
 
-          {/* Match Rate */}
+          {/* AI Matching Feature */}
           <Link
             href="/employer/jobs"
-            className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all hover:-translate-y-1 cursor-pointer relative overflow-hidden"
+            className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all hover:-translate-y-1 cursor-pointer relative overflow-hidden border-2 border-purple-200"
           >
-            {loadingMatchScore && (
-              <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-10">
-                <div className="w-6 h-6 border-3 border-amber-600 border-t-transparent rounded-full animate-spin"></div>
+            <div className="flex flex-col h-full">
+              <div className="flex items-center justify-between mb-4">
+                <div className="bg-gradient-to-br from-purple-500 to-purple-600 p-3 rounded-lg shadow-md">
+                  <Target className="h-8 w-8 text-white" />
+                </div>
               </div>
-            )}
-            <div className="flex items-center justify-between mb-4">
-              <div className="bg-gradient-to-br from-amber-100 to-amber-200 p-3 rounded-lg">
-                <Target className="h-8 w-8 text-amber-600" />
+              <h3 className="text-gray-900 font-bold text-lg mb-2">AI Candidate Matching</h3>
+              <p className="text-sm text-purple-700 mb-4 flex-grow">
+                Smart AI recommendations for your job postings
+              </p>
+              <div className="flex items-center justify-between">
+                <span className="text-purple-600 font-semibold text-sm">View Matches</span>
+                <div className="bg-purple-500 text-white rounded-full p-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
               </div>
-              <span className="text-3xl font-bold text-gray-900">
-                {avgMatchScore}%
-              </span>
             </div>
-            <h3 className="text-gray-600 font-medium">AI Match Rate</h3>
-            <p className="text-sm text-gray-500 mt-1">Average best match score</p>
           </Link>
         </div>
 
