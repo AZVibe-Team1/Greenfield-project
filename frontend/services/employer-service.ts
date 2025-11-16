@@ -4,7 +4,7 @@
  * API calls for employer operations
  */
 import apiClient from '@/lib/api';
-import { EmployerProfile, Job, CreateJobRequest, CandidateRecommendation } from '@/types';
+import { EmployerProfile, Job, CreateJobRequest, CandidateRecommendation, ScheduleInterviewRequest, N8nStatusResponse } from '@/types';
 
 export const employerService = {
   /**
@@ -91,6 +91,29 @@ export const employerService = {
         timeout: 60000
       }
     );
+    return response.data;
+  },
+
+  /**
+   * Schedule an interview with a candidate and send email notification via n8n
+   */
+  scheduleInterview: async (
+    jobId: string,
+    seekerId: string,
+    data: ScheduleInterviewRequest
+  ): Promise<any> => {
+    const response = await apiClient.post(
+      `/employers/jobs/${jobId}/candidates/${seekerId}/schedule-interview`,
+      data
+    );
+    return response.data;
+  },
+
+  /**
+   * Get n8n service connection status
+   */
+  getN8nStatus: async (): Promise<N8nStatusResponse> => {
+    const response = await apiClient.get<N8nStatusResponse>('/employers/n8n/status');
     return response.data;
   },
 };

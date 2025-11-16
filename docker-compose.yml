@@ -67,6 +67,37 @@ services:
     networks:
       - jobportal-network
 
+  # n8n Service - Workflow Automation
+  # This service runs n8n for email notifications and workflow automation
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: jobportal-n8n
+    # Port mapping: host:container
+    # Access n8n UI at http://localhost:5678
+    ports:
+      - "5678:5678"
+    # Environment variables for n8n configuration
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=false
+      - N8N_HOST=n8n
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+    # Volume for persistent storage of workflows and data
+    volumes:
+      - ./n8n_data:/home/node/.n8n
+    # Restart policy: restart container if it stops unexpectedly
+    restart: unless-stopped
+    # Networks allow services to communicate with each other
+    networks:
+      - jobportal-network
+    # Health check to ensure service is running
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5678/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
   # MongoDB Service - Database
   # NOTE: Currently commented out - uncomment when ready to add database
   # This service runs MongoDB 6.x database server

@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useEmployerAuth } from '@/hooks/useAuth';
 import { employerService } from '@/services/employer-service';
-import { CandidateRecommendation, Job } from '@/types';
+import { CandidateRecommendation, Job, ScheduleInterviewRequest } from '@/types';
 import { 
   ArrowLeft,
   User,
@@ -21,7 +21,8 @@ import {
   Award,
   FileText,
   Calendar,
-  Sparkles
+  Sparkles,
+  X
 } from 'lucide-react';
 
 export default function CandidateRecommendationsPage() {
@@ -35,6 +36,17 @@ export default function CandidateRecommendationsPage() {
   const [loading, setLoading] = useState(true);
   const [minScore, setMinScore] = useState(0);
   const [showAppliedOnly, setShowAppliedOnly] = useState(false);
+  const [showInterviewModal, setShowInterviewModal] = useState(false);
+  const [selectedCandidate, setSelectedCandidate] = useState<CandidateRecommendation | null>(null);
+  const [interviewForm, setInterviewForm] = useState<ScheduleInterviewRequest>({
+    interview_date: '',
+    interview_time: '',
+    interview_type: 'Video',
+    location_or_link: '',
+    notes: ''
+  });
+  const [scheduling, setScheduling] = useState(false);
+  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -77,6 +89,69 @@ export default function CandidateRecommendationsPage() {
     if (score >= 60) return 'bg-blue-500';
     if (score >= 40) return 'bg-amber-500';
     return 'bg-gray-500';
+  };
+
+  const openInterviewModal = (candidate: CandidateRecommendation) => {
+    setSelectedCandidate(candidate);
+    setInterviewForm({
+      interview_date: '',
+      interview_time: '',
+      interview_type: 'Video',
+      location_or_link: '',
+      notes: ''
+    });
+    setShowInterviewModal(true);
+  };
+
+  const closeInterviewModal = () => {
+    setShowInterviewModal(false);
+    setSelectedCandidate(null);
+    setNotification(null);
+  };
+
+  const handleScheduleInterview = async () => {
+    if (!selectedCandidate || !job) return;
+
+    // Validate form
+    if (!interviewForm.interview_date || !interviewForm.interview_time || !interviewForm.location_or_link) {
+      setNotification({ type: 'error', message: 'Please fill in all required fields' });
+      return;
+    }
+
+    setScheduling(true);
+    setNotification(null);
+
+    try {
+      // Format date and time for backend
+      // Backend expects interview_date as datetime (ISO string) and interview_time as separate time string
+      const dateTime = new Date(`${interviewForm.interview_date}T${interviewForm.interview_time}`);
+      const requestData: ScheduleInterviewRequest = {
+        interview_date: dateTime.toISOString(), // Full ISO datetime string
+        interview_time: interviewForm.interview_time, // Time string (HH:MM format)
+        interview_type: interviewForm.interview_type,
+        location_or_link: interviewForm.location_or_link,
+        notes: interviewForm.notes || null
+      };
+
+      await employerService.scheduleInterview(jobId, selectedCandidate.seeker_id, requestData);
+      
+      setNotification({ 
+        type: 'success', 
+        message: `Interview scheduled successfully! Email notification sent to ${selectedCandidate.email}` 
+      });
+      
+      // Close modal after 2 seconds
+      setTimeout(() => {
+        closeInterviewModal();
+        // Reload candidates to update application status
+        loadData();
+      }, 2000);
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.detail || error.message || 'Failed to schedule interview';
+      setNotification({ type: 'error', message: errorMessage });
+    } finally {
+      setScheduling(false);
+    }
   };
 
   if (loading) {
@@ -450,16 +525,155 @@ export default function CandidateRecommendationsPage() {
                     Contact Candidate
                   </a>
                   <button
+                    onClick={() => openInterviewModal(candidate)}
                     className="inline-flex items-center gap-2 px-6 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
-                    disabled
-                    title="Coming soon: Schedule interview via n8n"
                   >
                     <Calendar className="h-4 w-4" />
-                    Schedule Interview (Coming Soon)
+                    Schedule Interview
                   </button>
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Interview Scheduling Modal */}
+        {showInterviewModal && selectedCandidate && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">Schedule Interview</h2>
+                  <p className="text-gray-600 mt-1">
+                    {selectedCandidate.first_name} {selectedCandidate.last_name} - {job?.job_title}
+                  </p>
+                </div>
+                <button
+                  onClick={closeInterviewModal}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+
+              {/* Modal Body */}
+              <div className="p-6 space-y-4">
+                {/* Notification */}
+                {notification && (
+                  <div className={`p-4 rounded-lg ${
+                    notification.type === 'success' 
+                      ? 'bg-green-50 text-green-800 border border-green-200' 
+                      : 'bg-red-50 text-red-800 border border-red-200'
+                  }`}>
+                    {notification.message}
+                  </div>
+                )}
+
+                {/* Interview Date */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Interview Date <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    value={interviewForm.interview_date}
+                    onChange={(e) => setInterviewForm({ ...interviewForm, interview_date: e.target.value })}
+                    min={new Date().toISOString().split('T')[0]}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900"
+                    required
+                  />
+                </div>
+
+                {/* Interview Time */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Interview Time <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="time"
+                    value={interviewForm.interview_time}
+                    onChange={(e) => setInterviewForm({ ...interviewForm, interview_time: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900"
+                    required
+                  />
+                </div>
+
+                {/* Interview Type */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Interview Type <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={interviewForm.interview_type}
+                    onChange={(e) => setInterviewForm({ ...interviewForm, interview_type: e.target.value as 'In-person' | 'Video' | 'Phone' })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white"
+                    required
+                  >
+                    <option value="In-person">In-person</option>
+                    <option value="Video">Video</option>
+                    <option value="Phone">Phone</option>
+                  </select>
+                </div>
+
+                {/* Location or Link */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {interviewForm.interview_type === 'In-person' ? 'Location' : interviewForm.interview_type === 'Video' ? 'Video Link' : 'Phone Number'} <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={interviewForm.location_or_link}
+                    onChange={(e) => setInterviewForm({ ...interviewForm, location_or_link: e.target.value })}
+                    placeholder={interviewForm.interview_type === 'In-person' ? 'Enter address' : interviewForm.interview_type === 'Video' ? 'Enter video call link' : 'Enter phone number'}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900"
+                    required
+                  />
+                </div>
+
+                {/* Notes */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Notes (Optional)
+                  </label>
+                  <textarea
+                    value={interviewForm.notes || ''}
+                    onChange={(e) => setInterviewForm({ ...interviewForm, notes: e.target.value })}
+                    placeholder="Add any additional information about the interview..."
+                    rows={4}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900"
+                  />
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
+                <button
+                  onClick={closeInterviewModal}
+                  className="px-6 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                  disabled={scheduling}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleScheduleInterview}
+                  disabled={scheduling}
+                  className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {scheduling ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      Scheduling...
+                    </>
+                  ) : (
+                    <>
+                      <Calendar className="h-4 w-4" />
+                      Schedule Interview
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </main>
