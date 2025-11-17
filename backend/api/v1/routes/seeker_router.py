@@ -17,6 +17,7 @@ from loguru import logger
 from backend.ai.chains.matching_service import get_matching_service
 from backend.core.security import get_current_user_id, get_current_user_role
 from backend.db.seeker_db_ops import SeekerCRUD
+from backend.db.employer_db_ops import EmployerCRUD
 from backend.services.seeker_services import (
     DOCXExtractionError,
     FileValidationError,
@@ -159,16 +160,34 @@ async def get_my_profile(
 
         assert seeker is not None  # Type narrowing
 
-        # Convert applications to dict format for response
-        applications_list = [
-            {
-                "job_id": app.job_id,
-                "employer_id": app.employer_id,
+        # Convert applications to dict format for response with job details
+        applications_list = []
+        for app in seeker.applications:
+            app_data = {
+                "job_id": str(app.job_id),
+                "employer_id": str(app.employer_id),
                 "date_applied": app.date_applied.isoformat(),
-                "application_status": app.application_status
+                "application_status": app.application_status,
+                "job_title": None,
+                "company_name": None
             }
-            for app in seeker.applications
-        ]
+            
+            # Look up job details from employer
+            try:
+                employer = await EmployerCRUD.get_employer_by_id(app.employer_id)
+                if employer:
+                    app_data["company_name"] = employer.company_information.company_name
+                    
+                    # Find the job in employer's open_jobs
+                    for job in employer.open_jobs:
+                        if str(job.job_id) == str(app.job_id):
+                            app_data["job_title"] = job.job_title
+                            break
+            except Exception as lookup_error:
+                logger.warning(f"Failed to lookup job details for job_id={app.job_id}, employer_id={app.employer_id}: {lookup_error!s}")
+                # Continue with None values if lookup fails
+            
+            applications_list.append(app_data)
 
         return SeekerProfileResponse(
             id=str(seeker.id),
@@ -472,16 +491,37 @@ async def get_my_applications(
 
         assert seeker is not None  # Type narrowing
 
+        # Build applications list with job details
+        applications_list = []
+        for app in seeker.applications:
+            app_data = {
+                "job_id": str(app.job_id),
+                "employer_id": str(app.employer_id),
+                "date_applied": app.date_applied.isoformat(),
+                "application_status": app.application_status,
+                "job_title": None,
+                "company_name": None
+            }
+            
+            # Look up job details from employer
+            try:
+                employer = await EmployerCRUD.get_employer_by_id(app.employer_id)
+                if employer:
+                    app_data["company_name"] = employer.company_information.company_name
+                    
+                    # Find the job in employer's open_jobs
+                    for job in employer.open_jobs:
+                        if str(job.job_id) == str(app.job_id):
+                            app_data["job_title"] = job.job_title
+                            break
+            except Exception as lookup_error:
+                logger.warning(f"Failed to lookup job details for job_id={app.job_id}, employer_id={app.employer_id}: {lookup_error!s}")
+                # Continue with None values if lookup fails
+            
+            applications_list.append(app_data)
+
         return {
-            "applications": [
-                {
-                    "job_id": app.job_id,
-                    "employer_id": app.employer_id,
-                    "date_applied": app.date_applied.isoformat(),
-                    "application_status": app.application_status
-                }
-                for app in seeker.applications
-            ]
+            "applications": applications_list
         }
 
     except HTTPException:
@@ -564,26 +604,43 @@ async def search_jobs(
             # Get all jobs if no filter specified
             jobs = await SeekerService.search_all_jobs()
 
-        return [
-            JobSearchResponse(
-                job_id=job["job_id"],
-                job_title=job["job_title"],
-                job_description=job["job_description"],
-                company_name=job["company_name"],
-                employer_id=job["employer_id"],
-                posted_date=job["posted_date"].isoformat(),
-                department=job["department"],
-                pay_range=job["pay_range"],
-                pay_unit=job["pay_unit"],
-                education_level=job["education_level"],
-                edu_focus=job["edu_focus"],
-                key_skills=job["key_skills"],
-                hiring_manager=job["hiring_manager"]
-            )
-            for job in jobs
-        ]
+        result = []
+        for job in jobs:
+            try:
+                # Handle posted_date - convert to ISO format if it's a datetime object
+                posted_date = job["posted_date"]
+                if hasattr(posted_date, 'isoformat'):
+                    posted_date_str = posted_date.isoformat()
+                else:
+                    posted_date_str = str(posted_date)
+                
+                result.append(
+                    JobSearchResponse(
+                        job_id=str(job["job_id"]),
+                        job_title=job["job_title"],
+                        job_description=job["job_description"],
+                        company_name=job["company_name"],
+                        employer_id=job["employer_id"],
+                        posted_date=posted_date_str,
+                        department=job["department"],
+                        pay_range=job["pay_range"],
+                        pay_unit=job["pay_unit"],
+                        education_level=job["education_level"],
+                        edu_focus=job["edu_focus"],
+                        key_skills=job["key_skills"],
+                        hiring_manager=job["hiring_manager"]
+                    )
+                )
+            except Exception as job_error:
+                logger.error(f"Error processing job {job.get('job_id', 'unknown')}: {job_error!s}")
+                logger.exception("Job processing traceback:")
+                continue
+
+        return result
 
     except Exception as e:
+        logger.error(f"Error in search_jobs endpoint: {e!s}")
+        logger.exception("Full traceback:")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to search jobs: {e!s}"

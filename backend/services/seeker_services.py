@@ -580,6 +580,7 @@ class SeekerService:
     async def search_all_jobs() -> list[dict[str, Any]]:
         """
         Search and return all available job postings from all employers.
+        Only returns jobs with current_status == "Posted" (active jobs).
 
         Returns:
             List of dictionaries containing job information
@@ -596,26 +597,32 @@ class SeekerService:
             for employer in employers:
                 company_name = employer.company_information.company_name
                 for job in employer.open_jobs:
-                    job_info = {
-                        "job_id": job.job_id,
-                        "job_title": job.job_title,
-                        "job_description": job.job_description,
-                        "company_name": company_name,
-                        "employer_id": str(employer.id),
-                        "posted_date": job.posted_date,
-                        "department": job.department,
-                        "pay_range": job.pay_range,
-                        "pay_unit": job.pay_unit,
-                        "education_level": job.education_level,
-                        "edu_focus": job.edu_focus,
-                        "key_skills": job.key_skills,
-                        "hiring_manager": f"{job.hire_mgr_first} {job.hire_mgr_last}"
-                    }
-                    all_jobs.append(job_info)
+                    # Only include jobs with status "Posted" (active jobs)
+                    # Use getattr with default "Posted" for backward compatibility
+                    job_status = getattr(job, 'current_status', 'Posted')
+                    if job_status == "Posted":
+                        job_info = {
+                            "job_id": str(job.job_id),
+                            "job_title": job.job_title,
+                            "job_description": job.job_description,
+                            "company_name": company_name,
+                            "employer_id": str(employer.id),
+                            "posted_date": job.posted_date,
+                            "department": job.department,
+                            "pay_range": job.pay_range,
+                            "pay_unit": job.pay_unit,
+                            "education_level": job.education_level,
+                            "edu_focus": job.edu_focus,
+                            "key_skills": job.key_skills,
+                            "hiring_manager": f"{job.hire_mgr_first} {job.hire_mgr_last}"
+                        }
+                        all_jobs.append(job_info)
 
             return all_jobs  # noqa
 
-        except Exception:
+        except Exception as e:
+            logger.error(f"Error in search_all_jobs: {e!s}")
+            logger.exception("Full traceback:")
             return []
 
     @staticmethod
@@ -704,10 +711,12 @@ class SeekerService:
                                 match_found = True
                                 break
 
-                    # Add job to results if match found
-                    if match_found:
+                    # Add job to results if match found and job is active (Posted)
+                    # Use getattr with default "Posted" for backward compatibility
+                    job_status = getattr(job, 'current_status', 'Posted')
+                    if match_found and job_status == "Posted":
                         job_info = {
-                            "job_id": job.job_id,
+                            "job_id": str(job.job_id),
                             "job_title": job.job_title,
                             "job_description": job.job_description,
                             "company_name": company_name,

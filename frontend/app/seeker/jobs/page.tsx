@@ -13,7 +13,8 @@ import {
   GraduationCap, 
   Calendar, 
   User,
-  Tag
+  Tag,
+  CheckCircle
 } from 'lucide-react';
 
 export default function JobSearchPage() {
@@ -23,6 +24,7 @@ export default function JobSearchPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchType, setSearchType] = useState<'title' | 'company' | 'skill'>('title');
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Load jobs once authentication is confirmed
   useEffect(() => {
@@ -70,10 +72,17 @@ export default function JobSearchPage() {
     
     try {
       await seekerService.applyForJob(job.job_id, job.employer_id);
+      // Show success message
+      setSuccessMessage('You have successfully applied for this position');
       // Reload jobs to update UI
       await loadJobs();
+      // Clear success message after 5 seconds
+      setTimeout(() => {
+        setSuccessMessage(null);
+      }, 5000);
     } catch (error: any) {
       console.error('Failed to apply:', error);
+      setSuccessMessage(null);
     }
   };
 
@@ -124,6 +133,16 @@ export default function JobSearchPage() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8 max-w-7xl">
+        {/* Success Message */}
+        {successMessage && (
+          <div className="mb-6 p-4 bg-green-50 border border-green-200 text-green-700 rounded-xl flex items-start gap-3 animate-fade-in">
+            <CheckCircle className="h-6 w-6 text-green-600 flex-shrink-0" />
+            <div>
+              <p className="font-semibold">{successMessage}</p>
+            </div>
+          </div>
+        )}
+
         {/* Page Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
