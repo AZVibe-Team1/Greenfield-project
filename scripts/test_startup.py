@@ -2,6 +2,10 @@
 """Test script to diagnose server startup issues"""
 import sys
 import os
+from pathlib import Path
+
+# Get project root directory (parent of scripts directory)
+project_root = Path(__file__).parent.parent
 
 print("="*60)
 print("TESTING SERVER STARTUP")
@@ -33,7 +37,8 @@ except Exception as e:
 # Test 4: Environment variables
 print("\n[4] Checking environment variables...")
 from dotenv import load_dotenv
-load_dotenv()
+# Load .env from project root
+load_dotenv(dotenv_path=project_root / ".env")
 
 required_vars = ["MONGO_DB_USER", "MONGO_DB_PASSWORD", "MONGO_DB_URL"]
 for var in required_vars:
@@ -49,7 +54,8 @@ for var in required_vars:
 # Test 5: Try importing main app
 print("\n[5] Testing main app import...")
 try:
-    os.chdir("backend")
+    # Add project root to path for imports
+    sys.path.insert(0, str(project_root))
     from backend.main import app
     print(f"   ✓ App imported successfully")
     print(f"   App title: {app.title}")

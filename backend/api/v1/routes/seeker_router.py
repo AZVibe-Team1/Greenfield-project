@@ -762,6 +762,17 @@ async def get_job_recommendations_stream(
             
             logger.info(f"[STREAM] Found {len(similar_jobs)} similar jobs")
             
+            # Deduplicate jobs by job_id before processing
+            seen_job_ids = set()
+            unique_job_matches = []
+            for job_match in similar_jobs:
+                job_id = job_match.get("job_id")
+                if job_id and job_id not in seen_job_ids:
+                    seen_job_ids.add(job_id)
+                    unique_job_matches.append(job_match)
+            
+            logger.info(f"[STREAM] Deduplicated to {len(unique_job_matches)} unique jobs (from {len(similar_jobs)} results)")
+            
             # Prepare seeker data for scoring
             seeker_data = {
                 "first_name": seeker.information.first_name,
@@ -775,19 +786,30 @@ async def get_job_recommendations_stream(
                 "resume": seeker.resume or "No resume available"
             }
             
+            # Track processed jobs to avoid duplicate scoring
+            processed_job_ids = set()
+            
             # Process each job and stream results
             count = 0
-            for job_match in similar_jobs:
+            for job_match in unique_job_matches:
                 job_id = job_match["job_id"]
                 if count >= n_results:
                     break
                     
                 try:
+                    # Skip if we've already processed this job
+                    if job_id in processed_job_ids:
+                        logger.debug(f"[STREAM] Skipping duplicate job: {job_id}")
+                        continue
+                    
                     # Fetch job details from MongoDB
                     job_details = await matching_service.fetch_job_details(job_id)
                     if not job_details:
                         logger.warning(f"[STREAM] Job not found: {job_id}")
                         continue
+                    
+                    # Mark as processed before calculating score
+                    processed_job_ids.add(job_id)
                     
                     # Calculate match score
                     logger.debug(f"[STREAM] Calculating score for job: {job_details['job_title']}")

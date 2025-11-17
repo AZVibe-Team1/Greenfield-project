@@ -230,13 +230,18 @@ class EmployerService:
                 "Post_Date": str(job_data["posted_date"]),
                 "Employer_UUID": str(employer.employer_identification)
             }
-            write_collection(
+            result = write_collection(
                 Employer_JobDescr_collection,
                 "Employer_JobDescr_Collection",
                 str(job_identification),
                 job_description,
                 metadata_descr
             )
+            if result != 1:
+                logger.warning(
+                    f"Failed to write job description to ChromaDB for job {job_identification}. "
+                    f"Job will be created in MongoDB but may not appear in AI recommendations."
+                )
 
         # Store skills in ChromaDB if any skill data exists
         if key_skills or education_level or edu_focus:
@@ -250,13 +255,18 @@ class EmployerService:
 
             skills = ", ".join(skills_list)
             metadata_skill = {"Desired Skills": skills}
-            write_collection(
+            result = write_collection(
                 Employer_Skillswish_collection,
                 "Employer_Skillswish_Collection",
                 str(job_identification),
                 skills,
                 metadata_skill
             )
+            if result != 1:
+                logger.warning(
+                    f"Failed to write skills to ChromaDB for job {job_identification}. "
+                    f"Job will be created in MongoDB but may not appear in AI recommendations."
+                )
 
         # Add job posting to employer
         return await EmployerCRUD.add_job_posting(employer_id, job_data)

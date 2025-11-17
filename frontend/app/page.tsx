@@ -34,7 +34,7 @@ export default function Home() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <Briefcase className="h-8 w-8 text-blue-600" />
-              <span className="ml-2 text-2xl font-bold text-gray-900">JobPortal</span>
+              <span className="ml-2 text-2xl font-bold text-gray-900">WorkAtlas</span>
             </div>
             
             {/* Desktop Navigation */}
@@ -244,7 +244,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-bold text-white mb-6">Ready to Get Started?</h2>
           <p className="text-xl text-blue-100 mb-10">
-            Join thousands of job seekers and employers finding success on JobPortal
+            Join thousands of job seekers and employers finding success on WorkAtlas
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link 
@@ -270,7 +270,7 @@ export default function Home() {
             <div>
               <div className="flex items-center mb-4">
                 <Briefcase className="h-6 w-6 text-blue-500" />
-                <span className="ml-2 text-xl font-bold text-white">JobPortal</span>
+                <span className="ml-2 text-xl font-bold text-white">WorkAtlas</span>
               </div>
               <p className="text-sm">
                 Connecting talent with opportunity through intelligent matching.
@@ -306,7 +306,7 @@ export default function Home() {
           </div>
 
           <div className="border-t border-gray-800 mt-12 pt-8 text-center text-sm">
-            <p>&copy; 2025 JobPortal. All rights reserved.</p>
+            <p>&copy; 2025 WorkAtlas. All rights reserved.</p>
           </div>
         </div>
       </footer>

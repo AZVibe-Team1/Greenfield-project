@@ -1,5 +1,5 @@
 /**
- * TypeScript type definitions for Job Portal
+ * TypeScript type definitions for WorkAtlas
  */
 
 export interface User {
@@ -200,5 +200,18 @@ export interface CandidateRecommendation {
     state: string;
     zip_code: string;
   };
+}
+
+export interface ScheduleInterviewRequest {
+  interview_date: string; // ISO datetime string
+  interview_time: string; // Time string (e.g., "14:00")
+  interview_type: 'In-person' | 'Video' | 'Phone';
+  location_or_link: string;
+  notes?: string | null;
+}
+
+export interface N8nStatusResponse {
+  status: 'connected' | 'disconnected';
+  message: string;
 }
 

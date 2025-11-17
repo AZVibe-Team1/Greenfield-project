@@ -80,7 +80,7 @@ export default function LoginPage() {
       <div className="max-w-7xl mx-auto px-4 mb-8">
         <Link href="/" className="flex items-center text-gray-900 hover:text-blue-600 transition">
           <Briefcase className="h-8 w-8 text-blue-600 mr-2" />
-          <span className="text-2xl font-bold">JobPortal</span>
+          <span className="text-2xl font-bold">WorkAtlas</span>
         </Link>
       </div>
 
@@ -91,7 +91,7 @@ export default function LoginPage() {
               <LogIn className="h-10 w-10 text-blue-600" />
             </div>
             <h1 className="text-4xl font-bold text-gray-900">Welcome Back</h1>
-            <p className="text-gray-600 mt-2 text-lg">Login to your JobPortal account</p>
+            <p className="text-gray-600 mt-2 text-lg">Login to your WorkAtlas account</p>
           </div>
 
           {error && (

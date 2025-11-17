@@ -3,7 +3,8 @@ Employer API routes.
 
 Handles employer profile management, job posting, and application management.
 """
-from typing import Any
+from datetime import datetime
+from typing import Any, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
@@ -11,7 +12,9 @@ from pydantic import BaseModel, Field
 from backend.ai.chains.candidate_matching_service import get_candidate_matching_service
 from backend.core.security import get_current_user_id, get_current_user_role
 from backend.db.employer_db_ops import EmployerCRUD
+from backend.db.seeker_db_ops import SeekerCRUD
 from backend.services.employer_services import EmployerService
+from backend.services.n8n_service import get_n8n_service
 
 
 router = APIRouter(prefix="/employers", tags=["Employers"])
@@ -110,6 +113,21 @@ class CandidateRecommendationResponse(BaseModel):
     pay_unit: str
     phone: str
     address: dict[str, str]
+
+
+class ScheduleInterviewRequest(BaseModel):
+    """Schedule interview request."""
+    interview_date: datetime = Field(..., description="Date of the interview")
+    interview_time: str = Field(..., min_length=1, description="Time of the interview (e.g., '14:00')")
+    interview_type: Literal["In-person", "Video", "Phone"] = Field(..., description="Type of interview")
+    location_or_link: str = Field(..., min_length=1, description="Location address or video call link")
+    notes: str | None = Field(None, description="Optional notes about the interview")
+
+
+class N8nStatusResponse(BaseModel):
+    """n8n service status response."""
+    status: Literal["connected", "disconnected"]
+    message: str
 
 
 # Dependency to verify employer role
@@ -664,4 +682,225 @@ async def get_candidate_recommendations(
         ) from e
     else:
         return response
+
+
+@router.post("/jobs/{job_id}/candidates/{seeker_id}/schedule-interview")
+async def schedule_interview(
+    job_id: str,
+    seeker_id: str,
+    request: ScheduleInterviewRequest,
+    user_id: str = Depends(get_current_user_id),
+    _role: str = Depends(verify_employer_role)
+):
+    """
+    Schedule an interview with a candidate and send email notification via n8n.
+
+    Args:
+        job_id: Job posting ID
+        seeker_id: Job seeker ID
+        request: Interview scheduling details
+
+    Returns:
+        Success message
+    """
+    def raise_seeker_not_found() -> None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Seeker not found"
+        )
+
+    def raise_job_not_found() -> None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Job not found"
+        )
+
+    def raise_employer_not_found() -> None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Employer not found"
+        )
+
+    def raise_n8n_unavailable() -> None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="n8n service is unavailable. Cannot send interview notification."
+        )
+
+    try:
+        # Get n8n service
+        n8n_service = get_n8n_service()
+
+        # Check n8n connection
+        is_connected = await n8n_service.check_n8n_connection()
+        if not is_connected:
+            raise_n8n_unavailable()
+
+        # Get seeker information - try multiple lookup methods
+        from loguru import logger
+        from beanie import PydanticObjectId
+        from backend.schemas.seeker import Seeker
+        
+        seeker = None
+        
+        # First, try lookup by _id (MongoDB document ID) using SeekerCRUD
+        seeker = await SeekerCRUD.get_seeker_by_id(seeker_id)
+        
+        # If not found, try lookup by seeker_id field (not _id)
+        if not seeker:
+            try:
+                if isinstance(seeker_id, str):
+                    seeker_id_obj = PydanticObjectId(seeker_id)
+                else:
+                    seeker_id_obj = seeker_id
+                seeker = await Seeker.find_one(Seeker.seeker_id == seeker_id_obj)
+                if seeker:
+                    logger.debug(f"Found seeker by seeker_id field: {seeker_id}")
+            except Exception as e:
+                logger.debug(f"Seeker lookup by seeker_id field failed: {e}")
+        
+        # If still not found, try UUID format (only if ID looks like UUID)
+        if not seeker and "-" in str(seeker_id):
+            try:
+                seeker = await SeekerCRUD.get_seeker_by_uuid(str(seeker_id))
+                if seeker:
+                    logger.debug(f"Found seeker by UUID: {seeker_id}")
+            except (ValueError, Exception) as e:
+                logger.debug(f"Seeker lookup by UUID failed: {e}")
+        
+        if not seeker:
+            logger.warning(f"Seeker not found with ID: {seeker_id} (tried _id, seeker_id field, and UUID formats)")
+            raise_seeker_not_found()
+
+        assert seeker is not None  # Type narrowing
+        seeker_email = seeker.information.email
+
+        # Get employer information
+        employer = await EmployerCRUD.get_employer_by_id(user_id)
+        if not employer:
+            raise_employer_not_found()
+
+        assert employer is not None  # Type narrowing
+        employer_name = employer.company_information.company_name
+        employer_email = employer.email
+
+        # Get job information
+        job = None
+        for open_job in employer.open_jobs:
+            if str(open_job.job_id) == job_id:
+                job = open_job
+                break
+
+        if not job:
+            raise_job_not_found()
+
+        assert job is not None  # Type narrowing
+
+        # Prepare interview details for n8n
+        interview_details = {
+            "interview_date": request.interview_date,
+            "interview_time": request.interview_time,
+            "interview_type": request.interview_type,
+            "location_or_link": request.location_or_link,
+            "notes": request.notes
+        }
+
+        # Trigger n8n workflow to send email
+        workflow_success = await n8n_service.trigger_interview_workflow(
+            seeker_email=seeker_email,
+            job_title=job.job_title,
+            employer_name=employer_name,
+            employer_email=employer_email,
+            interview_details=interview_details
+        )
+
+        if not workflow_success:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to trigger email notification. Interview may not have been scheduled."
+            )
+
+        # Update application status to "Interviewed"
+        # First, try to update existing application
+        updated_employer = await EmployerCRUD.update_application_status(
+            employer_id=user_id,
+            applicant_id=seeker_id,
+            job_id=job_id,
+            new_status="Interviewed"
+        )
+
+        # If no application exists (e.g., candidate from AI recommendations who hasn't applied),
+        # create a new application record with status "Interviewed"
+        if not updated_employer:
+            from backend.schemas.employer import CandidateTracking
+            from datetime import datetime
+            from zoneinfo import ZoneInfo
+            
+            logger.info(
+                f"Application not found for seeker {seeker_id} and job {job_id}. "
+                f"Creating new application record with status 'Interviewed'."
+            )
+            
+            # Create new application with "Interviewed" status
+            application_data = {
+                "applicant_id": seeker_id,
+                "job_id": job_id,
+                "initial_daterec": datetime.now(ZoneInfo("America/Denver")),
+                "candidate_tracking": CandidateTracking(
+                    current_status="Interviewed",
+                    previous_status=None,
+                    current_status_date=datetime.now(ZoneInfo("America/Denver")),
+                    previous_status_date=None
+                )
+            }
+            
+            updated_employer = await EmployerCRUD.add_application_received(
+                employer_id=user_id,
+                application_data=application_data
+            )
+            
+            if not updated_employer:
+                # Log warning but don't fail the request since email was sent
+                logger.warning(
+                    f"Failed to create application record for seeker {seeker_id} "
+                    f"and job {job_id}, but email notification was sent"
+                )
+
+        return {
+            "message": "Interview scheduled successfully and email notification sent",
+            "seeker_email": seeker_email,
+            "job_title": job.job_title,
+            "interview_date": request.interview_date.isoformat(),
+            "interview_time": request.interview_time
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to schedule interview: {e!s}"
+        ) from e
+
+
+@router.get("/n8n/status", response_model=N8nStatusResponse)
+async def get_n8n_status(
+    _user_id: str = Depends(get_current_user_id),
+    _role: str = Depends(verify_employer_role)
+):
+    """
+    Get n8n service connection status.
+
+    Returns:
+        n8n service status and message
+    """
+    try:
+        n8n_service = get_n8n_service()
+        status_info = await n8n_service.get_n8n_status()
+        return N8nStatusResponse(**status_info)
+    except Exception as e:
+        return N8nStatusResponse(
+            status="disconnected",
+            message=f"Error checking n8n status: {e!s}"
+        )
 

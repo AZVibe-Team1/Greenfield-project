@@ -238,11 +238,29 @@ class MatchingService:
                 logger.info(f"No similar jobs found for seeker: {seeker_id}")
                 return []
 
+            # Deduplicate jobs by job_id before processing
+            seen_job_ids = set()
+            unique_job_matches = []
+            for match in job_matches:
+                job_id = match.get("job_id")
+                if job_id and job_id not in seen_job_ids:
+                    seen_job_ids.add(job_id)
+                    unique_job_matches.append(match)
+            
+            logger.info(f"[RECOMMENDATIONS] Deduplicated to {len(unique_job_matches)} unique jobs (from {len(job_matches)} results)")
+
             # 4. Fetch full job details and calculate scores
             recommendations = []
+            processed_job_ids = set()
 
-            for match in job_matches:
+            for match in unique_job_matches:
                 job_id = match["job_id"]
+                
+                # Skip if we've already processed this job
+                if job_id in processed_job_ids:
+                    logger.debug(f"[RECOMMENDATIONS] Skipping duplicate job: {job_id}")
+                    continue
+                
                 job_details = await self.fetch_job_details(job_id)
 
                 if not job_details:
@@ -251,6 +269,9 @@ class MatchingService:
                 # Filter to only active jobs
                 if job_details.get("current_status") != "Posted":
                     continue
+
+                # Mark as processed before calculating score
+                processed_job_ids.add(job_id)
 
                 # 5. Calculate match score using LangChain
                 job_data = {

@@ -120,7 +120,7 @@ export default function EditJobPage() {
           <div className="flex justify-between items-center h-16">
             <Link href="/employer/dashboard" className="flex items-center">
               <Briefcase className="h-8 w-8 text-blue-600" />
-              <span className="ml-2 text-2xl font-bold text-gray-900">JobPortal</span>
+              <span className="ml-2 text-2xl font-bold text-gray-900">WorkAtlas</span>
             </Link>
             <button
               onClick={logout}

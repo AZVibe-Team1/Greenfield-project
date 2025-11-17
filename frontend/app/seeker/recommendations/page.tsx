@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { useSeekerAuth } from '@/hooks/useAuth';
 import { seekerService } from '@/services/seeker-service';
@@ -33,6 +33,7 @@ export default function RecommendationsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [streamComplete, setStreamComplete] = useState(false);
   const jobsPerPage = 10;
+  const isLoadingRef = useRef(false);
 
   // Load from cache on mount
   useEffect(() => {
@@ -79,7 +80,15 @@ export default function RecommendationsPage() {
   }, [recommendations]);
 
   const loadRecommendationsStream = async (forceRefresh: boolean = false) => {
+    // Prevent multiple concurrent requests
+    if (isLoadingRef.current) {
+      console.log('Request already in progress, skipping...');
+      return;
+    }
+
     try {
+      isLoadingRef.current = true;
+      
       // Clear cache if forcing refresh
       if (forceRefresh && typeof window !== 'undefined') {
         sessionStorage.removeItem(CACHE_KEY);
@@ -197,6 +206,8 @@ export default function RecommendationsPage() {
       console.error('Failed to load recommendations:', error);
       setError(error.message || 'Failed to load recommendations. Please try again later.');
       setLoading(false);
+    } finally {
+      isLoadingRef.current = false;
     }
   };
 
@@ -234,7 +245,7 @@ export default function RecommendationsPage() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <Link href="/seeker/dashboard" className="text-2xl font-bold text-emerald-600 hover:text-emerald-700 transition-colors">
-              Job Portal
+              WorkAtlas
             </Link>
             <nav className="flex items-center gap-6">
               <Link 

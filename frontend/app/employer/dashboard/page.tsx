@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useEmployerAuth } from '@/hooks/useAuth';
 import { employerService } from '@/services/employer-service';
-import { EmployerProfile } from '@/types';
+import { EmployerProfile, N8nStatusResponse } from '@/types';
 import { 
   Briefcase, 
   Building2, 
@@ -18,7 +18,8 @@ import {
   CheckCircle,
   Target,
   User,
-  Edit
+  Edit,
+  Activity
 } from 'lucide-react';
 
 export default function EmployerDashboard() {
@@ -27,11 +28,13 @@ export default function EmployerDashboard() {
   const { user, isLoading: authLoading, logout } = useEmployerAuth();
   const [profile, setProfile] = useState<EmployerProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [n8nStatus, setN8nStatus] = useState<N8nStatusResponse | null>(null);
 
   // Load profile data once authentication is confirmed
   useEffect(() => {
     if (!authLoading && user) {
       loadProfile();
+      loadN8nStatus();
     }
   }, [authLoading, user]);
 
@@ -43,6 +46,16 @@ export default function EmployerDashboard() {
       console.error('Failed to load profile:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadN8nStatus = async () => {
+    try {
+      const status = await employerService.getN8nStatus();
+      setN8nStatus(status);
+    } catch (error) {
+      console.error('Failed to load n8n status:', error);
+      setN8nStatus({ status: 'disconnected', message: 'Unable to check n8n status' });
     }
   };
 
@@ -66,7 +79,7 @@ export default function EmployerDashboard() {
           <div className="flex justify-between items-center h-16">
             <Link href="/" className="flex items-center">
               <Briefcase className="h-8 w-8 text-blue-600" />
-              <span className="ml-2 text-2xl font-bold text-gray-900">JobPortal</span>
+              <span className="ml-2 text-2xl font-bold text-gray-900">WorkAtlas</span>
             </Link>
             <div className="flex items-center gap-6">
               <span className="text-gray-700 font-medium hidden sm:block">
@@ -95,15 +108,41 @@ export default function EmployerDashboard() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Banner */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-500 rounded-2xl shadow-xl p-8 mb-8 text-white">
-          <div className="flex items-center gap-3 mb-2">
-            <Building2 className="h-8 w-8" />
-            <h1 className="text-3xl md:text-4xl font-bold">
-              {profile?.company_name}
-            </h1>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <Building2 className="h-8 w-8" />
+              <h1 className="text-3xl md:text-4xl font-bold">
+                {profile?.company_name}
+              </h1>
+            </div>
+            {/* n8n Status Indicator */}
+            {n8nStatus && (
+              <div className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
+                n8nStatus.status === 'connected' 
+                  ? 'bg-green-500/20 border border-green-300/30' 
+                  : 'bg-red-500/20 border border-red-300/30'
+              }`}>
+                <Activity className={`h-4 w-4 ${
+                  n8nStatus.status === 'connected' ? 'text-green-200' : 'text-red-200'
+                }`} />
+                <span className={`text-sm font-medium ${
+                  n8nStatus.status === 'connected' ? 'text-green-100' : 'text-red-100'
+                }`}>
+                  Email: {n8nStatus.status === 'connected' ? 'Connected' : 'Disconnected'}
+                </span>
+              </div>
+            )}
           </div>
           <p className="text-blue-100 text-lg">
             Building your team at {profile?.company_name} - Hire smarter with AI-powered insights.
           </p>
+          {n8nStatus && n8nStatus.status === 'disconnected' && (
+            <div className="mt-4 p-3 bg-red-500/20 border border-red-300/30 rounded-lg">
+              <p className="text-red-100 text-sm">
+                ⚠️ Email notifications are currently unavailable. Interview scheduling emails will not be sent until n8n is connected.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Quick Stats */}

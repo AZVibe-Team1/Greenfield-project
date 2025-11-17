@@ -67,44 +67,36 @@ services:
     networks:
       - jobportal-network
 
-  # MongoDB Service - Database
-  # NOTE: Currently commented out - uncomment when ready to add database
-  # This service runs MongoDB 6.x database server
-  # mongodb:
-  #   image: mongo:6
-  #   container_name: jobportal-mongodb
-  #   # Port mapping: host:container
-  #   # Access MongoDB at mongodb://localhost:27017
-  #   ports:
-  #     - "27017:27017"
-  #   env_file:
-  #     - .env
-  #   # Environment variables for MongoDB
-  #   environment:
-  #     MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-admin}
-  #     MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-password}
-  #     MONGO_INITDB_DATABASE: ${MONGO_DATABASE:-jobportal}
-  #   # Volume for persistent data storage
-  #   # MongoDB data will persist across container restarts
-  #   volumes:
-  #     - mongodb_data:/data/db
-  #     - mongodb_config:/data/configdb
-  #   restart: unless-stopped
-  #   networks:
-  #     - jobportal-network
-  #   healthcheck:
-  #     test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
-
-# Named volumes for data persistence
-# These volumes persist data even when containers are removed
-# volumes:
-  # MongoDB data volume
-  # mongodb_data:
-  # MongoDB config volume
-  # mongodb_config:
+  # n8n Service - Workflow Automation
+  # This service runs n8n for email notifications and workflow automation
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: jobportal-n8n
+    # Port mapping: host:container
+    # Access n8n UI at http://localhost:5678
+    ports:
+      - "5678:5678"
+    # Environment variables for n8n configuration
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=false
+      - N8N_HOST=n8n
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+    # Volume for persistent storage of workflows and data
+    volumes:
+      - ./n8n_data:/home/node/.n8n
+    # Restart policy: restart container if it stops unexpectedly
+    restart: unless-stopped
+    # Networks allow services to communicate with each other
+    networks:
+      - jobportal-network
+    # Health check to ensure service is running
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5678/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
 # Network for inter-service communication
 # All services can communicate using service names as hostnames
