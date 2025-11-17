@@ -1,0 +1,69 @@
+Captain America - Data Scientist & Machine Learning Engineer
+
+PROFESSIONAL SUMMARY
+Data scientist and machine learning engineer with 6+ years of experience in developing predictive models, analyzing large datasets, and deploying ML solutions to production. Specialized in natural language processing, computer vision, and recommendation systems. Strong background in statistical analysis and data visualization.
+
+TECHNICAL SKILLS
+- Programming Languages: Python, R, SQL, Scala, Java
+- Machine Learning: TensorFlow, PyTorch, Scikit-learn, XGBoost, Keras
+- Data Processing: Pandas, NumPy, Spark, Hadoop, Airflow
+- Cloud Platforms: Google Cloud Platform, Azure ML, AWS SageMaker
+- Databases: PostgreSQL, MySQL, MongoDB, Elasticsearch
+- Visualization: Tableau, Power BI, Matplotlib, Seaborn, Plotly
+- NLP Tools: NLTK, spaCy, Transformers, BERT, GPT models
+- Version Control: Git, DVC (Data Version Control)
+
+PROFESSIONAL EXPERIENCE
+
+Senior Data Scientist | DataTech Innovations | 2022 - Present
+- Developed and deployed ML models for customer churn prediction achieving 92% accuracy
+- Built real-time recommendation engine increasing user engagement by 35%
+- Led team of 3 junior data scientists on NLP projects for sentiment analysis
+- Designed A/B testing frameworks for model evaluation and feature experimentation
+- Created automated ML pipelines reducing model deployment time from weeks to days
+- Presented findings to C-suite executives and stakeholders
+
+Data Scientist | Analytics Pro | 2020 - 2022
+- Built predictive models for sales forecasting using time series analysis
+- Implemented computer vision models for image classification tasks
+- Developed ETL pipelines processing 10TB+ of data daily
+- Collaborated with engineering teams to integrate ML models into production systems
+- Created interactive dashboards for business intelligence reporting
+- Optimized database queries reducing processing time by 50%
+
+Junior Data Analyst | Market Insights Inc | 2018 - 2020
+- Performed statistical analysis on customer behavior data
+- Created data visualizations and reports for marketing teams
+- Cleaned and preprocessed datasets for analysis
+- Assisted in building regression models for sales prediction
+- Participated in data quality assurance and validation processes
+
+EDUCATION
+
+Master of Science in Data Science | Stanford University | 2018
+- GPA: 3.9/4.0
+- Thesis: "Deep Learning Approaches for Sentiment Analysis in Social Media"
+- Relevant Coursework: Machine Learning, Statistical Inference, Big Data Analytics, Deep Learning
+
+Bachelor of Science in Mathematics | University of California, Berkeley | 2016
+- GPA: 3.7/4.0
+- Minor: Computer Science
+- Dean's List: Fall 2014, Spring 2015, Fall 2015, Spring 2016
+
+CERTIFICATIONS
+- Google Cloud Professional Machine Learning Engineer (2023)
+- AWS Certified Machine Learning - Specialty (2022)
+- TensorFlow Developer Certificate (2021)
+- Databricks Certified Data Engineer Associate (2020)
+
+PUBLICATIONS & RESEARCH
+- "Improving Recommendation Systems Using Deep Learning" - Published in Journal of Machine Learning Research (2023)
+- "NLP Techniques for Customer Feedback Analysis" - Presented at NeurIPS 2022
+- Contributed to open-source ML library with 500+ GitHub stars
+
+PROJECTS
+- Fraud Detection System: Built anomaly detection model using isolation forests and neural networks
+- Chatbot Development: Created conversational AI using transformer models for customer support
+- Image Recognition API: Developed REST API for image classification using CNN models
+- Time Series Forecasting: Built LSTM models for stock price prediction with 85% accuracy
+

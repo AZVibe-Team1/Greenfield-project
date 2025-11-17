@@ -142,7 +142,7 @@ export default function NewJobPage() {
               required
               value={formData.job_title}
               onChange={(e) => setFormData({ ...formData, job_title: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-gray-900"
               placeholder="e.g. Senior Software Engineer"
             />
           </div>
@@ -154,7 +154,7 @@ export default function NewJobPage() {
               rows={6}
               value={formData.job_description}
               onChange={(e) => setFormData({ ...formData, job_description: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-gray-900"
               placeholder="Describe the role, responsibilities, and requirements..."
             />
           </div>
@@ -167,7 +167,7 @@ export default function NewJobPage() {
                 required
                 value={formData.department}
                 onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-gray-900"
                 placeholder="e.g. Engineering"
               />
             </div>
@@ -179,7 +179,7 @@ export default function NewJobPage() {
                 required
                 value={formData.edu_focus}
                 onChange={(e) => setFormData({ ...formData, edu_focus: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-gray-900"
                 placeholder="e.g. Computer Science"
               />
             </div>
@@ -193,7 +193,7 @@ export default function NewJobPage() {
                 required
                 value={formData.hire_mgr_first}
                 onChange={(e) => setFormData({ ...formData, hire_mgr_first: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-gray-900"
               />
             </div>
 
@@ -204,7 +204,7 @@ export default function NewJobPage() {
                 required
                 value={formData.hire_mgr_last}
                 onChange={(e) => setFormData({ ...formData, hire_mgr_last: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-gray-900"
               />
             </div>
           </div>
@@ -218,7 +218,7 @@ export default function NewJobPage() {
                 min="0"
                 value={formData.pay_range_min}
                 onChange={(e) => setFormData({ ...formData, pay_range_min: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-gray-900"
                 placeholder="50000"
               />
             </div>
@@ -231,7 +231,7 @@ export default function NewJobPage() {
                 min="0"
                 value={formData.pay_range_max}
                 onChange={(e) => setFormData({ ...formData, pay_range_max: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-gray-900"
                 placeholder="100000"
               />
             </div>
@@ -242,7 +242,7 @@ export default function NewJobPage() {
                 required
                 value={formData.pay_unit}
                 onChange={(e) => setFormData({ ...formData, pay_unit: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-gray-900"
               >
                 <option value="Hourly">Hourly</option>
                 <option value="Monthly">Monthly</option>
@@ -257,7 +257,7 @@ export default function NewJobPage() {
               required
               value={formData.education_level}
               onChange={(e) => setFormData({ ...formData, education_level: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-gray-900"
             >
               <option value="BA">BA</option>
               <option value="BS">BS</option>
@@ -274,7 +274,7 @@ export default function NewJobPage() {
               type="text"
               value={formData.key_skills}
               onChange={(e) => setFormData({ ...formData, key_skills: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-gray-900"
               placeholder="Python, JavaScript, React, Node.js"
             />
           </div>
