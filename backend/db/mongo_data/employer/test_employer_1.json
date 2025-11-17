@@ -1,0 +1,77 @@
+{
+  "company_information": {
+    "company_name": "TechVision Inc",
+    "address": {
+      "street": "500 Innovation Drive",
+      "city": "San Jose",
+      "state": "CA",
+      "zip_code": "95110"
+    },
+    "industry": [
+      {
+        "code": "45",
+        "description": "Information Technology"
+      },
+      {
+        "code": "4510",
+        "description": "Software & Services"
+      }
+    ],
+    "benefits": "Comprehensive health insurance, 401k matching up to 6%, unlimited PTO, remote work options, professional development budget"
+  },
+  "contact_first_name": "Sarah",
+  "contact_last_name": "Martinez",
+  "email": "sarah.martinez@techvision-test.com",
+  "password_hash": "hashed_password_employer_123",
+  "employer_identification": "770e8400-e29b-41d4-a716-446655440201",
+  "open_jobs": [
+    {
+      "job_identification": "660e8400-e29b-41d4-a716-446655440001",
+      "employer_identification": "770e8400-e29b-41d4-a716-446655440201",
+      "job_title": "Senior Full Stack Engineer",
+      "job_description": "We are seeking a Senior Full Stack Engineer to join our innovative team. You will work on cutting-edge web applications using modern technologies and best practices.\n\nResponsibilities:\n- Design and develop scalable web applications\n- Lead technical architecture decisions\n- Mentor junior developers\n- Collaborate with product and design teams\n- Write clean, maintainable code\n\nRequirements:\n- 5+ years of full stack development experience\n- Strong proficiency in React and Node.js\n- Experience with cloud platforms (AWS preferred)\n- Excellent problem-solving skills\n- Strong communication abilities",
+      "department": "Engineering",
+      "hire_mgr_first": "David",
+      "hire_mgr_last": "Kim",
+      "posted_date": "2024-11-10T09:00:00-08:00",
+      "pay_range": [130000, 180000],
+      "pay_unit": "Yearly",
+      "education_level": "BS",
+      "edu_focus": "Computer Science",
+      "key_skills": [
+        "React",
+        "Node.js",
+        "TypeScript",
+        "AWS",
+        "Docker",
+        "PostgreSQL",
+        "GraphQL",
+        "CI/CD"
+      ]
+    },
+    {
+      "job_identification": "660e8400-e29b-41d4-a716-446655440002",
+      "employer_identification": "770e8400-e29b-41d4-a716-446655440201",
+      "job_title": "Data Engineer",
+      "job_description": "Join our data team to build robust data pipelines and infrastructure. You'll work with big data technologies and help drive data-driven decision making.\n\nResponsibilities:\n- Design and implement data pipelines\n- Optimize data storage and retrieval\n- Build ETL processes\n- Ensure data quality and reliability\n- Collaborate with data scientists and analysts\n\nRequirements:\n- 3+ years of data engineering experience\n- Proficiency in Python and SQL\n- Experience with big data tools (Spark, Hadoop)\n- Knowledge of data warehousing concepts\n- Strong analytical skills",
+      "department": "Data",
+      "hire_mgr_first": "Emily",
+      "hire_mgr_last": "Thompson",
+      "posted_date": "2024-11-11T10:30:00-08:00",
+      "pay_range": [110000, 160000],
+      "pay_unit": "Yearly",
+      "education_level": "BS",
+      "edu_focus": "Computer Science",
+      "key_skills": [
+        "Python",
+        "SQL",
+        "Apache Spark",
+        "ETL",
+        "Data Warehousing",
+        "AWS",
+        "Airflow"
+      ]
+    }
+  ]
+}
+

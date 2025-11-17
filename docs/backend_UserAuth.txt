@@ -1,0 +1,299 @@
+Backend: User Auth
+The goal is to implement secure user authentication for the Job Portal backend using:
+
+Beanie for MongoDB user documents.
+
+Pydantic schemas for request/response validation.
+
+Password hashing and JWT for secure authentication.
+
+FastAPI OAuth2 flow for login and protected routes.
+
+A modular layered architecture: Models → Repository → Service → Routes → Utils.
+
+Repository layer abstracts all direct database interactions.
+
+Service layer focuses solely on business logic and uses the repository.
+
+Key Components
+1. User Model (src/models/user.py)
+
+Defines user attributes: first_name, last_name, email, hashed_password, role, created_at.
+
+Beanie Document ensures async database operations.
+
+Automatically creates the users collection in MongoDB.
+
+2. User Role Enum (src/models/enums.py)
+
+Enum for user roles (e.g., recruiter, applicant).
+
+Enables role-based access control if required in the future.
+
+3. Schemas (src/schemas/user.py)
+
+UserCreate – for registration requests.
+
+UserLogin – for login requests.
+
+UserResponse – for returning user info safely without exposing passwords.
+
+4. Security Utils (src/utils/security.py)
+
+Password hashing and verification with passlib.
+
+JWT token creation and decoding for authentication.
+
+Dependency functions for FastAPI routes to get the current user (get_current_user) from token.
+
+5. Repository Layer (planned, src/repositories/user_repository.py)
+
+Encapsulates all database operations such as creating a user or fetching by email.
+
+Enables unit testing by mocking database operations.
+
+Service layer calls the repository for all DB interactions.
+
+6. Service Layer (src/services/user_service.py)
+
+Handles CRUD operations and business logic for user management.
+
+Delegates all database access to the repository layer.
+
+Optional role-based checks for endpoints (e.g., recruiter/admin).
+
+7. Routes (src/routers/user_router.py)
+
+/register – registers a new user via the service layer.
+
+/login – authenticates user and returns JWT token.
+
+/profile – protected route to get current user info.
+
+/logout – frontend removes token (stateless backend).
+
+8. Integration with main.py
+
+Include the user router in FastAPI
+
+
+Instructions
+1. src/models/enums.py
+from enum import Enum
+
+class UserRole(str, Enum):
+    recruiter = "recruiter"
+    applicant = "applicant"
+2.  src/models/user.py
+from beanie import Document
+from pydantic import EmailStr, Field
+from datetime import datetime
+from .enums import UserRole
+
+class User(Document):
+    first_name: str
+    last_name: str
+    email: EmailStr
+    hashed_password: str
+    role: UserRole = Field(default=UserRole.applicant)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+    class Settings:
+        name = "users"
+3.  src/schemas/user.py
+from pydantic import BaseModel, EmailStr
+from datetime import datetime
+from src.models.enums import UserRole
+from typing import Optional
+
+class UserCreate(BaseModel):
+    first_name: str
+    last_name: str
+    email: EmailStr
+    password: str
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class UserResponse(BaseModel):
+    id: str
+    first_name: str
+    last_name: str
+    email: EmailStr
+    role: UserRole
+    created_at: datetime
+4.  src/utils/security.py
+from passlib.context import CryptContext
+from datetime import datetime, timedelta
+from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends, HTTPException, status
+from jose import JWTError
+from src.models.user import User
+
+import jwt
+
+SECRET_KEY = "rev--secret-key"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/login")
+
+# -------------------------------
+# Password Utilities
+# -------------------------------
+def hash_password(password: str) -> str:
+    return pwd_context.hash(password)
+
+def verify_password(plain: str, hashed: str) -> bool:
+    return pwd_context.verify(plain, hashed)
+
+# -------------------------------
+# JWT Utilities
+# -------------------------------
+def create_access_token(data: dict, expires_delta: timedelta = None):
+    to_encode = data.copy()
+    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+def decode_token(token: str):
+    return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+
+# -------------------------------
+# Authentication Utilities
+# -------------------------------
+async def authenticate_user(email: str, password: str):
+    user = await User.find_one(User.email == email)
+    if not user or not verify_password(password, user.hashed_password):
+        return False
+    return user
+
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid token or authentication credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = decode_token(token)
+        email: str = payload.get("sub")
+        if email is None:
+            raise credentials_exception
+        user = await User.find_one(User.email == email)
+        if user is None:
+            raise credentials_exception
+        return user
+    except JWTError:
+        raise credentials_exception
+5. src/services/user_repository.py
+from src.models.user import User
+from typing import Optional
+
+class UserRepository:
+
+    @staticmethod
+    async def create(user: User) -> User:
+        await user.insert()
+        return user
+
+    @staticmethod
+    async def get_by_email(email: str) -> Optional[User]:
+        return await User.find_one(User.email == email)
+6. src/services/user_service.py
+from src.schemas.user import UserCreate
+from src.models.user import User
+from src.utils.security import hash_password
+from src.repositories.user_repository import UserRepository
+
+class UserService:
+
+    @staticmethod
+    async def register_user(user_create: UserCreate) -> User:
+        hashed_pw = hash_password(user_create.password)
+        user_doc = User(
+            first_name=user_create.first_name,
+            last_name=user_create.last_name,
+            email=user_create.email,
+            hashed_password=hashed_pw
+        )
+        return await UserRepository.create(user_doc)
+
+    @staticmethod
+    async def get_user_by_email(email: str) -> User:
+        return await UserRepository.get_by_email(email)
+7. src/routers/user.py
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import OAuth2PasswordRequestForm
+from src.schemas.user import UserCreate, UserResponse
+from src.services.user_service import UserService
+from src.models.user import User
+from src.utils.security import authenticate_user, create_access_token, get_current_user
+
+router = APIRouter(prefix="/users", tags=["Users"])
+
+@router.post("/register", response_model=UserResponse)
+async def register_user(user: UserCreate):
+    user_doc = await UserService.register_user(user)
+    return UserResponse(
+        id=str(user_doc.id),
+        first_name=user_doc.first_name,
+        last_name=user_doc.last_name,
+        email=user_doc.email,
+        role=user_doc.role,
+        created_at=user_doc.created_at
+    )
+
+@router.post("/login")
+async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = await authenticate_user(form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(status_code=400, detail="Invalid credentials")
+    token = create_access_token(data={"sub": user.email})
+    return {"access_token": token, "token_type": "bearer"}
+
+@router.get("/profile", response_model=UserResponse)
+async def get_profile(current_user: User = Depends(get_current_user)):
+    return UserResponse(
+        id=str(current_user.id),
+        first_name=current_user.first_name,
+        last_name=current_user.last_name,
+        email=current_user.email,
+        role=current_user.role,
+        created_at=current_user.created_at
+    )
+
+@router.post("/logout")
+async def logout(current_user: User = Depends(get_current_user)):
+    # Frontend removes token. Backend is stateless.
+    return {"message": "Logged out successfully"}
+6.  main.py (Modification)
+from fastapi import FastAPI
+from src.db.init_db import init_db
+from src.api.v1.routes import jobs
+from src.api.v1.routes import user
+
+
+app = FastAPI(title="Job Portal App")
+
+@app.on_event("startup")
+async def startup_event():
+    await init_db()
+
+app.include_router(jobs.router)
+app.include_router(user.router) # add user route
+This completes a ready-to-run User Auth module:
+
+Registration → /users/register
+
+Login → /users/login (returns JWT)
+
+Profile → /users/profile (protected)
+
+Logout → /users/logout
+
+Note:
+
+Model Registration: Always add new Beanie models (e.g., User, Job) to document_models in init_db.py
+Testing with Swagger: Use /docs to test register, login, profile, and logout endpoints; use Authorize to test token-protected routes.

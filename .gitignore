@@ -1,3 +1,11 @@
+# ChromaDB
+chroma_db/
+
+#n8n 
+n8n_data/
+
+backend/Logs/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

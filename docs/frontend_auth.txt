@@ -1,0 +1,157 @@
+User Authentication in Next.js
+1. Architecture Overview
+In a Next.js frontend integrated with a FastAPI backend:
+
+Frontend Pages/Components handle user input:
+
+LoginForm / RegisterForm for collecting credentials.
+
+Forms are styled with Tailwind CSS for enterprise-level design.
+
+API Service Layer interacts with the backend:
+
+Sends requests to FastAPI endpoints (/users/register, /users/login).
+
+Receives JWT tokens and user data.
+
+State Management / Session Handling stores authentication state:
+
+JWT token is saved in localStorage (or cookies for more secure storage).
+
+Protected routes check token validity before rendering.
+
+Protected Pages redirect unauthorized users:
+
+If no token is present, user is redirected to /login.
+
+Authenticated users can access /dashboard or /profile.
+
+2.  User Registration Flow
+User Input: User fills the registration form (first name, last name, email, password).
+
+Form Submission: Login/Register form component calls registerUser() from lib/api.js.
+
+Backend Processing:
+
+FastAPI endpoint /users/register receives data.
+
+Password is hashed with bcrypt using passlib.
+
+Beanie model User saves the new user document in MongoDB.
+
+Response:
+
+Backend returns user ID and basic info (without password).
+
+Frontend can display a success message and redirect to /login.
+
+3.  User Login Flow
+User Input: Email and password are entered into LoginForm.
+
+Form Submission: Frontend calls loginUser() function, sending credentials to /users/login.
+
+Backend Verification:
+
+FastAPI verifies email exists.
+
+Password is checked against hashed password using verify_password.
+
+On success, backend generates a JWT token using create_access_token().
+
+Token Storage:
+
+Frontend stores token in localStorage.
+
+Token can be decoded or sent with every protected API call in the Authorization: Bearer <token> header.
+
+4. Protected Routes and Dashboard
+Token Check:
+
+On page load, useEffect or a custom hook checks localStorage for a token.
+
+If token is absent, redirect user to /login.
+
+Token Validation:
+
+Optionally, call backend /users/profile endpoint with token to verify validity.
+
+Decoded token can provide user info (e.g., first_name, role) for personalized dashboard content.
+
+Access Control:
+
+Only authenticated users can access /dashboard, /profile, or recruiter-only pages.
+
+Unauthorized access triggers a redirect or error message.
+
+5. JWT Handling in Next.js
+JWT Creation (Backend): FastAPI signs user info (sub: email) with HS256 algorithm and secret key.
+
+JWT Storage (Frontend):
+
+localStorage (simple, persists across sessions).
+
+Optional: secure HTTP-only cookies (more secure against XSS).
+
+JWT Verification (Backend):
+
+Every protected endpoint decodes JWT to verify identity.
+
+Invalid/expired tokens return 401 Unauthorized.
+
+Frontend Usage:
+
+Attach token to headers when calling protected endpoints:  
+
+fetch(`${API_URL}/jobs`, 
+    { 
+       headers: { 
+           Authorization: `Bearer ${token}` 
+       }, 
+    }
+
+);
+ 
+
+6.  Form Validation & Security
+Frontend Validation:
+
+Required fields, email format, password strength.
+
+Real-time error messages.
+
+Backend Validation:
+
+Ensures no duplicate emails.
+
+Password is securely hashed.
+
+Role-based access (optional for recruiters/admin).
+
+Security Measures:
+
+HTTPS communication between frontend and backend.
+
+Token expiry for sessions (e.g., 30 mins).
+
+Optional refresh token flow for long sessions.
+
+7. Component & State Architecture
+Form Components:
+
+LoginForm.jsx and RegisterForm.jsx handle local state and form submission.
+
+API Layer (lib/api.js):
+
+Centralized API calls for authentication.
+
+Routing & Navigation:
+
+useRouter() handles redirects after login/register.
+
+Protected Pages:
+
+Dashboard and Profile components check token before rendering.
+
+Global Auth State:
+
+Optional: Redux/Zustand for storing auth info, user profile, or permissions.
