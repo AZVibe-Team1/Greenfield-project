@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1000" height="1000" viewBox="0 0 1000 1000"
+     xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Work Atlas Chicken, Waffles and Job Portal logo">
+  <defs>
+    <!-- background gradient -->
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffd6d6"/>
+      <stop offset="100%" stop-color="#e34b4b"/>
+    </linearGradient>
+
+    <radialGradient id="highlight" cx="30%" cy="25%" r="80%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.14"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+
+    <filter id="softShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="8" stdDeviation="18" flood-color="#000" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <!-- outer circle -->
+  <g filter="url(#softShadow)">
+    <circle cx="500" cy="500" r="460" fill="url(#bgGrad)"/>
+    <circle cx="500" cy="500" r="460" fill="url(#highlight)" style="mix-blend-mode:screen; opacity:0.9"/>
+    <circle cx="500" cy="500" r="430" fill="none" stroke="#ffffff" stroke-opacity="0.08" stroke-width="6"/>
+  </g>
+
+  <!-- central badge -->
+  <g transform="translate(500,420)">
+    <ellipse rx="300" ry="220" fill="rgba(255,255,255,0.06)"/>
+
+    <!-- chicken -->
+    <g transform="translate(-150,-100) scale(1.1)">
+      <ellipse cx="0" cy="0" rx="72" ry="55" fill="#fff7e6" stroke="#ffd9b3" stroke-width="2"/>
+      <path d="M-20,-5 q30,-30 54,-6 q-26,18 -54,6z" fill="#fff0d9" stroke="#ffd9b3" stroke-width="1.5"/>
+      <circle cx="80" cy="-35" r="28" fill="#fff7e6" stroke="#ffd9b3" stroke-width="2"/>
+      <path d="M102,-36 l18,8 l-18,6 z" fill="#ffb84d" stroke="#e08b14" stroke-width="1"/>
+      <path d="M70,-58 q6,-18 22,-12 q0,-14 20,-8 q4,3 6,12 q-14,-4 -26,6 q-14,-4 -22,2z" fill="#ff6b6b" stroke="#d94b4b" stroke-width="1"/>
+      <circle cx="74" cy="-38" r="3.2" fill="#3b2e2e"/>
+      <path d="M-20,52 l8,26 M-6,52 l8,26" stroke="#ffb84d" stroke-width="4" stroke-linecap="round"/>
+    </g>
+
+    <!-- waffle -->
+    <g transform="translate(160,-60) scale(1.05)">
+      <rect x="-70" y="-70" width="140" height="140" rx="18" ry="18" fill="#f6d7a3" stroke="#e2b46f" stroke-width="4"/>
+      <g stroke="#e0b56a" stroke-width="6" stroke-linecap="round">
+        <line x1="-70" y1="-10" x2="70" y2="-10"/>
+        <line x1="-70" y1="30" x2="70" y2="30"/>
+        <line x1="-10" y1="-70" x2="-10" y2="70"/>
+        <line x1="30" y1="-70" x2="30" y2="70"/>
+      </g>
+      <path d="M-40,-48 q30,30 80,8 q-8,32 -68,44" fill="none" stroke="#b56b1f" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
+    </g>
+
+    <!-- text (15% larger font sizes) -->
+    <g transform="translate(0,260)" text-anchor="middle" fill="#ffffff" style="font-family: 'Segoe UI', Arial, sans-serif;">
+      <text x="0" y="-150" font-size="64.4" font-weight="700" letter-spacing="1">Work Atlas</text>
+      <text x="0" y="-90" font-size="41.4" font-weight="600">Chicken, Waffles</text>
+      <text x="0" y="-40" font-size="25.3" font-weight="500" opacity="0.95">and Job Portal</text>
+    </g>
+  </g>
+
+  <title>Work Atlas Chicken, Waffles and Job Portal — round logo</title>
+</svg>

@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1000 1000">
+  <!-- Generator: Adobe Illustrator 29.8.2, SVG Export Plug-In . SVG Version: 2.1.1 Build 3)  -->
+  <defs>
+    <style>
+      .st0 {
+        stroke: #e0b56a;
+        stroke-width: 6.3px;
+      }
+
+      .st0, .st1, .st2 {
+        stroke-linecap: round;
+      }
+
+      .st0, .st1, .st3 {
+        fill: none;
+      }
+
+      .st0, .st4 {
+        stroke-miterlimit: 4.2;
+      }
+
+      .st5 {
+        filter: url(#softShadow);
+      }
+
+      .st6 {
+        font-family: SegoeUI, 'Segoe UI';
+        font-size: 44.66px;
+      }
+
+      .st6, .st7, .st8, .st1, .st9, .st10 {
+        isolation: isolate;
+      }
+
+      .st6, .st8, .st9 {
+        fill: #fff;
+      }
+
+      .st6, .st1 {
+        opacity: .95;
+      }
+
+      .st11 {
+        fill: #ffb84d;
+        stroke: #e08b14;
+      }
+
+      .st11, .st12 {
+        stroke-width: 1.1px;
+      }
+
+      .st11, .st12, .st13, .st2, .st14 {
+        stroke-miterlimit: 4.4;
+      }
+
+      .st12 {
+        fill: #ff6b6b;
+        stroke: #d94b4b;
+      }
+
+      .st8 {
+        font-family: SegoeUI-Semibold, 'Segoe UI';
+        font-size: 73.07px;
+        font-weight: 600;
+      }
+
+      .st1 {
+        stroke: #b56b1f;
+        stroke-linejoin: round;
+        stroke-width: 8.4px;
+      }
+
+      .st13 {
+        fill: #fff0d9;
+        stroke-width: 1.65px;
+      }
+
+      .st13, .st14 {
+        stroke: #ffd9b3;
+      }
+
+      .st9 {
+        font-family: SegoeUI-Bold, 'Segoe UI';
+        font-size: 113.67px;
+        font-weight: 700;
+        letter-spacing: .02em;
+      }
+
+      .st10 {
+        fill: url(#radial-gradient);
+        mix-blend-mode: screen;
+        opacity: .9;
+      }
+
+      .st2 {
+        stroke: #ffb84d;
+        stroke-width: 4.4px;
+      }
+
+      .st14 {
+        fill: #fff7e6;
+        stroke-width: 2.2px;
+      }
+
+      .st3 {
+        opacity: .08;
+        stroke: #fff;
+        stroke-width: 6px;
+      }
+
+      .st15 {
+        fill: url(#linear-gradient);
+      }
+
+      .st4 {
+        fill: #f6d7a3;
+        stroke: #e2b46f;
+        stroke-width: 4.2px;
+      }
+
+      .st16 {
+        fill: #3b2e2e;
+      }
+    </style>
+    <filter id="softShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="8" flood-color="#000" flood-opacity="0.25" stdDeviation="18"/>
+    </filter>
+    <linearGradient id="linear-gradient" x1="193.79" y1="896.11" x2="194.79" y2="895.11" gradientTransform="translate(-178246 824464) scale(920 -920)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffd6d6"/>
+      <stop offset="1" stop-color="#e34b4b"/>
+    </linearGradient>
+    <radialGradient id="radial-gradient" cx="194.09" cy="895.86" fx="194.09" fy="895.86" r=".8" gradientTransform="translate(-178246 824464) scale(920 -920)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff" stop-opacity=".14"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <g class="st7">
+    <g id="Layer_1">
+      <g class="st5">
+        <circle class="st15" cx="500" cy="500" r="460"/>
+        <circle class="st10" cx="500" cy="500" r="460"/>
+        <circle class="st3" cx="500" cy="500" r="430"/>
+      </g>
+      <g>
+        <ellipse cx="475" cy="500" rx="374" ry="388.32"/>
+        <g>
+          <ellipse class="st14" cx="276.04" cy="321.55" rx="76.78" ry="87.22"/>
+          <path class="st13" d="M254.71,313.63c21.33-31.72,40.52-34.89,57.58-9.52-18.48,19.03-37.68,22.2-57.58,9.52Z"/>
+          <ellipse class="st14" cx="361.35" cy="266.05" rx="29.86" ry="44.41"/>
+          <path class="st11" d="M384.81,264.46l19.19,12.69-19.19,9.52v-22.2Z"/>
+          <path class="st12" d="M350.68,229.57c4.27-19.03,12.09-25.37,23.46-19.03,0-14.8,7.11-19.03,21.33-12.69,2.84,3.17,4.98,9.52,6.4,19.03-9.95-4.23-19.19-1.06-27.72,9.52-9.95-4.23-17.77-3.17-23.46,3.17Z"/>
+          <ellipse class="st16" cx="354.95" cy="261.29" rx="3.41" ry="5.07"/>
+          <path class="st2" d="M254.71,404.02l8.53,41.23M269.64,404.02l8.53,41.23"/>
+        </g>
+        <g>
+          <rect class="st4" x="507.13" y="207.32" width="167" height="237.93" rx="18.9" ry="18.9"/>
+          <g>
+            <line class="st0" x1="507.13" y1="309.29" x2="674.13" y2="309.29"/>
+            <line class="st0" x1="507.13" y1="377.27" x2="674.13" y2="377.27"/>
+            <line class="st0" x1="578.7" y1="207.32" x2="578.7" y2="445.26"/>
+            <line class="st0" x1="626.42" y1="207.32" x2="626.42" y2="445.26"/>
+          </g>
+          <path class="st1" d="M542.92,244.71c23.86,33.99,55.67,38.52,95.43,13.6-6.36,36.26-33.4,61.18-81.11,74.78"/>
+        </g>
+        <g>
+          <text class="st9" transform="translate(269.64 567.48) scale(.71 1)"><tspan x="0" y="0">Work Atlas</tspan></text>
+          <text class="st8" transform="translate(291.01 673.39) scale(.71 1)"><tspan x="0" y="0">Chicken, Waffles</tspan></text>
+          <text class="st6" transform="translate(383.71 761.64) scale(.71 1)"><tspan x="0" y="0">and Job Portal</tspan></text>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>
