@@ -1,0 +1,79 @@
+2025-11-17T16:30:39.684864+0000 INFO LangSmith tracing enabled for project: job_portal
+2025-11-17T16:30:39.685236+0000 DEBUG [TOKEN_COUNTER] Token counter callback initialized
+2025-11-17T16:30:39.934971+0000 INFO [STREAM] Starting match for seeker_id: 691a58058c5975fb6d36e31d
+2025-11-17T16:30:40.011571+0000 INFO [STREAM] Found seeker: l0nvw96hg8@illubd.com
+2025-11-17T16:30:40.011846+0000 INFO [STREAM] Seeker UUID: 40938220-4a55-4e68-946d-97731fb1d1d3
+2025-11-17T16:30:40.076499+0000 INFO [STREAM] Found seeker embedding in ChromaDB
+2025-11-17T16:30:40.122749+0000 DEBUG Found 15 similar jobs
+2025-11-17T16:30:40.122977+0000 INFO [STREAM] Found 15 similar jobs
+2025-11-17T16:30:40.123113+0000 INFO [STREAM] Deduplicated to 15 unique jobs (from 15 results)
+2025-11-17T16:30:40.282561+0000 DEBUG [STREAM] Calculating score for job: Full-Stack Developer
+2025-11-17T16:30:47.359562+0000 DEBUG [TOKEN_COUNTER] LLM Call #1 - Input: 846 tokens ($0.000127), Output: 227 tokens ($0.000136), Total: 1,073 tokens ($0.000263)
+2025-11-17T16:30:47.359900+0000 DEBUG [TOKEN_COUNTER] Cumulative Totals - Input: 846 tokens, Output: 227 tokens, Total Cost: $0.000263 (1 calls)
+2025-11-17T16:30:47.365198+0000 DEBUG Match score calculated: 66.0%
+2025-11-17T16:30:47.365436+0000 DEBUG [STREAM] Match score calculated: 66.0%
+2025-11-17T16:30:47.517518+0000 DEBUG [STREAM] Calculating score for job: Junior Full-Stack Developer
+2025-11-17T16:30:53.570914+0000 DEBUG [TOKEN_COUNTER] LLM Call #2 - Input: 847 tokens ($0.000127), Output: 235 tokens ($0.000141), Total: 1,082 tokens ($0.000268)
+2025-11-17T16:30:53.571167+0000 DEBUG [TOKEN_COUNTER] Cumulative Totals - Input: 1,693 tokens, Output: 462 tokens, Total Cost: $0.000531 (2 calls)
+2025-11-17T16:30:53.576215+0000 DEBUG Match score calculated: 61.6%
+2025-11-17T16:30:53.576426+0000 DEBUG [STREAM] Match score calculated: 61.6%
+2025-11-17T16:30:53.729382+0000 DEBUG [STREAM] Calculating score for job: Full Stack JavaScript/Python Developer
+2025-11-17T16:31:00.170600+0000 DEBUG [TOKEN_COUNTER] LLM Call #3 - Input: 1,287 tokens ($0.000193), Output: 210 tokens ($0.000126), Total: 1,497 tokens ($0.000319)
+2025-11-17T16:31:00.170934+0000 DEBUG [TOKEN_COUNTER] Cumulative Totals - Input: 2,980 tokens, Output: 672 tokens, Total Cost: $0.000850 (3 calls)
+2025-11-17T16:31:00.177601+0000 DEBUG Match score calculated: 62.0%
+2025-11-17T16:31:00.178088+0000 DEBUG [STREAM] Match score calculated: 62.0%
+2025-11-17T16:31:00.332728+0000 DEBUG [STREAM] Calculating score for job: Senior Full Stack Engineer
+2025-11-17T16:31:06.550095+0000 DEBUG [TOKEN_COUNTER] LLM Call #4 - Input: 927 tokens ($0.000139), Output: 235 tokens ($0.000141), Total: 1,162 tokens ($0.000280)
+2025-11-17T16:31:06.550299+0000 DEBUG [TOKEN_COUNTER] Cumulative Totals - Input: 3,907 tokens, Output: 907 tokens, Total Cost: $0.001130 (4 calls)
+2025-11-17T16:31:06.555995+0000 DEBUG Match score calculated: 53.4%
+2025-11-17T16:31:06.556189+0000 DEBUG [STREAM] Match score calculated: 53.4%
+2025-11-17T16:31:06.708336+0000 DEBUG [STREAM] Calculating score for job: Frontend Developer - Entry Level
+2025-11-17T16:31:12.053198+0000 DEBUG [TOKEN_COUNTER] LLM Call #5 - Input: 979 tokens ($0.000147), Output: 232 tokens ($0.000139), Total: 1,211 tokens ($0.000286)
+2025-11-17T16:31:12.053528+0000 DEBUG [TOKEN_COUNTER] Cumulative Totals - Input: 4,886 tokens, Output: 1,139 tokens, Total Cost: $0.001416 (5 calls)
+2025-11-17T16:31:12.058790+0000 DEBUG Match score calculated: 62.0%
+2025-11-17T16:31:12.058977+0000 DEBUG [STREAM] Match score calculated: 62.0%
+2025-11-17T16:31:12.212947+0000 DEBUG [STREAM] Calculating score for job: Python Developer - Backend Focus
+2025-11-17T16:31:23.861912+0000 DEBUG [TOKEN_COUNTER] LLM Call #6 - Input: 993 tokens ($0.000149), Output: 389 tokens ($0.000233), Total: 1,382 tokens ($0.000382)
+2025-11-17T16:31:23.862192+0000 DEBUG [TOKEN_COUNTER] Cumulative Totals - Input: 5,879 tokens, Output: 1,528 tokens, Total Cost: $0.001799 (6 calls)
+2025-11-17T16:31:23.871492+0000 DEBUG Match score calculated: 56.0%
+2025-11-17T16:31:23.871681+0000 DEBUG [STREAM] Match score calculated: 56.0%
+2025-11-17T16:31:24.028882+0000 DEBUG [STREAM] Calculating score for job: Full Stack Developer
+2025-11-17T16:31:33.653134+0000 DEBUG [TOKEN_COUNTER] LLM Call #7 - Input: 1,009 tokens ($0.000151), Output: 293 tokens ($0.000176), Total: 1,302 tokens ($0.000327)
+2025-11-17T16:31:33.656519+0000 DEBUG [TOKEN_COUNTER] Cumulative Totals - Input: 6,888 tokens, Output: 1,821 tokens, Total Cost: $0.002126 (7 calls)
+2025-11-17T16:31:33.664864+0000 DEBUG Match score calculated: 66.0%
+2025-11-17T16:31:33.665748+0000 DEBUG [STREAM] Match score calculated: 66.0%
+2025-11-17T16:31:33.824629+0000 WARNING Job not found: 660e8400-e29b-41d4-a716-446655440101
+2025-11-17T16:31:33.824923+0000 WARNING [STREAM] Job not found: 660e8400-e29b-41d4-a716-446655440101
+2025-11-17T16:31:33.908469+0000 DEBUG [STREAM] Calculating score for job: Senior Software Developer
+2025-11-17T16:31:48.574927+0000 DEBUG [TOKEN_COUNTER] LLM Call #8 - Input: 1,066 tokens ($0.000160), Output: 419 tokens ($0.000251), Total: 1,485 tokens ($0.000411)
+2025-11-17T16:31:48.575635+0000 DEBUG [TOKEN_COUNTER] Cumulative Totals - Input: 7,954 tokens, Output: 2,240 tokens, Total Cost: $0.002537 (8 calls)
+2025-11-17T16:31:48.589564+0000 DEBUG Match score calculated: 55.0%
+2025-11-17T16:31:48.589999+0000 DEBUG [STREAM] Match score calculated: 55.0%
+2025-11-17T16:31:48.746165+0000 DEBUG [STREAM] Calculating score for job: Junior Software Engineer
+2025-11-17T16:31:55.259332+0000 DEBUG [TOKEN_COUNTER] LLM Call #9 - Input: 1,030 tokens ($0.000155), Output: 184 tokens ($0.000110), Total: 1,214 tokens ($0.000265)
+2025-11-17T16:31:55.259584+0000 DEBUG [TOKEN_COUNTER] Cumulative Totals - Input: 8,984 tokens, Output: 2,424 tokens, Total Cost: $0.002802 (9 calls)
+2025-11-17T16:31:55.264172+0000 DEBUG Match score calculated: 53.0%
+2025-11-17T16:31:55.264327+0000 DEBUG [STREAM] Match score calculated: 53.0%
+2025-11-17T16:31:55.458747+0000 DEBUG [STREAM] Calculating score for job: Junior DevOps Engineer
+2025-11-17T16:32:02.207718+0000 DEBUG [TOKEN_COUNTER] LLM Call #10 - Input: 981 tokens ($0.000147), Output: 246 tokens ($0.000148), Total: 1,227 tokens ($0.000295)
+2025-11-17T16:32:02.208439+0000 DEBUG [TOKEN_COUNTER] Cumulative Totals - Input: 9,965 tokens, Output: 2,670 tokens, Total Cost: $0.003097 (10 calls)
+2025-11-17T16:32:02.213918+0000 DEBUG Match score calculated: 41.0%
+2025-11-17T16:32:02.214098+0000 DEBUG [STREAM] Match score calculated: 41.0%
+2025-11-17T16:32:02.371127+0000 DEBUG [STREAM] Calculating score for job: Software QA Engineer - Automation
+2025-11-17T16:32:08.612238+0000 DEBUG [TOKEN_COUNTER] LLM Call #11 - Input: 997 tokens ($0.000150), Output: 201 tokens ($0.000121), Total: 1,198 tokens ($0.000270)
+2025-11-17T16:32:08.612911+0000 DEBUG [TOKEN_COUNTER] Cumulative Totals - Input: 10,962 tokens, Output: 2,871 tokens, Total Cost: $0.003367 (11 calls)
+2025-11-17T16:32:08.617832+0000 DEBUG Match score calculated: 32.0%
+2025-11-17T16:32:08.618022+0000 DEBUG [STREAM] Match score calculated: 32.0%
+2025-11-17T16:32:08.772263+0000 WARNING Job not found: 660e8400-e29b-41d4-a716-446655440102
+2025-11-17T16:32:08.772598+0000 WARNING [STREAM] Job not found: 660e8400-e29b-41d4-a716-446655440102
+2025-11-17T16:32:08.854156+0000 DEBUG [STREAM] Calculating score for job: DevOps Engineer
+2025-11-17T16:32:17.982186+0000 DEBUG [TOKEN_COUNTER] LLM Call #12 - Input: 930 tokens ($0.000140), Output: 218 tokens ($0.000131), Total: 1,148 tokens ($0.000270)
+2025-11-17T16:32:17.982377+0000 DEBUG [TOKEN_COUNTER] Cumulative Totals - Input: 11,892 tokens, Output: 3,089 tokens, Total Cost: $0.003637 (12 calls)
+2025-11-17T16:32:17.983884+0000 DEBUG Match score calculated: 34.0%
+2025-11-17T16:32:17.984062+0000 DEBUG [STREAM] Match score calculated: 34.0%
+2025-11-17T16:32:18.144229+0000 DEBUG [STREAM] Calculating score for job: Data Engineer
+2025-11-17T16:32:31.893071+0000 DEBUG [TOKEN_COUNTER] LLM Call #13 - Input: 922 tokens ($0.000138), Output: 347 tokens ($0.000208), Total: 1,269 tokens ($0.000347)
+2025-11-17T16:32:31.893323+0000 DEBUG [TOKEN_COUNTER] Cumulative Totals - Input: 12,814 tokens, Output: 3,436 tokens, Total Cost: $0.003984 (13 calls)
+2025-11-17T16:32:31.901909+0000 DEBUG Match score calculated: 45.0%
+2025-11-17T16:32:31.902087+0000 DEBUG [STREAM] Match score calculated: 45.0%
+2025-11-17T16:32:31.902268+0000 INFO [STREAM] Completed streaming 13 recommendations

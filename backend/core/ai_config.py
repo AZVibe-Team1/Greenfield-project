@@ -9,6 +9,8 @@ import os
 from langchain_openai import ChatOpenAI
 from loguru import logger
 
+from backend.core.token_counter import get_token_counter
+
 
 class AIConfig:
     """
@@ -64,20 +66,24 @@ class AIConfig:
     
     def get_llm_client(self, temperature: float | None = None) -> ChatOpenAI:
         """
-        Get a configured LLM client.
+        Get a configured LLM client with token counting enabled.
         
         Args:
             temperature: Optional temperature override (0-1)
         
         Returns:
-            Configured ChatOpenAI client
+            Configured ChatOpenAI client with token counter callback
         """
         temp = temperature if temperature is not None else self.default_temperature
+        
+        # Get token counter callback handler
+        token_counter = get_token_counter()
         
         return ChatOpenAI(
             model=self.openai_model,
             temperature=temp,
-            api_key=self.openai_api_key
+            api_key=self.openai_api_key,
+            callbacks=[token_counter]  # Add token counter callback
         )
 
 

@@ -1,0 +1,75 @@
+2025-11-17T16:35:50.366565+0000 INFO Looking up job in ChromaDB with UUID: 76ae8a63-7571-4f1b-90a6-685647e5cfe1
+2025-11-17T16:35:50.378093+0000 DEBUG Found 6 similar seekers
+2025-11-17T16:35:50.378283+0000 INFO Processing 6 candidates in batches of 5
+2025-11-17T16:35:50.378484+0000 DEBUG Processing batch 1 (5 candidates)
+2025-11-17T16:35:50.460771+0000 DEBUG Cache miss - calculating score: 8aee279998b3c108c9e15538d594a2b4
+2025-11-17T16:35:50.464716+0000 DEBUG Cache miss - calculating score: 37791a39dfefcecbf78512392f13384f
+2025-11-17T16:35:50.465814+0000 DEBUG Cache miss - calculating score: 3f6277d2e1fd8ad7726d4e7b76405b0b
+2025-11-17T16:35:50.888518+0000 DEBUG Cache miss - calculating score: 37791a39dfefcecbf78512392f13384f
+2025-11-17T16:35:50.895404+0000 DEBUG Cache miss - calculating score: 37791a39dfefcecbf78512392f13384f
+2025-11-17T16:35:57.098580+0000 DEBUG [TOKEN_COUNTER] LLM Call #14 - Input: 1,085 tokens ($0.000163), Output: 204 tokens ($0.000122), Total: 1,289 tokens ($0.000285)
+2025-11-17T16:35:57.099221+0000 DEBUG [TOKEN_COUNTER] Cumulative Totals - Input: 13,899 tokens, Output: 3,640 tokens, Total Cost: $0.004269 (14 calls)
+2025-11-17T16:35:57.106377+0000 DEBUG Match score calculated: 69.0%
+2025-11-17T16:35:57.419541+0000 DEBUG [TOKEN_COUNTER] LLM Call #15 - Input: 2,516 tokens ($0.000377), Output: 236 tokens ($0.000142), Total: 2,752 tokens ($0.000519)
+2025-11-17T16:35:57.419853+0000 DEBUG [TOKEN_COUNTER] Cumulative Totals - Input: 16,415 tokens, Output: 3,876 tokens, Total Cost: $0.004788 (15 calls)
+2025-11-17T16:35:57.426125+0000 DEBUG Match score calculated: 72.0%
+2025-11-17T16:35:58.136374+0000 DEBUG [TOKEN_COUNTER] LLM Call #16 - Input: 1,070 tokens ($0.000160), Output: 239 tokens ($0.000143), Total: 1,309 tokens ($0.000304)
+2025-11-17T16:35:58.138535+0000 DEBUG [TOKEN_COUNTER] Cumulative Totals - Input: 17,485 tokens, Output: 4,115 tokens, Total Cost: $0.005092 (16 calls)
+2025-11-17T16:35:58.146250+0000 DEBUG Match score calculated: 66.0%
+2025-11-17T16:36:01.122869+0000 DEBUG [TOKEN_COUNTER] LLM Call #17 - Input: 1,070 tokens ($0.000160), Output: 272 tokens ($0.000163), Total: 1,342 tokens ($0.000324)
+2025-11-17T16:36:01.123626+0000 DEBUG [TOKEN_COUNTER] Cumulative Totals - Input: 18,555 tokens, Output: 4,387 tokens, Total Cost: $0.005415 (17 calls)
+2025-11-17T16:36:01.130936+0000 DEBUG Match score calculated: 68.4%
+2025-11-17T16:36:09.578017+0000 INFO Looking up job in ChromaDB with UUID: 76ae8a63-7571-4f1b-90a6-685647e5cfe1
+2025-11-17T16:36:09.589509+0000 DEBUG Found 6 similar seekers
+2025-11-17T16:36:09.589697+0000 INFO Processing 6 candidates in batches of 5
+2025-11-17T16:36:09.589825+0000 DEBUG Processing batch 1 (5 candidates)
+2025-11-17T16:36:09.756885+0000 INFO Looking up job in ChromaDB with UUID: 76ae8a63-7571-4f1b-90a6-685647e5cfe1
+2025-11-17T16:36:09.765721+0000 DEBUG Found 6 similar seekers
+2025-11-17T16:36:09.765907+0000 INFO Processing 6 candidates in batches of 5
+2025-11-17T16:36:09.766052+0000 DEBUG Processing batch 1 (5 candidates)
+2025-11-17T16:36:09.766488+0000 DEBUG Cache hit for match calculation: 3f6277d2e1fd8ad7726d4e7b76405b0b
+2025-11-17T16:36:09.767027+0000 DEBUG Cache hit for match calculation: 37791a39dfefcecbf78512392f13384f
+2025-11-17T16:36:09.767635+0000 DEBUG Cache hit for match calculation: 37791a39dfefcecbf78512392f13384f
+2025-11-17T16:36:09.768450+0000 DEBUG Cache hit for match calculation: 8aee279998b3c108c9e15538d594a2b4
+2025-11-17T16:36:09.850207+0000 DEBUG Cache hit for match calculation: 8aee279998b3c108c9e15538d594a2b4
+2025-11-17T16:36:09.927218+0000 DEBUG Cache hit for match calculation: 37791a39dfefcecbf78512392f13384f
+2025-11-17T16:36:09.928770+0000 DEBUG Cache hit for match calculation: 37791a39dfefcecbf78512392f13384f
+2025-11-17T16:36:09.929502+0000 DEBUG Cache hit for match calculation: 3f6277d2e1fd8ad7726d4e7b76405b0b
+2025-11-17T16:36:09.930223+0000 DEBUG Cache hit for match calculation: 37791a39dfefcecbf78512392f13384f
+2025-11-17T16:36:10.012317+0000 DEBUG Processing batch 2 (1 candidates)
+2025-11-17T16:36:10.090560+0000 DEBUG Cache miss - calculating score: 56d3b76b8022c91f80416158c0da1771
+2025-11-17T16:36:10.182338+0000 DEBUG Cache hit for match calculation: 37791a39dfefcecbf78512392f13384f
+2025-11-17T16:36:10.263571+0000 DEBUG Processing batch 2 (1 candidates)
+2025-11-17T16:36:10.269930+0000 INFO Looking up job in ChromaDB with UUID: 76ae8a63-7571-4f1b-90a6-685647e5cfe1
+2025-11-17T16:36:10.281219+0000 DEBUG Found 6 similar seekers
+2025-11-17T16:36:10.281558+0000 INFO Processing 6 candidates in batches of 5
+2025-11-17T16:36:10.281733+0000 DEBUG Processing batch 1 (5 candidates)
+2025-11-17T16:36:10.342668+0000 DEBUG Cache miss - calculating score: 56d3b76b8022c91f80416158c0da1771
+2025-11-17T16:36:10.356150+0000 DEBUG Cache hit for match calculation: 37791a39dfefcecbf78512392f13384f
+2025-11-17T16:36:10.361058+0000 DEBUG Cache hit for match calculation: 37791a39dfefcecbf78512392f13384f
+2025-11-17T16:36:10.361911+0000 DEBUG Cache hit for match calculation: 3f6277d2e1fd8ad7726d4e7b76405b0b
+2025-11-17T16:36:10.362477+0000 DEBUG Cache hit for match calculation: 37791a39dfefcecbf78512392f13384f
+2025-11-17T16:36:10.479479+0000 DEBUG Cache hit for match calculation: 8aee279998b3c108c9e15538d594a2b4
+2025-11-17T16:36:10.562404+0000 DEBUG Processing batch 2 (1 candidates)
+2025-11-17T16:36:10.640294+0000 DEBUG Cache miss - calculating score: 56d3b76b8022c91f80416158c0da1771
+2025-11-17T16:36:12.026298+0000 DEBUG [TOKEN_COUNTER] LLM Call #18 - Input: 1,070 tokens ($0.000160), Output: 427 tokens ($0.000256), Total: 1,497 tokens ($0.000417)
+2025-11-17T16:36:12.026967+0000 DEBUG [TOKEN_COUNTER] Cumulative Totals - Input: 19,625 tokens, Output: 4,814 tokens, Total Cost: $0.005832 (18 calls)
+2025-11-17T16:36:12.039291+0000 DEBUG Match score calculated: 66.0%
+2025-11-17T16:36:12.116100+0000 DEBUG Processing batch 2 (1 candidates)
+2025-11-17T16:36:12.199893+0000 DEBUG Cache miss - calculating score: 56d3b76b8022c91f80416158c0da1771
+2025-11-17T16:36:17.192932+0000 DEBUG [TOKEN_COUNTER] LLM Call #19 - Input: 1,063 tokens ($0.000159), Output: 201 tokens ($0.000121), Total: 1,264 tokens ($0.000280)
+2025-11-17T16:36:17.193277+0000 DEBUG [TOKEN_COUNTER] Cumulative Totals - Input: 20,688 tokens, Output: 5,015 tokens, Total Cost: $0.006112 (19 calls)
+2025-11-17T16:36:17.198821+0000 DEBUG Match score calculated: 70.0%
+2025-11-17T16:36:17.279117+0000 INFO Found 6 candidate recommendations for job 6918e5f8a53851a265b5e279
+2025-11-17T16:36:18.190344+0000 DEBUG [TOKEN_COUNTER] LLM Call #20 - Input: 1,063 tokens ($0.000159), Output: 250 tokens ($0.000150), Total: 1,313 tokens ($0.000309)
+2025-11-17T16:36:18.191051+0000 DEBUG [TOKEN_COUNTER] Cumulative Totals - Input: 21,751 tokens, Output: 5,265 tokens, Total Cost: $0.006422 (20 calls)
+2025-11-17T16:36:18.198793+0000 DEBUG Match score calculated: 68.0%
+2025-11-17T16:36:18.274415+0000 INFO Found 6 candidate recommendations for job 6918e5f8a53851a265b5e279
+2025-11-17T16:36:18.811077+0000 DEBUG [TOKEN_COUNTER] LLM Call #21 - Input: 1,063 tokens ($0.000159), Output: 303 tokens ($0.000182), Total: 1,366 tokens ($0.000341)
+2025-11-17T16:36:18.812350+0000 DEBUG [TOKEN_COUNTER] Cumulative Totals - Input: 22,814 tokens, Output: 5,568 tokens, Total Cost: $0.006763 (21 calls)
+2025-11-17T16:36:18.820375+0000 DEBUG Match score calculated: 71.0%
+2025-11-17T16:36:18.899172+0000 INFO Found 6 candidate recommendations for job 6918e5f8a53851a265b5e279
+2025-11-17T16:36:20.469828+0000 DEBUG [TOKEN_COUNTER] LLM Call #22 - Input: 1,063 tokens ($0.000159), Output: 271 tokens ($0.000163), Total: 1,334 tokens ($0.000322)
+2025-11-17T16:36:20.470225+0000 DEBUG [TOKEN_COUNTER] Cumulative Totals - Input: 23,877 tokens, Output: 5,839 tokens, Total Cost: $0.007085 (22 calls)
+2025-11-17T16:36:20.476499+0000 DEBUG Match score calculated: 66.0%
+2025-11-17T16:36:20.565606+0000 INFO Found 6 candidate recommendations for job 6918e5f8a53851a265b5e279
