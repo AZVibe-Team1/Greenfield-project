@@ -118,11 +118,11 @@ export default function EmployerApplicationsPage() {
                     </div>
                     <div className="flex-1">
                       <h3 className="text-xl font-semibold text-gray-900 mb-1">
-                        Applicant ID: {app.applicant_id}
+                        {app.applicant_name || `Applicant ID: ${app.applicant_id}`}
                       </h3>
                       <div className="flex items-center gap-2 text-gray-600 mb-3">
                         <Briefcase className="h-4 w-4" />
-                        <span>Job ID: {app.job_id}</span>
+                        <span>{app.job_title || `Job ID: ${app.job_id}`}</span>
                       </div>
                       
                       <div className="flex flex-wrap gap-4 text-sm">

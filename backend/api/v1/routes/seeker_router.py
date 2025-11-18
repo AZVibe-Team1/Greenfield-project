@@ -510,12 +510,36 @@ async def get_my_applications(
                     app_data["company_name"] = employer.company_information.company_name
                     
                     # Find the job in employer's open_jobs
-                    for job in employer.open_jobs:
-                        if str(job.job_id) == str(app.job_id):
-                            app_data["job_title"] = job.job_title
-                            break
+                    # Convert app.job_id to PydanticObjectId for proper comparison
+                    from beanie import PydanticObjectId
+                    try:
+                        app_job_id_obj = PydanticObjectId(app.job_id)
+                        for job in employer.open_jobs:
+                            # Compare ObjectIds directly
+                            if job.job_id == app_job_id_obj:
+                                app_data["job_title"] = job.job_title
+                                break
+                    except Exception as id_error:
+                        # If conversion fails, fall back to string comparison
+                        logger.debug(f"Could not convert app.job_id to ObjectId, using string comparison: {id_error!s}")
+                        app_job_id_str = str(app.job_id).strip()
+                        for job in employer.open_jobs:
+                            job_id_str = str(job.job_id).strip()
+                            if job_id_str == app_job_id_str:
+                                app_data["job_title"] = job.job_title
+                                break
+                    
+                    # Log if job not found (for debugging)
+                    if app_data["job_title"] is None:
+                        logger.warning(
+                            f"Job not found in employer's open_jobs: "
+                            f"app.job_id={app.job_id}, "
+                            f"employer_id={app.employer_id}, "
+                            f"available_job_ids={[str(j.job_id) for j in employer.open_jobs]}"
+                        )
             except Exception as lookup_error:
                 logger.warning(f"Failed to lookup job details for job_id={app.job_id}, employer_id={app.employer_id}: {lookup_error!s}")
+                logger.exception("Full traceback:")
                 # Continue with None values if lookup fails
             
             applications_list.append(app_data)

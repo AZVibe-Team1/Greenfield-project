@@ -7,6 +7,7 @@ from datetime import datetime
 from typing import Any, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from loguru import logger
 from pydantic import BaseModel, Field
 
 from backend.ai.chains.candidate_matching_service import get_candidate_matching_service
@@ -582,7 +583,7 @@ async def get_applications(
     Get all applications received by employer.
 
     Returns:
-        List of applications
+        List of applications with applicant names and job titles
     """
     def raise_employer_not_found() -> None:
         raise HTTPException(
@@ -597,18 +598,66 @@ async def get_applications(
 
         assert employer is not None  # Type narrowing
 
+        # Build applications list with applicant names and job titles
+        applications_list = []
+        for app in employer.apps_received:
+            app_data = {
+                "applicant_id": app.applicant_id,
+                "job_id": app.job_id,
+                "initial_daterec": app.initial_daterec.isoformat(),
+                "current_status": app.candidate_tracking.current_status,
+                "previous_status": app.candidate_tracking.previous_status,
+                "current_status_date": app.candidate_tracking.current_status_date.isoformat(),
+                "applicant_name": None,
+                "job_title": None,
+            }
+            
+            # Look up applicant name from seeker
+            try:
+                # Try to get seeker by ID - applicant_id should be the MongoDB _id
+                seeker = await SeekerCRUD.get_seeker_by_id(app.applicant_id)
+                if seeker and seeker.information:
+                    first_name = seeker.information.first_name or ""
+                    last_name = seeker.information.last_name or ""
+                    full_name = f"{first_name} {last_name}".strip()
+                    app_data["applicant_name"] = full_name if full_name else None
+                elif seeker:
+                    # Seeker found but no information - log warning
+                    logger.warning(f"Seeker {app.applicant_id} found but has no information field")
+                else:
+                    # Seeker not found - try alternative lookup by seeker_id field
+                    logger.debug(f"Seeker not found by _id={app.applicant_id}, trying alternative lookup")
+                    try:
+                        from backend.schemas.seeker import Seeker
+                        from beanie import PydanticObjectId
+                        # Try looking up by seeker_id field instead
+                        seeker_obj_id = PydanticObjectId(app.applicant_id)
+                        seeker = await Seeker.find_one(Seeker.seeker_id == seeker_obj_id)
+                        if seeker and seeker.information:
+                            first_name = seeker.information.first_name or ""
+                            last_name = seeker.information.last_name or ""
+                            full_name = f"{first_name} {last_name}".strip()
+                            app_data["applicant_name"] = full_name if full_name else None
+                    except Exception:
+                        logger.debug(f"Alternative lookup also failed for applicant_id={app.applicant_id}")
+            except Exception as lookup_error:
+                logger.warning(f"Failed to lookup applicant details for applicant_id={app.applicant_id}: {lookup_error!s}")
+                # Continue with None if lookup fails
+            
+            # Look up job title from employer's open_jobs
+            try:
+                for job in employer.open_jobs:
+                    if str(job.job_id) == str(app.job_id):
+                        app_data["job_title"] = job.job_title
+                        break
+            except Exception as lookup_error:
+                logger.warning(f"Failed to lookup job details for job_id={app.job_id}: {lookup_error!s}")
+                # Continue with None if lookup fails
+            
+            applications_list.append(app_data)
+
         return {
-            "applications": [
-                {
-                    "applicant_id": app.applicant_id,
-                    "job_id": app.job_id,
-                    "initial_daterec": app.initial_daterec.isoformat(),
-                    "current_status": app.candidate_tracking.current_status,
-                    "previous_status": app.candidate_tracking.previous_status,
-                    "current_status_date": app.candidate_tracking.current_status_date.isoformat(),
-                }
-                for app in employer.apps_received
-            ]
+            "applications": applications_list
         }
 
     except HTTPException:
