@@ -1,0 +1,420 @@
+"""
+Authentication API routes.
+
+Handles user registration and login for both job seekers and employers.
+Implements JWT-based authentication with token validation endpoints.
+"""
+from fastapi import APIRouter, HTTPException, status, Depends
+from loguru import logger
+from pydantic import BaseModel, EmailStr, Field
+
+from backend.core.security import (
+    create_access_token, 
+    hash_password, 
+    verify_password,
+    get_current_user_id,
+    get_current_user_role,
+    decode_access_token
+)
+from backend.db.employer_db_ops import EmployerCRUD
+from backend.db.seeker_db_ops import SeekerCRUD
+from backend.services.employer_services import EmployerService
+from backend.services.seeker_services import SeekerService
+
+
+router = APIRouter(prefix="/auth", tags=["Authentication"])
+
+
+# Request/Response Models
+class LoginRequest(BaseModel):
+    """Login request body."""
+    email: EmailStr
+    password: str
+    role: str = Field(..., description="User role: 'seeker' or 'employer'")
+
+
+class LoginResponse(BaseModel):
+    """Login response."""
+    access_token: str
+    token_type: str = "bearer"
+    user_id: str
+    role: str
+    email: str
+
+
+class SeekerRegisterRequest(BaseModel):
+    """Job seeker registration request."""
+    first_name: str = Field(..., min_length=1)
+    last_name: str = Field(..., min_length=1)
+    email: EmailStr
+    password: str = Field(..., min_length=6)
+    phone: str
+    street: str
+    city: str
+    state: str
+    zip_code: str
+    education_level: str
+    edu_focus: str
+    pay_range: list[int] | None = None
+    pay_unit: str = "Yearly"
+    key_skills: list[str] | None = None
+    resume: str | None = Field(None, description="Optional resume text content")
+
+
+class EmployerRegisterRequest(BaseModel):
+    """Employer registration request."""
+    company_name: str = Field(..., min_length=1)
+    contact_first_name: str = Field(..., min_length=1)
+    contact_last_name: str = Field(..., min_length=1)
+    email: EmailStr
+    password: str = Field(..., min_length=6)
+    street: str
+    city: str
+    state: str
+    zip_code: str
+    industry: list[dict[str, str]] = Field(..., min_length=2, max_length=2)
+    benefits: str = ""
+
+
+class RegisterResponse(BaseModel):
+    """Registration response."""
+    user_id: str
+    email: str
+    role: str
+    message: str = "Registration successful"
+
+
+@router.post("/login", response_model=LoginResponse)
+async def login(request: LoginRequest):
+    """
+    Authenticate user and return access token.
+
+    Args:
+        request: Login credentials (email, password, role)
+
+    Returns:
+        Access token and user information
+
+    Raises:
+        HTTPException: If credentials are invalid or user not found
+    """
+    def raise_invalid_credentials() -> None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password"
+        )
+
+    def raise_invalid_role() -> None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid role. Must be 'seeker' or 'employer'"
+        )
+
+    try:
+        if request.role == "seeker":
+            # Find seeker by email
+            seeker = await SeekerCRUD.get_seeker_by_email(request.email)
+            if not seeker:
+                raise_invalid_credentials()
+
+            assert seeker is not None  # Type narrowing
+
+            # Verify password
+            if not verify_password(request.password, seeker.password_hash):
+                raise_invalid_credentials()
+
+            # Create access token
+            access_token = create_access_token(
+                data={"sub": str(seeker.id), "role": "seeker", "email": request.email}
+            )
+
+            return LoginResponse(
+                access_token=access_token,
+                user_id=str(seeker.id),
+                role="seeker",
+                email=request.email
+            )
+
+        if request.role == "employer":
+            # Find employer by email
+            employer = await EmployerCRUD.get_employer_by_email(request.email)
+            if not employer:
+                raise_invalid_credentials()
+
+            assert employer is not None  # Type narrowing
+
+            # Verify password
+            if not verify_password(request.password, employer.password_hash):
+                raise_invalid_credentials()
+
+            # Create access token
+            access_token = create_access_token(
+                data={"sub": str(employer.id), "role": "employer", "email": request.email}
+            )
+
+            return LoginResponse(
+                access_token=access_token,
+                user_id=str(employer.id),
+                role="employer",
+                email=request.email
+            )
+
+        raise_invalid_role()
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Login failed: {e!s}"
+        ) from e
+
+
+@router.post("/register/seeker", response_model=RegisterResponse, status_code=status.HTTP_201_CREATED)
+async def register_seeker(request: SeekerRegisterRequest):
+    """
+    Register a new job seeker account.
+
+    Args:
+        request: Seeker registration data
+
+    Returns:
+        Created user information
+
+    Raises:
+        HTTPException: If registration fails or email already exists
+    """
+    def raise_email_exists() -> None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered"
+        )
+
+    def raise_creation_failed() -> None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to create seeker account"
+        )
+
+    try:
+        # Check if email already exists
+        existing_seeker = await SeekerCRUD.get_seeker_by_email(request.email)
+        if existing_seeker:
+            raise_email_exists()
+
+        # Hash password
+        password_hash = hash_password(request.password)
+
+        # Create seeker
+        seeker = await SeekerService.create_new_seeker(
+            first_name=request.first_name,
+            last_name=request.last_name,
+            email=request.email,
+            phone=request.phone,
+            street=request.street,
+            city=request.city,
+            state=request.state,
+            zip_code=request.zip_code,
+            password_hash=password_hash,
+            education_level=request.education_level,
+            edu_focus=request.edu_focus,
+            pay_range=request.pay_range,
+            pay_unit=request.pay_unit,
+            key_skills=request.key_skills,
+            resume=request.resume
+        )
+
+        if not seeker:
+            raise_creation_failed()
+
+        assert seeker is not None  # Type narrowing
+
+        return RegisterResponse(
+            user_id=str(seeker.id),
+            email=request.email,
+            role="seeker"
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        logger.error(f"Registration failed for {request.email}: {e!s}")
+        logger.error(f"Traceback: {traceback.format_exc()}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Registration failed: {e!s}"
+        ) from e
+
+
+@router.post("/register/employer", response_model=RegisterResponse, status_code=status.HTTP_201_CREATED)
+async def register_employer(request: EmployerRegisterRequest):
+    """
+    Register a new employer account.
+
+    Args:
+        request: Employer registration data
+
+    Returns:
+        Created user information
+
+    Raises:
+        HTTPException: If registration fails or company already exists
+    """
+    def raise_company_exists() -> None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Company already registered"
+        )
+
+    def raise_email_exists_employer() -> None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered"
+        )
+
+    def raise_employer_creation_failed() -> None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to create employer account"
+        )
+
+    try:
+        # Check if company already exists
+        existing_employer = await EmployerCRUD.get_employer_by_company_name(request.company_name)
+        if existing_employer:
+            raise_company_exists()
+
+        # Hash password
+        password_hash = hash_password(request.password)
+
+        # Create address
+        address = {
+            "street": request.street,
+            "city": request.city,
+            "state": request.state,
+            "zip_code": request.zip_code
+        }
+
+        # Check if email already exists
+        existing_email = await EmployerCRUD.get_employer_by_email(request.email)
+        if existing_email:
+            raise_email_exists_employer()
+
+        # Create employer
+        employer = await EmployerService.create_new_employer(
+            company_name=request.company_name,
+            address=address,
+            industry=request.industry,
+            contact_first_name=request.contact_first_name,
+            contact_last_name=request.contact_last_name,
+            email=request.email,
+            password_hash=password_hash,
+            benefits=request.benefits,
+            open_jobs=[]
+        )
+
+        if not employer:
+            raise_employer_creation_failed()
+
+        assert employer is not None  # Type narrowing
+
+        return RegisterResponse(
+            user_id=str(employer.id),
+            email=request.email,
+            role="employer"
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Registration failed: {e!s}"
+        ) from e
+
+
+class UserInfoResponse(BaseModel):
+    """User information response for token validation."""
+    user_id: str
+    email: str
+    role: str
+    first_name: str | None = None
+    last_name: str | None = None
+    company_name: str | None = None
+
+
+@router.get("/me", response_model=UserInfoResponse)
+async def get_current_user(
+    user_id: str = Depends(get_current_user_id),
+    role: str = Depends(get_current_user_role)
+):
+    """
+    Get current authenticated user information.
+    
+    This endpoint validates the JWT token and returns user information.
+    Used by frontend to verify token validity and get user details.
+    
+    Args:
+        user_id: User ID from JWT token (injected by dependency)
+        role: User role from JWT token (injected by dependency)
+        
+    Returns:
+        User information including ID, email, role, and name
+        
+    Raises:
+        HTTPException: If token is invalid or user not found
+    """
+    try:
+        # Based on role, fetch the appropriate user data
+        if role == "seeker":
+            # Retrieve seeker information from database
+            # IMPORTANT: Seeker model stores personal info in 'information' sub-document
+            seeker = await SeekerCRUD.get_seeker_by_id(user_id)
+            if not seeker:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="User not found"
+                )
+            
+            return UserInfoResponse(
+                user_id=str(seeker.id),
+                email=seeker.information.email,
+                role="seeker",
+                first_name=seeker.information.first_name,
+                last_name=seeker.information.last_name
+            )
+            
+        elif role == "employer":
+            # Retrieve employer information from database
+            # IMPORTANT: Employer model stores contact info directly, company name in 'company_information'
+            employer = await EmployerCRUD.get_employer_by_id(user_id)
+            if not employer:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="User not found"
+                )
+            
+            return UserInfoResponse(
+                user_id=str(employer.id),
+                email=employer.email,
+                role="employer",
+                first_name=employer.contact_first_name,
+                last_name=employer.contact_last_name,
+                company_name=employer.company_information.company_name
+            )
+            
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid role"
+            )
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get user information: {str(e)}"
+        )
+

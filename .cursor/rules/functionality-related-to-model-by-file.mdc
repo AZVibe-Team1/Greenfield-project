@@ -1,5 +1,5 @@
 ---
-alwaysApply: true
+alwaysApply: false
 ---
 # Rule: Enforce Layered Architecture Naming Conventions
 

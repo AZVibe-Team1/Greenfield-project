@@ -1,0 +1,58 @@
+{
+  "company_information": {
+    "company_name": "ReactStack Technologies",
+    "address": {
+      "street": "123 Market Street",
+      "city": "San Francisco",
+      "state": "CA",
+      "zip_code": "94103"
+    },
+    "industry": [
+      {
+        "code": "45",
+        "description": "Information Technology"
+      },
+      {
+        "code": "4510",
+        "description": "Software & Services"
+      }
+    ],
+    "benefits": "Comprehensive health, dental, and vision insurance, 401k with 5% company match, flexible PTO, remote/hybrid work options, $2000 annual learning budget, stock options, gym membership, commuter benefits"
+  },
+  "contact_first_name": "Michael",
+  "contact_last_name": "Chen",
+  "email": "michael.chen@reactstack-test.com",
+  "password_hash": "hashed_password_employer_cloudscale_456",
+  "employer_identification": "770e8400-e29b-41d4-a716-446655440209",
+  "open_jobs": [
+    {
+      "job_identification": "660e8400-e29b-41d4-a716-446655440109",
+      "employer_identification": "770e8400-e29b-41d4-a716-446655440209",
+      "job_title": "Full Stack JavaScript/Python Developer",
+      "job_description": "ReactStack Technologies is looking for a talented Full Stack Developer with strong JavaScript and Python skills to join our growing engineering team in San Francisco. Perfect for recent Computer Science graduates or developers with 1-2 years of experience who have worked on freelance projects, internships, or university projects and want to grow with a supportive team.\n\nWhat You'll Do:\n- Build responsive web applications using React and TypeScript\n- Develop RESTful APIs with FastAPI and Python\n- Design and optimize database schemas in PostgreSQL and MongoDB\n- Implement authentication and authorization systems\n- Write clean, maintainable, and well-tested code\n- Collaborate with designers and product managers\n- Deploy applications using Docker containers\n- Participate in code reviews and knowledge sharing\n- Contribute to technical documentation\n- Learn from experienced engineers and grow your skills\n\nRequired Qualifications:\n- Bachelor's degree in Computer Science (recent graduates welcome!)\n- Strong proficiency in Python and JavaScript\n- Experience with React through projects, coursework, or internships\n- Knowledge of TypeScript for type-safe development\n- Experience with FastAPI, Flask, or similar Python frameworks\n- Solid understanding of PostgreSQL and MongoDB from projects or coursework\n- Familiarity with REST API design and implementation\n- Experience with Git version control\n- Understanding of HTML5 and CSS3\n- Strong problem-solving and debugging skills\n- Excellent communication and teamwork abilities\n- Relevant experience includes: freelance projects, internships, university research positions, or personal portfolio projects\n\nPreferred Skills:\n- Experience with Docker and containerization\n- Knowledge of CI/CD pipelines\n- Understanding of cloud platforms (AWS, GCP, or Azure)\n- Experience with testing frameworks (Jest, pytest)\n- Familiarity with Agile/Scrum methodologies\n- Knowledge of responsive design principles\n- Experience with state management (Redux, Context API)\n- Understanding of database optimization\n- Exposure to microservices architecture\n\nWhat We Offer:\n- Competitive salary range: $90,000 - $130,000 (negotiable based on experience)\n- Annual performance bonuses\n- Equity/stock options\n- Comprehensive benefits package\n- Flexible work arrangements (hybrid 2-3 days in office)\n- Modern tech stack and latest tools\n- Collaborative and inclusive culture\n- Professional development opportunities\n- Team events and activities\n- Beautiful office space in downtown San Francisco\n\nLocation: San Francisco, CA (Hybrid - 2-3 days in office per week)\n\nReactStack Technologies is an equal opportunity employer committed to building a diverse and inclusive team.",
+      "department": "Engineering",
+      "hire_mgr_first": "Jennifer",
+      "hire_mgr_last": "Rodriguez",
+      "posted_date": "2024-11-15T08:00:00-08:00",
+      "pay_range": [90000, 130000],
+      "pay_unit": "Yearly",
+      "education_level": "BS",
+      "edu_focus": "Computer Science",
+      "key_skills": [
+        "Python",
+        "JavaScript",
+        "React",
+        "TypeScript",
+        "FastAPI",
+        "PostgreSQL",
+        "MongoDB",
+        "Docker",
+        "Git",
+        "REST APIs",
+        "HTML",
+        "CSS"
+      ]
+    }
+  ]
+}
+

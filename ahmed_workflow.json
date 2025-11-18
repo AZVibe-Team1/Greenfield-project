@@ -1,0 +1,265 @@
+{
+    "name": "My workflow",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "/resume-upload",
+          "options": {
+            "responseData": "Resume upload received"
+          }
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          -368,
+          0
+        ],
+        "id": "a8bb1711-15f9-41e1-8310-a8c653dfeba5",
+        "name": "Webhook",
+        "webhookId": "a374e447-da54-43b4-9292-8651cbbc93a1"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "http://localhost:8000/create-embedding",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "user_id",
+                "value": "=={{$json[\"user_id\"]}}"
+              },
+              {
+                "name": "skills",
+                "value": "=={{$json[\"skills\"].join(', ')}}"
+              },
+              {
+                "name": "experience",
+                "value": "=={{$json[\"experience\"]}}"
+              },
+              {
+                "name": "education",
+                "value": "=={{$json[\"education\"]}}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          256,
+          0
+        ],
+        "id": "34c8021c-912e-4cc9-b2cb-5c47dafcc24a",
+        "name": "Create Embedding"
+      },
+      {
+        "parameters": {
+          "url": "=={{$json[\"resume_url\"]}}",
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "file"
+              }
+            }
+          }
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          -160,
+          0
+        ],
+        "id": "73b7a8ad-4420-468d-837c-fdc9d87e49f5",
+        "name": "Download Resume File"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "http://localhost:8000/parse-resume",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "user_id",
+                "value": "=={{$json[\"user_id\"]}}"
+              },
+              {
+                "name": "resume_base64",
+                "value": "=={{$binary.resume.data.toString('base64')}}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          48,
+          0
+        ],
+        "id": "24f61dba-210f-4eb5-b3ae-5f03f9133891",
+        "name": "Parse Resume"
+      },
+      {
+        "parameters": {
+          "url": "=http://backend:8000/recommend-jobs?user_id={{$json[\"user_id\"]}}",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "user_id",
+                "value": "=={{$json[\"user_id\"]}}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          464,
+          0
+        ],
+        "id": "32de1370-9638-4f96-89d4-de8a29f0c9d0",
+        "name": "Retrieve Job recommendations"
+      },
+      {
+        "parameters": {
+          "sendTo": "=={{$json[\"user_email\"]}}",
+          "subject": "We found job matches for you!",
+          "message": "=<h3>Hi {{$json[\"user_name\"]}},</h3>  <p>Based on your resume, here are your top job matches:</p>  <ul> {{ $json[\"recommendations\"].map(r => `<li><strong>${r.title}</strong> at ${r.company}</li>`).join('') }} </ul>  <p>You can view and apply directly from your dashboard.</p> <p>– The JobPortal AI Team</p>",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.1,
+        "position": [
+          672,
+          0
+        ],
+        "id": "604f76a7-1589-4735-abb5-8d6695a1dbbc",
+        "name": "Send a message1",
+        "webhookId": "e5d2606f-c7ab-4468-84cc-13c3228bc0a4",
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "lHKkhOid9esRJVEQ",
+            "name": "Gmail account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "http://localhost:8000/log-event",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "user_id",
+                "value": "=={{$json[\"user_id\"]}}"
+              },
+              {
+                "name": "event",
+                "value": "recommendation_sent"
+              },
+              {
+                "name": "timestamp",
+                "value": "=={{$now}}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          880,
+          0
+        ],
+        "id": "774748a9-61d0-4a12-a48b-22aeab35e358",
+        "name": "Log event"
+      }
+    ],
+    "pinData": {},
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Download Resume File",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download Resume File": {
+        "main": [
+          [
+            {
+              "node": "Parse Resume",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse Resume": {
+        "main": [
+          [
+            {
+              "node": "Create Embedding",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Embedding": {
+        "main": [
+          [
+            {
+              "node": "Retrieve Job recommendations",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Retrieve Job recommendations": {
+        "main": [
+          [
+            {
+              "node": "Send a message1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send a message1": {
+        "main": [
+          [
+            {
+              "node": "Log event",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "active": false,
+    "settings": {
+      "executionOrder": "v1"
+    },
+    "versionId": "4e5d677c-7f3f-4d48-96cc-7f3d1bc652c8",
+    "meta": {
+      "templateCredsSetupCompleted": true,
+      "instanceId": "6895fc8b24e73fa66616f4e094f23bb53f7a27db7b09b943bfcceca97338657b"
+    },
+    "id": "3aBFiIWjsbwJVL7e",
+    "tags": []
+  }

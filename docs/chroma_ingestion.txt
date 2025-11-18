@@ -1,0 +1,24 @@
+ChromaDB:
+
+The following two scripts should live inside ./backend/db/:
+
+ingest_seeker.py - script should be ran when a job seeker first uploads their resume
+                 - populates the chromadb Seeker_Resume_Collection and Seeker_Skills_Collection with information from that user's upload
+                 - should be able to be ran with a flag "--test-data" that only looks for .json files in a directory ./backend/db/chroma_data/seeker/, with the json files containing example seeker resume data and skills data
+
+ingest_employer.py - script should be ran when an employer first creates a new job posting
+                   - populates the chromadb Employer_Job_Descr_Collection and Employer_Skillswish_Collection with information from the job posting upload
+                   - should be able to be ran with a flag "--test-data" that only looks for .json files in a directory ./backend/db/chroma_data/employer/, with the json files containing example job posting data and skills data
+
+Actual chroma database folder is at root project directory ./chroma_db
+Chroma should use "text-embedding-3-small" from OpenAI for embeddings.
+Add detailed logging for chroma operations into the existing logging infrastructure.
+If an existing method or endpoint exists for a chroma task, leave it in place as you implement.
+
+Backend/Chroma Context (additional info):
+
+There are 4 collections: Employer_Job_Descr_Collection, Employer_Skillswish_Collection, Seeker_Resume_Collection, and Seeker_Skills_Collection.
+The Employer_JobDescr_collection will ingest all job descriptions for all employers. Each job description has a unique identifier (UUID) plus the text. There is also metadata that lists the job title, post date, and the unique employer identification number (also a UUID). So, this would allow a search to ‘find’ a job, then by looking at the metadata find the employer id, and from there do a mongodb search to pull up the rest of the employer information.
+Employer_Skillswish_Collection is same basic principle, except this has the concatenation of an employer’s desired education level, education focus and desired skills. (NOTE, employers and seekers can define up to 15 skills, in free form text)
+Seeker_Resume_Collection will ingest the resume. Its only metadata tag is the create_at datestamp. If we feel there should be more metadata here, its pretty straightforward to add more.
+Seeker_Skills_Collection is the opposite of the Employer one

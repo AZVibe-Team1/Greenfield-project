@@ -1,0 +1,15 @@
+I want you to implement a docker compose setup for my project. The docker compose setup should contain:
+
+- One container for the Backend
+- One container for the Frontend (leave this service commented out to be added later)
+- One container for the mongoDB (leave this service commented out to be added later)
+
+Leave detailed comments in all dockerfiles, and in the root docker-compose.yml file.
+I should be able to run my backend using: "docker compose run backend"
+I should be able to run my frontend using: "docker compose run frontend"
+I should be able to run the whole application together using: "docker compose up".
+
+Append the existing root level README.md file with concise information about your implementation and how to get started.
+
+
+Create ONLY the basic files needed to run a very basic backend container. More files will be added at a later time. We are focusing mostly on docker.

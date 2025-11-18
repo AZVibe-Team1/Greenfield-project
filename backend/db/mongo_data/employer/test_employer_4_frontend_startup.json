@@ -1,0 +1,53 @@
+{
+  "company_information": {
+    "company_name": "PixelPerfect Design Co",
+    "address": {
+      "street": "456 Mission Street, 8th Floor",
+      "city": "San Francisco",
+      "state": "CA",
+      "zip_code": "94105"
+    },
+    "industry": [
+      {
+        "code": "45",
+        "description": "Information Technology"
+      },
+      {
+        "code": "4510",
+        "description": "Software & Services"
+      }
+    ],
+    "benefits": "Health, dental, vision insurance, stock options, unlimited PTO, remote-friendly, latest MacBook Pro, learning budget, casual dress code, fun team culture"
+  },
+  "contact_first_name": "Sophie",
+  "contact_last_name": "Williams",
+  "email": "sophie.williams@pixelperfect-test.com",
+  "password_hash": "hashed_password_employer_304",
+  "employer_identification": "770e8400-e29b-41d4-a716-446655440204",
+  "open_jobs": [
+    {
+      "job_identification": "660e8400-e29b-41d4-a716-446655440104",
+      "employer_identification": "770e8400-e29b-41d4-a716-446655440204",
+      "job_title": "Frontend Developer - Entry Level",
+      "job_description": "Join our dynamic startup as an Entry-Level Frontend Developer! Perfect for Computer Science graduates who love creating beautiful user interfaces and want to work with modern web technologies.\n\nResponsibilities:\n- Build responsive web applications using React and TypeScript\n- Implement pixel-perfect designs from Figma mockups\n- Write clean, reusable component code\n- Optimize application performance\n- Collaborate with designers and backend engineers\n- Participate in daily standups and sprint planning\n- Learn and adopt best practices in frontend development\n\nRequirements:\n- Bachelor's degree in Computer Science or related field\n- Strong understanding of HTML, CSS, and JavaScript\n- Familiarity with React or similar frameworks\n- Basic knowledge of responsive design principles\n- Git version control experience\n- Portfolio or GitHub projects demonstrating frontend skills\n- Passion for user experience and design",
+      "department": "Product Engineering",
+      "hire_mgr_first": "Marcus",
+      "hire_mgr_last": "Taylor",
+      "posted_date": "2024-11-14T14:30:00-08:00",
+      "pay_range": [80000, 110000],
+      "pay_unit": "Yearly",
+      "education_level": "BS",
+      "edu_focus": "Computer Science",
+      "key_skills": [
+        "React",
+        "JavaScript",
+        "TypeScript",
+        "HTML",
+        "CSS",
+        "Git",
+        "Responsive Design"
+      ]
+    }
+  ]
+}
+

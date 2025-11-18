@@ -1,0 +1,24 @@
+{
+  "job_identification": "660e8400-e29b-41d4-a716-446655440102",
+  "employer_identification": "770e8400-e29b-41d4-a716-446655440202",
+  "education_level": "MS",
+  "edu_focus": "Computer Science",
+  "key_skills": [
+    "Python",
+    "Machine Learning",
+    "TensorFlow",
+    "PyTorch",
+    "scikit-learn",
+    "MLOps",
+    "Apache Spark",
+    "Docker",
+    "Kubernetes",
+    "SQL",
+    "Data Pipelines",
+    "Model Deployment",
+    "A/B Testing",
+    "Statistical Analysis",
+    "Deep Learning"
+  ]
+}
+
